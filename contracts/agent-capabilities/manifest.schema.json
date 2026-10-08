@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://studypilot.local/contracts/agent-capabilities/manifest.schema.json",
+  "title": "StudyPilot Capability Manifest Schema (H02)",
+  "description": "Schema defining the compiled capability manifest and tool entries for StudyPilot pluggable agent runtime.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "generated_at",
+    "sources",
+    "tools"
+  ],
+  "properties": {
+    "manifest_version": {
+      "type": "string",
+      "const": "1.0-draft"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "descriptor_count",
+        "descriptors_hash",
+        "metadata_hash"
+      ],
+      "properties": {
+        "descriptor_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "descriptors_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "metadata_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/manifestToolEntry"
+      }
+    }
+  },
+  "$defs": {
+    "manifestToolEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "category",
+        "description",
+        "when_to_use",
+        "when_not_to_use",
+        "input_schema",
+        "output_schema",
+        "side_effect",
+        "permission",
+        "confirmation",
+        "idempotency",
+        "timeout_ms",
+        "error_contract",
+        "cost_hint",
+        "exposure",
+        "source_provenance"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9_]+)*$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "when_to_use": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "when_not_to_use": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "input_schema": {
+          "type": "object"
+        },
+        "output_schema": {
+          "type": "object"
+        },
+        "side_effect": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effect",
+            "risk_level",
+            "mutates_business_data"
+          ],
+          "properties": {
+            "effect": {
+              "enum": ["READ", "NAVIGATE", "WRITE", "LOCAL"]
+            },
+            "risk_level": {
+              "enum": ["NONE", "LOW", "HIGH"]
+            },
+            "mutates_business_data": {
+              "type": "boolean"
+            }
+          }
+        },
+        "permission": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required_scope",
+            "scope_required"
+          ],
+          "properties": {
+            "required_scope": {
+              "type": ["string", "null"]
+            },
+            "scope_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "confirmation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "waiting_status",
+            "notes"
+          ],
+          "properties": {
+            "mode": {
+              "enum": ["none", "always_user_confirmation", "conditional_scope_grant"]
+            },
+            "waiting_status": {
+              "enum": ["WAITING_CONFIRMATION", "WAITING_AUTHORIZATION", null]
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        },
+        "idempotency": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required"
+          ],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 1000
+        },
+        "error_contract": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "cost_hint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "local",
+            "external_dependency",
+            "notes"
+          ],
+          "properties": {
+            "local": {
+              "type": "boolean"
+            },
+            "external_dependency": {
+              "type": ["string", "null"]
+            },
+            "notes": {
+              "type": "string"
+            }
+          }
+        },
+        "exposure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "reason"
+          ],
+          "properties": {
+            "state": {
+              "enum": ["allowed", "disabled", "pending"]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "authoritative_facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fact", "meaning"],
+            "properties": {
+              "fact": { "type": "string", "minLength": 1 },
+              "meaning": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "examples": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "input",
+              "expect",
+              "outcome"
+            ],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "input": { "type": "object" },
+              "expect": { "type": "string", "minLength": 1 },
+              "outcome": {
+                "enum": ["ok", "rejected", "unavailable"]
+              },
+              "fixture_kind": { "type": "string" },
+              "output": {},
+              "error": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["code", "message"],
+                "properties": {
+                  "code": { "type": "string" },
+                  "message": { "type": "string" }
+                }
+              },
+              "fixture_source": { "type": "string" }
+            }
+          }
+        },
+        "source_provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "registration",
+            "handler",
+            "output_schema"
+          ],
+          "properties": {
+            "registration": { "type": "string", "minLength": 1 },
+            "handler": { "type": "string", "minLength": 1 },
+            "output_schema": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  }
+}
