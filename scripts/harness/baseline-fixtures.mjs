@@ -561,9 +561,28 @@ function checkPublicProjection(doc) {
   const p = doc.publicContractProjection;
   if (!isPlainObject(p)) fail('publicContractProjection block is missing');
   if (!isNonEmptyString(p.publicSchemaRef)) fail('publicContractProjection.publicSchemaRef is missing');
+  const observed = p.publicSchemaObservedAt;
+  if (!isPlainObject(observed)) {
+    fail('publicContractProjection.publicSchemaObservedAt is missing: the vocabulary source must be traceable');
+  }
+  if (!isNonEmptyString(observed.path)) fail('publicContractProjection.publicSchemaObservedAt.path is missing');
+  if (!/^[0-9a-f]{40}$/.test(observed.head ?? '')) {
+    fail('publicContractProjection.publicSchemaObservedAt.head is not a full 40-char commit hash');
+  }
   const events = p.eventTypes ?? [];
   for (const type of PUBLIC_EVENT_TYPES) {
     if (!events.includes(type)) fail(`publicContractProjection.eventTypes is missing "${type}"`);
+  }
+  // The observed draft vocabulary must be a superset of what the scenarios use,
+  // so the projection can never claim an event the draft does not define.
+  const observedEvents = p.draftObservedEventTypes ?? [];
+  if (!Array.isArray(observedEvents) || observedEvents.length === 0) {
+    fail('publicContractProjection.draftObservedEventTypes is missing or empty');
+  }
+  for (const type of events) {
+    if (!observedEvents.includes(type)) {
+      fail(`publicContractProjection.eventTypes lists "${type}", which the observed draft vocabulary does not define`);
+    }
   }
   const reasons = p.endReasonVocabulary ?? [];
   for (const reason of PUBLIC_END_REASONS) {

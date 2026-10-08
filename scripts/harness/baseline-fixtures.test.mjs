@@ -485,3 +485,47 @@ test('positive control: the shipped projection passes after all projection edits
   assert.equal(report.ok, true);
   assert.ok(report.assertionsEvaluated >= 101);
 });
+
+// --- Public vocabulary traceability and cross-tree independence -----------
+
+test('rejects a projection without a traceable observed schema head', () => {
+  const doc = clone();
+  delete doc.publicContractProjection.publicSchemaObservedAt;
+  assertRejected(doc, /publicSchemaObservedAt is missing/);
+});
+
+test('rejects a projection whose observed schema head is not a commit', () => {
+  const doc = clone();
+  doc.publicContractProjection.publicSchemaObservedAt.head = 'draft';
+  assertRejected(doc, /head is not a full 40-char commit hash/);
+});
+
+test('rejects a used event the observed draft vocabulary does not define', () => {
+  const doc = clone();
+  doc.publicContractProjection.eventTypes.push('MADE_UP_EVENT');
+  assertRejected(doc, /MADE_UP_EVENT|does not define/);
+});
+
+test('the observed draft vocabulary covers every event the scenarios use', () => {
+  const doc = clone();
+  const p = doc.publicContractProjection;
+  for (const type of p.eventTypes) {
+    assert.ok(p.draftObservedEventTypes.includes(type), `${type} must be in the observed draft vocabulary`);
+  }
+});
+
+test('the harness scripts never read another end worktree (no cross-tree dependency)', () => {
+  // The projection records the observed public schema by path and commit only.
+  // No test-time read of another end's tree may be introduced. The forbidden
+  // markers are assembled at runtime so this assertion cannot match itself.
+  const forbidden = [
+    ['project-harness-h01', 'minimax'].join('-'),
+    ['project-harness-h01', 'zcode'].join('-'),
+  ];
+  for (const file of ['baseline-fixtures.mjs', 'baseline-inventory.mjs', 'baseline-fixtures.test.mjs', 'baseline-inventory.test.mjs']) {
+    const source = readFileSync(new URL(`./${file}`, import.meta.url), 'utf8');
+    for (const marker of forbidden) {
+      assert.ok(!source.includes(marker), `${file} must not reference the sibling worktree ${marker}`);
+    }
+  }
+});

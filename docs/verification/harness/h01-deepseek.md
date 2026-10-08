@@ -463,7 +463,7 @@ RED 变异体在 `mktemp -d` 临时目录生成，**未写入仓库**。
 
 ```
 $ node --test scripts/harness/baseline-fixtures.test.mjs
-ℹ tests 61   ℹ pass 61   ℹ fail 0
+ℹ tests 66   ℹ pass 66   ℹ fail 0
 
 $ node --test scripts/harness/baseline-inventory.test.mjs
 ℹ tests 34   ℹ pass 34   ℹ fail 0
@@ -472,9 +472,9 @@ $ node --test scripts/harness/baseline-inventory.test.mjs
 二轮在原有 41 + 16 项之上新增负例：
 
 - **inventory（+18）**：核心机制摘要变化、组合 patch 变化、preset 摘要变化、profile 层摘要变化（bundles 不变）、机制从 inventory 移除、机制文件缺失、profile 层缺失/不可读、profile 层整体不可读（UNVERIFIED）、出现冻结锁之外的机制（UNVERIFIED）、**仅**锁定核心路径 dirty、无关未跟踪工件不算漂移（正例）、baseline 未冻结机制摘要、baseline 未冻结 profile 摘要、`collectLock` 只输出摘要、锁等值正例，以及一条**真实只读正例**（在本机 live inventory 上比对全部 33 + 6 个摘要完全相等）。
-- **fixtures（+20）**：baseline 未冻结机制摘要、缺必要机制摘要、未冻结 profile 摘要、非摘要值、未声明"仅摘要"意图、顶层与场景内敏感键、缺投影块、缺公共事件名、缺公共 endReason、outcome kind 无投影、terminationReason 无投影、ok/endReason 不一致、交互待答却被标为完成、steer 被投影成 cancelled、steer 被赋予 CANCELLED endReason、cancel 未投影 CANCELLED、投影声明 steer 为终结、steer 被列入 terminationReasons。
+- **fixtures（+25）**：baseline 未冻结机制摘要、缺必要机制摘要、未冻结 profile 摘要、非摘要值、未声明"仅摘要"意图、顶层与场景内敏感键、缺投影块、缺公共事件名、缺公共 endReason、outcome kind 无投影、terminationReason 无投影、ok/endReason 不一致、交互待答却被标为完成、steer 被投影成 cancelled、steer 被赋予 CANCELLED endReason、cancel 未投影 CANCELLED、投影声明 steer 为终结、steer 被列入 terminationReasons、缺 `publicSchemaObservedAt`、观察 head 非 commit、使用了草案词表未定义的事件、`draftObservedEventTypes` 覆盖性，以及一条**源码级跨树独立性正例**（断言四个脚本不含兄弟工作树路径）。
 
-`baseline-fixtures.test.mjs` 共 61 项（含 2 个正例对照）；`baseline-inventory.test.mjs` 共 34 项，其中 6 项为真实只读正例（依赖本机桌面 Harness，缺失时 skip 而非 fail）。
+`baseline-fixtures.test.mjs` 共 66 项（含 2 个正例对照）；`baseline-inventory.test.mjs` 共 34 项，其中 6 项为真实只读正例（依赖本机桌面 Harness，缺失时 skip 而非 fail）。
 
 ### 7.5 场景术语到公共 Runtime 契约的投影（steer ≠ cancel）
 
@@ -503,6 +503,8 @@ $ node --test scripts/harness/baseline-inventory.test.mjs
 | 公共事件 | `TURN_FINISHED` | 仍为活跃轮次（`TURN_STARTED`） |
 
 校验器对上述规则做**逐场景强制**（`steer_not_cancel`、`cancel_maps_to_cancelled` 断言 + 全局投影一致性检查），因此"把 steer 当成 cancel"或"把待答状态当成完成"都会使校验失败。术语对齐的说明也写入 fixture：本端早期术语（`turn.started`、`tool.call.started`、`content.delta` 等）**不是**公共契约形状，已由投影统一为 uppercase 事件名。
+
+**词表来源可追溯、且无跨树运行时依赖**：投影记录只读观察到的公共 schema 位置与 commit（`publicSchemaObservedAt`：`/Users/moxiao/IdeaProjects/project-harness-h01-minimax` @ `981ca91c25011f8f0051bfb979b902c8ca68a52f`，仍为 `1.0-draft`）。观察到的草案事件全集为 13 个（本端 16 场景实际使用的 11 个 + `PROGRESS` + `UI_ACTION`；后两者属展示进度与旧 UI 指令分支，归 H08/H09 展示面，本轮场景未使用，故写入 `draftObservedEventTypes` 但**不纳入强制集**）。校验器要求：实际使用的事件必须被观察到的草案词表覆盖，且 `draftObservedEventTypes ⊇ eventTypes`。本端测试**不读取** MiniMax/ZCode 工作树的任何文件——已加源码级守护测试断言四个脚本中不出现兄弟工作树路径，因此公共 schema 的二轮改名不会使本端 fixture 失败，只会触发一次显式的词表同步。
 
 ---
 
@@ -582,7 +584,7 @@ node --test scripts/harness/baseline-inventory.test.mjs
 | --- | --- |
 | `git -C <worktree> rev-parse --abbrev-ref HEAD` / `HEAD` | `codex/harness-h01-deepseek-baseline`；二轮 HEAD 见第 12 节 |
 | `node scripts/harness/baseline-fixtures.mjs` | exit 0；16 场景 / 16 覆盖标签 / **101** 断言 / 33 硬失败规则 |
-| `node --test scripts/harness/baseline-fixtures.test.mjs` | **61 tests, 61 pass, 0 fail** |
+| `node --test scripts/harness/baseline-fixtures.test.mjs` | **66 tests, 66 pass, 0 fail** |
 | `node scripts/harness/baseline-inventory.mjs` | exit 0；HEAD `ddefc45…`；**33** 个机制扩展点全部存在；3 个锁摘要 |
 | `node scripts/harness/baseline-inventory.mjs --lock` | 输出仅含摘要的冻结子集（33 机制 + 6 profile 层 + 3 锁文件），无文件内容 |
 | `node scripts/harness/baseline-inventory.mjs --check` | exit 0；`LOCKED baseline matches the live Harness tree` |
@@ -642,7 +644,7 @@ node --test scripts/harness/baseline-inventory.test.mjs
 | 基线（快照 commit） | `f7311079a83b84c5e7f3a9076ce4efccb3044c86` |
 | 一轮交付提交 | `b63184b56336804de588571f43fd20722724457c`（一轮 Codex HEAD 记为 `61e097f5…`） |
 | 二轮交付提交 | `ad039d35ea6bb2d7ac682bb4d9216ab3599a8440`（含下列 6 个文件，本地提交，无 push/merge/deploy）；本文档该行 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
-| 测试 | fixtures **61/61**；inventory **34/34**；`--check` 无漂移；R4 独立反例 **10/10** 符合预期（含一轮被误接受的 2 例现被拒） |
+| 测试 | fixtures **66/66**；inventory **34/34**；`--check` 无漂移；R4 独立反例 **10/10** 符合预期（含一轮被误接受的 2 例现被拒） |
 | 证据层级 | mock/offline（无真实模型、无服务、无 DB、未运行桌面 Harness 测试或构建） |
 | 未覆盖项 | 见第 11 节（含 UNVERIFIED 清单） |
 | 下一步 | 停在 H01，等 Codex 二轮复验与用户审阅。**不进入 H02** |
@@ -677,7 +679,7 @@ M  docs/verification/harness/h01-deepseek.md             # 本文档
 ```bash
 cd /Users/moxiao/IdeaProjects/project-harness-h01-deepseek
 node scripts/harness/baseline-fixtures.mjs                 # 期望 PASS，101 断言
-node --test scripts/harness/baseline-fixtures.test.mjs      # 期望 61/61
+node --test scripts/harness/baseline-fixtures.test.mjs      # 期望 66/66
 node scripts/harness/baseline-inventory.mjs --check         # 期望 LOCKED
 node --test scripts/harness/baseline-inventory.test.mjs     # 期望 34/34
 node scripts/harness/baseline-inventory.mjs --lock          # 复核冻结摘要可复现

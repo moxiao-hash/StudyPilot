@@ -220,6 +220,28 @@
     "publicSchemaRef": "contracts/agent-runtime/runtime.schema.json",
     "publicSchemaOwner": "MiniMax",
     "protocolVersion": "1.0-draft",
+    "publicSchemaObservedAt": {
+      "path": "/Users/moxiao/IdeaProjects/project-harness-h01-minimax",
+      "head": "981ca91c25011f8f0051bfb979b902c8ca68a52f",
+      "observedAt": "2026-10-08",
+      "note": "只读观察记录，用于追溯词表来源。本端测试不读取、不依赖该工作树的任何文件；公共 schema 仍为 1.0-draft，若 MiniMax 二轮改名，本端只更新上述 head 与词表，不产生跨树运行时依赖。"
+    },
+    "eventTypesNote": "eventTypes 是本 16 场景实际使用、并由校验器强制存在的 11 个事件；draftObservedEventTypes 是观察到的草案全集（多出 PROGRESS 与 UI_ACTION，属展示进度与旧 UI 指令分支，归 H08/H09 展示面，本轮场景未使用，故不纳入强制集）。",
+    "draftObservedEventTypes": [
+      "SESSION_OPENED",
+      "SESSION_CLOSED",
+      "TURN_STARTED",
+      "TURN_FINISHED",
+      "CALL_STARTED",
+      "CALL_FINISHED",
+      "ASSISTANT_DELTA",
+      "ASSISTANT_MESSAGE",
+      "INTERACTION_REQUIRED",
+      "USAGE_REPORTED",
+      "ERROR",
+      "PROGRESS",
+      "UI_ACTION"
+    ],
     "eventTypes": [
       "SESSION_OPENED",
       "SESSION_CLOSED",
