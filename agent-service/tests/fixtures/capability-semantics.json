@@ -831,6 +831,13 @@
           "index": 0,
           "field": "outcome",
           "value": "rejected"
+        },
+        {
+          "op": "set_example_field",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "field": "fixture_kind",
+          "value": "rejection"
         }
       ],
       "expectErrorCode": "E_OUTPUT_INSTANCE"
@@ -851,7 +858,7 @@
     },
     {
       "id": "N42",
-      "intent": "R-D3 形状 fixture 里塞入伪造业务值",
+      "intent": "合成实例违反契约（缺必需字段的伪造业务值）",
       "ops": [
         {
           "op": "set_example_output",
@@ -864,7 +871,7 @@
           ]
         }
       ],
-      "expectErrorCode": "E_OUTPUT_INSTANCE"
+      "expectErrorCode": "E_SCHEMA_INSTANCE"
     },
     {
       "id": "N43",
@@ -976,6 +983,85 @@
         }
       ],
       "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N51",
+      "intent": "类型化实例字段类型错误（score 应为 number）",
+      "ops": [
+        {
+          "op": "set_example_output",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "value": [
+            {
+              "knowledgePoint": "synthetic",
+              "score": "0.99"
+            }
+          ]
+        }
+      ],
+      "expectErrorCode": "E_SCHEMA_INSTANCE"
+    },
+    {
+      "id": "N52",
+      "intent": "类型化实例缺必需字段",
+      "ops": [
+        {
+          "op": "set_example_output",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "value": [
+            {
+              "score": 0
+            }
+          ]
+        }
+      ],
+      "expectErrorCode": "E_SCHEMA_INSTANCE"
+    },
+    {
+      "id": "N53",
+      "intent": "输入违反登记 input_schema（多余参数）",
+      "ops": [
+        {
+          "op": "set_example_input",
+          "tool": "learning.plan.get",
+          "index": 0,
+          "value": {
+            "planId": "p-1",
+            "extra": "x"
+          }
+        }
+      ],
+      "expectErrorCode": "E_EXAMPLE_SCHEMA"
+    },
+    {
+      "id": "N54",
+      "intent": "合成实例来源未指向生成器",
+      "ops": [
+        {
+          "op": "set_example_field",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "field": "fixture_source",
+          "value": "docs/verification/harness/h02-deepseek.md"
+        }
+      ],
+      "expectErrorCode": "E_SCHEMA_INSTANCE"
+    },
+    {
+      "id": "N55",
+      "intent": "outcome 与 fixture_kind 不一致",
+      "ops": [
+        {
+          "op": "set_example_field",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "field": "fixture_kind",
+          "value": "contract_defect"
+        }
+      ],
+      "expectErrorCode": "E_SCHEMA_INSTANCE"
     }
   ],
   "frozenFacts": {
@@ -4965,7 +5051,6178 @@
           "Set#of"
         ]
       }
-    ]
+    ],
+    "descriptorProvenance": {
+      "source": "MiniMax H02 descriptor export (read-only, not modified)",
+      "artifact": "contracts/agent-capabilities/generated/descriptors.json",
+      "artifactSha256": "0e7cf62526b823ae5db18ff142ed9d1e368f23d5ccff0b930cba617e2e86e896",
+      "manifestSchema": "contracts/agent-capabilities/manifest.schema.json",
+      "manifestSchemaSha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
+      "sourceCommit": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
+      "note": "Schemas are frozen here so validation is offline and self-contained; re-derive with --descriptors <path> after the upstream export changes."
+    },
+    "toolSchemas": {
+      "artifacts.evaluate": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "artifactId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifactId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "relativePath": {
+              "type": "string"
+            },
+            "canonicalPath": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "testEvidence": {
+              "type": "string"
+            },
+            "evaluationMode": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "submissionVersion": {
+              "type": "integer"
+            },
+            "roadmapNode": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "moduleId": {
+                  "type": "string"
+                },
+                "stageId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "moduleTitle": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "stageTitle": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "moduleId",
+                "stageId",
+                "title"
+              ]
+            },
+            "reviewHistory": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "fromStatus": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "toStatus": {
+                    "type": "string"
+                  },
+                  "eventType": {
+                    "type": "string"
+                  },
+                  "details": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "score": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "rubricBreakdownJson": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "toStatus",
+                  "eventType",
+                  "createdAt"
+                ]
+              }
+            },
+            "rubricScore": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "rubricFeedback": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sensitiveScanPassed": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "sensitiveFindings": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "acceptedAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "createdAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "workspaceId",
+            "relativePath",
+            "canonicalPath",
+            "description",
+            "testEvidence",
+            "evaluationMode",
+            "status",
+            "submissionVersion",
+            "reviewHistory",
+            "createdAt"
+          ]
+        }
+      },
+      "artifacts.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "artifactId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifactId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "relativePath": {
+              "type": "string"
+            },
+            "canonicalPath": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "testEvidence": {
+              "type": "string"
+            },
+            "evaluationMode": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "submissionVersion": {
+              "type": "integer"
+            },
+            "roadmapNode": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "moduleId": {
+                  "type": "string"
+                },
+                "stageId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "moduleTitle": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "stageTitle": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "moduleId",
+                "stageId",
+                "title"
+              ]
+            },
+            "reviewHistory": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "fromStatus": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "toStatus": {
+                    "type": "string"
+                  },
+                  "eventType": {
+                    "type": "string"
+                  },
+                  "details": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "score": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "rubricBreakdownJson": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "toStatus",
+                  "eventType",
+                  "createdAt"
+                ]
+              }
+            },
+            "rubricScore": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "rubricFeedback": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sensitiveScanPassed": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "sensitiveFindings": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "acceptedAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "createdAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "workspaceId",
+            "relativePath",
+            "canonicalPath",
+            "description",
+            "testEvidence",
+            "evaluationMode",
+            "status",
+            "submissionVersion",
+            "reviewHistory",
+            "createdAt"
+          ]
+        }
+      },
+      "artifacts.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "workspaceId": {
+                "type": "string"
+              },
+              "relativePath": {
+                "type": "string"
+              },
+              "canonicalPath": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "testEvidence": {
+                "type": "string"
+              },
+              "evaluationMode": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "submissionVersion": {
+                "type": "integer"
+              },
+              "roadmapNode": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "moduleId": {
+                    "type": "string"
+                  },
+                  "stageId": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "moduleTitle": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "stageTitle": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "moduleId",
+                  "stageId",
+                  "title"
+                ]
+              },
+              "reviewHistory": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "fromStatus": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "toStatus": {
+                      "type": "string"
+                    },
+                    "eventType": {
+                      "type": "string"
+                    },
+                    "details": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "score": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "rubricBreakdownJson": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "toStatus",
+                    "eventType",
+                    "createdAt"
+                  ]
+                }
+              },
+              "rubricScore": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "rubricFeedback": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sensitiveScanPassed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "sensitiveFindings": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "acceptedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "workspaceId",
+              "relativePath",
+              "canonicalPath",
+              "description",
+              "testEvidence",
+              "evaluationMode",
+              "status",
+              "submissionVersion",
+              "reviewHistory",
+              "createdAt"
+            ]
+          }
+        }
+      },
+      "artifacts.submit": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "roadmapNodeId": {
+              "type": "string"
+            },
+            "testEvidence": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "relativePath": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "roadmapNodeId",
+            "testEvidence",
+            "description",
+            "relativePath"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "relativePath": {
+              "type": "string"
+            },
+            "canonicalPath": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "testEvidence": {
+              "type": "string"
+            },
+            "evaluationMode": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "submissionVersion": {
+              "type": "integer"
+            },
+            "roadmapNode": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "moduleId": {
+                  "type": "string"
+                },
+                "stageId": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "moduleTitle": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "stageTitle": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "moduleId",
+                "stageId",
+                "title"
+              ]
+            },
+            "reviewHistory": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "fromStatus": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "toStatus": {
+                    "type": "string"
+                  },
+                  "eventType": {
+                    "type": "string"
+                  },
+                  "details": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "score": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "rubricBreakdownJson": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "toStatus",
+                  "eventType",
+                  "createdAt"
+                ]
+              }
+            },
+            "rubricScore": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "rubricFeedback": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sensitiveScanPassed": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "sensitiveFindings": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "acceptedAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "createdAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "workspaceId",
+            "relativePath",
+            "canonicalPath",
+            "description",
+            "testEvidence",
+            "evaluationMode",
+            "status",
+            "submissionVersion",
+            "reviewHistory",
+            "createdAt"
+          ]
+        }
+      },
+      "assessment.attempt.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "attemptId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "attemptId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "quizId": {
+              "type": "string"
+            },
+            "score": {
+              "type": "number"
+            },
+            "status": {
+              "type": "string"
+            },
+            "warning": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "results": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "questionId": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "questionText": {
+                    "type": "string"
+                  },
+                  "options": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "selectedAnswers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "codeAnswer": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "correctAnswers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "referenceAnswer": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "correct": {
+                    "type": "boolean"
+                  },
+                  "knowledgePoint": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "explanation": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "evaluationMethod": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "score": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "evaluation": {
+                    "type": [
+                      "object",
+                      "null"
+                    ],
+                    "additionalProperties": {}
+                  }
+                },
+                "required": [
+                  "questionId",
+                  "type",
+                  "questionText",
+                  "selectedAnswers",
+                  "correctAnswers",
+                  "correct"
+                ]
+              }
+            },
+            "reviewProgress": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "clearedCount": {
+                  "type": "integer"
+                },
+                "remainingCount": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "clearedCount",
+                "remainingCount"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "quizId",
+            "score",
+            "status",
+            "results",
+            "reviewProgress"
+          ]
+        }
+      },
+      "assessment.mastery.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "knowledgePoint": {
+                "type": "string"
+              },
+              "score": {
+                "type": "number"
+              },
+              "quizScore": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "taskScore": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "selfAssessmentScore": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "evidenceCount": {
+                "type": "integer"
+              },
+              "attemptCount": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "knowledgePoint",
+              "score",
+              "evidenceCount",
+              "attemptCount",
+              "updatedAt"
+            ]
+          }
+        }
+      },
+      "assessment.node_quiz.generate": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nodeId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "quizId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestAttemptId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "generation": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "jobId": {
+                  "type": "string"
+                },
+                "purpose": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "retrySequence": {
+                  "type": "integer"
+                },
+                "attemptCount": {
+                  "type": "integer"
+                },
+                "quizId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "lastError": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "leaseUntil": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "jobId",
+                "purpose",
+                "status",
+                "retrySequence",
+                "attemptCount",
+                "updatedAt"
+              ]
+            }
+          },
+          "required": [
+            "nodeId",
+            "status"
+          ]
+        }
+      },
+      "assessment.node_quiz.retry": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nodeId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "quizId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestAttemptId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "generation": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "jobId": {
+                  "type": "string"
+                },
+                "purpose": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "retrySequence": {
+                  "type": "integer"
+                },
+                "attemptCount": {
+                  "type": "integer"
+                },
+                "quizId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "lastError": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "leaseUntil": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "jobId",
+                "purpose",
+                "status",
+                "retrySequence",
+                "attemptCount",
+                "updatedAt"
+              ]
+            }
+          },
+          "required": [
+            "nodeId",
+            "status"
+          ]
+        }
+      },
+      "assessment.node_quiz_status.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nodeId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "quizId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "latestAttemptId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "generation": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "jobId": {
+                  "type": "string"
+                },
+                "purpose": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "retrySequence": {
+                  "type": "integer"
+                },
+                "attemptCount": {
+                  "type": "integer"
+                },
+                "quizId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "lastError": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "leaseUntil": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "jobId",
+                "purpose",
+                "status",
+                "retrySequence",
+                "attemptCount",
+                "updatedAt"
+              ]
+            }
+          },
+          "required": [
+            "nodeId",
+            "status"
+          ]
+        }
+      },
+      "assessment.quiz.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "quizId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "quizId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "materialId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "taskId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lessonId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "kind": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "modelName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "questions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "difficulty": {
+                    "type": "string"
+                  },
+                  "codingKind": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "language": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "knowledgePoint": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "questionText": {
+                    "type": "string"
+                  },
+                  "options": {
+                    "type": [
+                      "array",
+                      "null"
+                    ],
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "starterCode": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "sourceType": {
+                          "type": "string"
+                        },
+                        "materialId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "webResultId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "locator": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "snippet": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "sourceType",
+                        "title"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "type",
+                  "difficulty",
+                  "questionText",
+                  "sources"
+                ]
+              }
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "title",
+            "questions"
+          ]
+        }
+      },
+      "assessment.wrong_question_review.create": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "chapterKey": {
+              "type": "string"
+            }
+          },
+          "required": []
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "quizId": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "questionCount": {
+              "type": "integer"
+            },
+            "remainingCount": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id",
+            "quizId",
+            "status",
+            "questionCount",
+            "remainingCount"
+          ]
+        }
+      },
+      "assessment.wrong_questions.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "chapterKey": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "size": {
+              "type": "integer"
+            },
+            "page": {
+              "type": "integer"
+            }
+          },
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "chapterKey": {
+                "type": "string"
+              },
+              "chapterTitle": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "difficulty": {
+                "type": "string"
+              },
+              "codingKind": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "language": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "knowledgePoint": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "questionText": {
+                "type": "string"
+              },
+              "options": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                }
+              },
+              "latestSelectedAnswers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "latestCodeAnswer": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "correctAnswers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "referenceAnswer": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "explanation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sources": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "sourceType": {
+                      "type": "string"
+                    },
+                    "materialId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "webResultId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "locator": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "snippet": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "sourceType",
+                    "title"
+                  ]
+                }
+              },
+              "wrongCount": {
+                "type": "integer"
+              },
+              "redoCount": {
+                "type": "integer"
+              },
+              "firstWrongAt": {
+                "type": "string"
+              },
+              "lastWrongAt": {
+                "type": "string"
+              },
+              "masteredAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "status",
+              "chapterKey",
+              "chapterTitle",
+              "type",
+              "difficulty",
+              "questionText",
+              "latestSelectedAnswers",
+              "correctAnswers",
+              "sources",
+              "wrongCount",
+              "redoCount",
+              "firstWrongAt",
+              "lastWrongAt"
+            ]
+          }
+        }
+      },
+      "assessment.wrong_questions.summary": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "activeCount": {
+              "type": "integer"
+            },
+            "masteredCount": {
+              "type": "integer"
+            },
+            "chapters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "chapterKey": {
+                    "type": "string"
+                  },
+                  "chapterTitle": {
+                    "type": "string"
+                  },
+                  "activeCount": {
+                    "type": "integer"
+                  },
+                  "masteredCount": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "chapterKey",
+                  "chapterTitle",
+                  "activeCount",
+                  "masteredCount"
+                ]
+              }
+            },
+            "currentReview": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "quizId": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "questionCount": {
+                  "type": "integer"
+                },
+                "remainingCount": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "quizId",
+                "status",
+                "questionCount",
+                "remainingCount"
+              ]
+            }
+          },
+          "required": [
+            "activeCount",
+            "masteredCount",
+            "chapters"
+          ]
+        }
+      },
+      "automation.rules.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "timezone": {
+                "type": "string"
+              },
+              "localTime": {
+                "type": "string"
+              },
+              "riskLevel": {
+                "type": "string"
+              },
+              "requiredScope": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "status",
+              "timezone",
+              "localTime",
+              "riskLevel",
+              "requiredScope",
+              "createdAt",
+              "updatedAt"
+            ]
+          }
+        }
+      },
+      "automation.settings.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "paused": {
+              "type": "boolean"
+            },
+            "updatedAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "paused",
+            "updatedAt"
+          ]
+        }
+      },
+      "developer.code.search": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "q": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "q"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "query": {
+              "type": "string"
+            },
+            "matches": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "relativePath": {
+                    "type": "string"
+                  },
+                  "lineNumber": {
+                    "type": "integer"
+                  },
+                  "lineContent": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "relativePath",
+                  "lineNumber",
+                  "lineContent"
+                ]
+              }
+            }
+          },
+          "required": [
+            "workspaceId",
+            "query",
+            "matches"
+          ]
+        }
+      },
+      "developer.file.read": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "path"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "relativePath": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "sizeBytes": {
+              "type": "integer"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "relativePath",
+            "content",
+            "sizeBytes",
+            "truncated"
+          ]
+        }
+      },
+      "developer.file_tree.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "rootPath": {
+              "type": "string"
+            },
+            "entries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "relativePath": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "directory": {
+                    "type": "boolean"
+                  },
+                  "sizeBytes": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "relativePath",
+                  "name",
+                  "directory",
+                  "sizeBytes"
+                ]
+              }
+            }
+          },
+          "required": [
+            "workspaceId",
+            "rootPath",
+            "entries"
+          ]
+        }
+      },
+      "developer.git.commit": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "expectedHead": {
+              "type": "string"
+            },
+            "changeFingerprint": {
+              "type": "string"
+            },
+            "paths": {
+              "type": "array"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "message",
+            "expectedHead",
+            "changeFingerprint",
+            "paths"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "commitId": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "committedAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "commitId",
+            "message",
+            "paths",
+            "committedAt"
+          ]
+        }
+      },
+      "developer.git.commit.preview": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "message": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "paths": {
+              "type": "array"
+            }
+          },
+          "required": [
+            "message",
+            "workspaceId",
+            "paths"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "branch": {
+              "type": "string"
+            },
+            "expectedHead": {
+              "type": "string"
+            },
+            "changeFingerprint": {
+              "type": "string"
+            },
+            "paths": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "branch",
+            "expectedHead",
+            "changeFingerprint",
+            "paths",
+            "message"
+          ]
+        }
+      },
+      "developer.git.diff": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "content",
+            "truncated"
+          ]
+        }
+      },
+      "developer.git.log": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workspaceId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "truncated": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "content",
+            "truncated"
+          ]
+        }
+      },
+      "developer.git.push": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "expectedRemoteRef": {
+              "type": "string"
+            },
+            "branch": {
+              "type": "string"
+            },
+            "remoteName": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "timeoutSeconds": {
+              "type": "integer"
+            },
+            "remoteUrlDigest": {
+              "type": "string"
+            },
+            "expectedRemoteRefCommit": {
+              "type": "string"
+            },
+            "expectedHead": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "expectedRemoteRef",
+            "branch",
+            "remoteName",
+            "workspaceId",
+            "timeoutSeconds",
+            "remoteUrlDigest",
+            "expectedRemoteRefCommit",
+            "expectedHead"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "remoteName": {
+              "type": "string"
+            },
+            "branch": {
+              "type": "string"
+            },
+            "pushedCommit": {
+              "type": "string"
+            },
+            "pushedAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "remoteName",
+            "branch",
+            "pushedCommit",
+            "pushedAt"
+          ]
+        }
+      },
+      "developer.git.push.preview": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "remoteName": {
+              "type": "string"
+            },
+            "remoteUrlDigest": {
+              "type": "string"
+            },
+            "branch": {
+              "type": "string"
+            },
+            "expectedHead": {
+              "type": "string"
+            },
+            "expectedRemoteRef": {
+              "type": "string"
+            },
+            "expectedRemoteRefCommit": {
+              "type": "string"
+            },
+            "aheadCount": {
+              "type": "integer"
+            },
+            "timeoutSeconds": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "remoteName",
+            "remoteUrlDigest",
+            "branch",
+            "expectedHead",
+            "expectedRemoteRef",
+            "expectedRemoteRefCommit",
+            "aheadCount",
+            "timeoutSeconds"
+          ]
+        }
+      },
+      "developer.git.status": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "gitRepository": {
+              "type": "boolean"
+            },
+            "branch": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "currentCommit": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "clean": {
+              "type": "boolean"
+            },
+            "modifiedFiles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "untrackedFiles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "workspaceId",
+            "gitRepository",
+            "clean",
+            "modifiedFiles",
+            "untrackedFiles"
+          ]
+        }
+      },
+      "developer.interface_fallback.execute": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "type": "string"
+            },
+            "actionKey": {
+              "type": "string"
+            },
+            "businessApiAvailable": {
+              "type": "boolean"
+            },
+            "targetKey": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel",
+            "actionKey",
+            "businessApiAvailable",
+            "targetKey"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "type": "string"
+            },
+            "actionKey": {
+              "type": "string"
+            },
+            "targetKey": {
+              "type": "string"
+            },
+            "localAdapterInvoked": {
+              "type": "boolean"
+            },
+            "adapter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "targetDigest": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "receiptStatus": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "startedAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "finishedAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel",
+            "actionKey",
+            "targetKey",
+            "localAdapterInvoked",
+            "message"
+          ]
+        }
+      },
+      "developer.interface_fallback.preview": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "type": "string"
+            },
+            "actionKey": {
+              "type": "string"
+            },
+            "businessApiAvailable": {
+              "type": "boolean"
+            },
+            "targetKey": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel",
+            "actionKey",
+            "businessApiAvailable",
+            "targetKey"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "channel": {
+              "type": "string"
+            },
+            "actionKey": {
+              "type": "string"
+            },
+            "targetKey": {
+              "type": "string"
+            },
+            "fallbackRequired": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "channel",
+            "actionKey",
+            "targetKey",
+            "fallbackRequired",
+            "reason"
+          ]
+        }
+      },
+      "developer.patch.apply": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "explanation": {
+              "type": "string"
+            },
+            "targetFile": {
+              "type": "string"
+            },
+            "unifiedDiff": {
+              "type": "string"
+            },
+            "expectedSha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "expectedSha256",
+            "workspaceId",
+            "unifiedDiff",
+            "targetFile"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "targetFile": {
+              "type": "string"
+            },
+            "unifiedDiff": {
+              "type": "string"
+            },
+            "expectedSha256": {
+              "type": "string"
+            },
+            "resultSha256": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "conflict": {
+              "type": "boolean"
+            },
+            "conflictReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "affectedLines": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "safeToApply": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "targetFile",
+            "unifiedDiff",
+            "expectedSha256",
+            "conflict",
+            "affectedLines",
+            "safeToApply"
+          ]
+        }
+      },
+      "developer.patch.preview": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "diff": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "targetFile": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "diff",
+            "workspaceId",
+            "targetFile"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "targetFile": {
+              "type": "string"
+            },
+            "unifiedDiff": {
+              "type": "string"
+            },
+            "expectedSha256": {
+              "type": "string"
+            },
+            "resultSha256": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "conflict": {
+              "type": "boolean"
+            },
+            "conflictReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "affectedLines": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "safeToApply": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "targetFile",
+            "unifiedDiff",
+            "expectedSha256",
+            "conflict",
+            "affectedLines",
+            "safeToApply"
+          ]
+        }
+      },
+      "developer.tests.recommend": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "changedFiles": {
+              "type": "array"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "changedFiles"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "templates": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "executions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "templateType": {
+                    "type": "string"
+                  },
+                  "workingDirectory": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "templateType",
+                  "workingDirectory"
+                ]
+              }
+            },
+            "requiresDependencyPreparation": {
+              "type": "boolean"
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "workspaceId",
+            "templates",
+            "executions",
+            "requiresDependencyPreparation",
+            "reasons"
+          ]
+        }
+      },
+      "governance.audit.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "action": {
+                "type": "string"
+              },
+              "targetType": {
+                "type": "string"
+              },
+              "targetId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "details": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "action",
+              "targetType",
+              "createdAt"
+            ]
+          }
+        }
+      },
+      "governance.executions.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "idempotencyKey": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "executionType": {
+                "type": "string"
+              },
+              "triggerType": {
+                "type": "string"
+              },
+              "riskLevel": {
+                "type": "string"
+              },
+              "requiredScope": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "resultSummary": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "errorMessage": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "modelName": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "promptTokens": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "completionTokens": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "latencyMs": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "estimatedCost": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "executionType",
+              "triggerType",
+              "riskLevel",
+              "requiredScope",
+              "status",
+              "summary",
+              "createdAt"
+            ]
+          }
+        }
+      },
+      "governance.health.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "totalExecutions": {
+              "type": "integer"
+            },
+            "successfulExecutions": {
+              "type": "integer"
+            },
+            "failedExecutions": {
+              "type": "integer"
+            },
+            "successRate": {
+              "type": "number"
+            },
+            "promptTokens": {
+              "type": "integer"
+            },
+            "completionTokens": {
+              "type": "integer"
+            },
+            "estimatedCost": {
+              "type": "number"
+            },
+            "averageLatencyMs": {
+              "type": "integer"
+            },
+            "pendingConfirmations": {
+              "type": "integer"
+            },
+            "costSamples": {
+              "type": "integer"
+            },
+            "tokenSamples": {
+              "type": "integer"
+            },
+            "latencySamples": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "totalExecutions",
+            "successfulExecutions",
+            "failedExecutions",
+            "successRate",
+            "promptTokens",
+            "completionTokens",
+            "estimatedCost",
+            "averageLatencyMs",
+            "pendingConfirmations",
+            "costSamples",
+            "tokenSamples",
+            "latencySamples"
+          ]
+        }
+      },
+      "learning.context.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "generatedAt": {
+              "type": "string"
+            },
+            "learning": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "timeZone": {
+                  "type": "string"
+                },
+                "goals": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "targetDate": {
+                        "type": "string"
+                      },
+                      "weeklyStudyHours": {
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "targetDate",
+                      "weeklyStudyHours",
+                      "status"
+                    ]
+                  }
+                },
+                "plans": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "goalId": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "startDate": {
+                        "type": "string"
+                      },
+                      "endDate": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "goalId",
+                      "title",
+                      "startDate",
+                      "endDate",
+                      "status",
+                      "version"
+                    ]
+                  }
+                },
+                "tasks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "planId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "scheduledDate": {
+                        "type": "string"
+                      },
+                      "estimatedMinutes": {
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "integer"
+                      },
+                      "completedAt": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "actualMinutes": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "taskKind": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "knowledgePoint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "sourceAttemptId": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "scheduledDate",
+                      "estimatedMinutes",
+                      "status",
+                      "version"
+                    ]
+                  }
+                },
+                "materials": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "materialType": {
+                        "type": "string"
+                      },
+                      "category": {
+                        "type": "string"
+                      },
+                      "privacyLevel": {
+                        "type": "string"
+                      },
+                      "sourceUrl": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "originalFilename": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "mediaType": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "contentLength": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "processingStatus": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "tags": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "knowledgePoints": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "processingWarnings": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "contentReference": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "failureReason": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "materialType",
+                      "category",
+                      "privacyLevel",
+                      "processingStatus",
+                      "tags",
+                      "knowledgePoints",
+                      "processingWarnings"
+                    ]
+                  }
+                },
+                "mastery": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "knowledgePoint": {
+                        "type": "string"
+                      },
+                      "score": {
+                        "type": "number"
+                      },
+                      "quizScore": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "taskScore": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "selfAssessmentScore": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "evidenceCount": {
+                        "type": "integer"
+                      },
+                      "attemptCount": {
+                        "type": "integer"
+                      },
+                      "updatedAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "knowledgePoint",
+                      "score",
+                      "evidenceCount",
+                      "attemptCount",
+                      "updatedAt"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "timeZone",
+                "goals",
+                "plans",
+                "tasks",
+                "materials",
+                "mastery"
+              ]
+            },
+            "roadmap": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "enrollmentId": {
+                  "type": "string"
+                },
+                "roadmapCode": {
+                  "type": "string"
+                },
+                "templateVersion": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "completedRequiredNodes": {
+                  "type": "integer"
+                },
+                "totalRequiredNodes": {
+                  "type": "integer"
+                },
+                "stages": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "order": {
+                        "type": "integer"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "completedRequiredNodes": {
+                        "type": "integer"
+                      },
+                      "totalRequiredNodes": {
+                        "type": "integer"
+                      },
+                      "nodes": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "code": {
+                              "type": "string"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "displayStatus": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "code",
+                            "title",
+                            "displayStatus"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "code",
+                      "order",
+                      "title",
+                      "completedRequiredNodes",
+                      "totalRequiredNodes",
+                      "nodes"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "enrollmentId",
+                "roadmapCode",
+                "templateVersion",
+                "title",
+                "completedRequiredNodes",
+                "totalRequiredNodes",
+                "stages"
+              ]
+            },
+            "wrongQuestions": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "activeCount": {
+                  "type": "integer"
+                },
+                "masteredCount": {
+                  "type": "integer"
+                },
+                "chapters": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "chapterKey": {
+                        "type": "string"
+                      },
+                      "chapterTitle": {
+                        "type": "string"
+                      },
+                      "activeCount": {
+                        "type": "integer"
+                      },
+                      "masteredCount": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "chapterKey",
+                      "chapterTitle",
+                      "activeCount",
+                      "masteredCount"
+                    ]
+                  }
+                },
+                "currentReview": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "quizId": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "questionCount": {
+                      "type": "integer"
+                    },
+                    "remainingCount": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "quizId",
+                    "status",
+                    "questionCount",
+                    "remainingCount"
+                  ]
+                }
+              },
+              "required": [
+                "activeCount",
+                "masteredCount",
+                "chapters"
+              ]
+            },
+            "unreadNotificationCount": {
+              "type": "integer"
+            },
+            "pendingConfirmationCount": {
+              "type": "integer"
+            },
+            "workspaces": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "rootPath": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "rootPath",
+                  "status",
+                  "createdAt"
+                ]
+              }
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "generatedAt",
+            "learning",
+            "wrongQuestions",
+            "unreadNotificationCount",
+            "pendingConfirmationCount",
+            "workspaces",
+            "warnings"
+          ]
+        }
+      },
+      "learning.goal.create": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "weeklyStudyHours": {
+              "type": "integer"
+            },
+            "targetDate": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "weeklyStudyHours",
+            "targetDate",
+            "title"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "targetDate": {
+              "type": "string"
+            },
+            "weeklyStudyHours": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "title",
+            "targetDate",
+            "weeklyStudyHours",
+            "status"
+          ]
+        }
+      },
+      "learning.goals.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "targetDate": {
+                "type": "string"
+              },
+              "weeklyStudyHours": {
+                "type": "integer"
+              },
+              "status": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "targetDate",
+              "weeklyStudyHours",
+              "status"
+            ]
+          }
+        }
+      },
+      "learning.plan.create": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "endDate": {
+              "type": "string"
+            },
+            "startDate": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "goalId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "endDate",
+            "startDate",
+            "title",
+            "goalId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "goalId": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "startDate": {
+              "type": "string"
+            },
+            "endDate": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id",
+            "goalId",
+            "title",
+            "startDate",
+            "endDate",
+            "status",
+            "version"
+          ]
+        }
+      },
+      "learning.plan.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "planId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "planId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "goalId": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "startDate": {
+              "type": "string"
+            },
+            "endDate": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id",
+            "goalId",
+            "title",
+            "startDate",
+            "endDate",
+            "status",
+            "version"
+          ]
+        }
+      },
+      "learning.plans.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "goalId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "startDate": {
+                "type": "string"
+              },
+              "endDate": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "version": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "id",
+              "goalId",
+              "title",
+              "startDate",
+              "endDate",
+              "status",
+              "version"
+            ]
+          }
+        }
+      },
+      "learning.task.update": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "actualMinutes": {
+              "type": "integer"
+            },
+            "taskId": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "expectedVersion": {
+              "type": "integer"
+            },
+            "scheduledDate": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "expectedVersion",
+            "status",
+            "taskId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "planId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "type": "string"
+            },
+            "scheduledDate": {
+              "type": "string"
+            },
+            "estimatedMinutes": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            },
+            "completedAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "actualMinutes": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "taskKind": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "knowledgePoint": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sourceAttemptId": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "title",
+            "scheduledDate",
+            "estimatedMinutes",
+            "status",
+            "version"
+          ]
+        }
+      },
+      "learning.tasks.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "planId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "scheduledDate": {
+                "type": "string"
+              },
+              "estimatedMinutes": {
+                "type": "integer"
+              },
+              "status": {
+                "type": "string"
+              },
+              "version": {
+                "type": "integer"
+              },
+              "completedAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "actualMinutes": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "taskKind": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "knowledgePoint": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sourceAttemptId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "scheduledDate",
+              "estimatedMinutes",
+              "status",
+              "version"
+            ]
+          }
+        }
+      },
+      "materials.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "materialId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "materialId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "materialType": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "privacyLevel": {
+              "type": "string"
+            },
+            "sourceUrl": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "originalFilename": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mediaType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "contentLength": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "processingStatus": {
+              "type": "string"
+            },
+            "summary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "knowledgePoints": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "processingWarnings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "contentReference": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "failureReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "title",
+            "materialType",
+            "category",
+            "privacyLevel",
+            "processingStatus",
+            "tags",
+            "knowledgePoints",
+            "processingWarnings"
+          ]
+        }
+      },
+      "materials.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "materialType": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string"
+              },
+              "privacyLevel": {
+                "type": "string"
+              },
+              "sourceUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "originalFilename": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "mediaType": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "contentLength": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "processingStatus": {
+                "type": "string"
+              },
+              "summary": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "knowledgePoints": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "processingWarnings": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "contentReference": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "failureReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "materialType",
+              "category",
+              "privacyLevel",
+              "processingStatus",
+              "tags",
+              "knowledgePoints",
+              "processingWarnings"
+            ]
+          }
+        }
+      },
+      "materials.text.import": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "privacyLevel": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "content",
+            "title",
+            "category",
+            "privacyLevel"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "materialType": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "privacyLevel": {
+              "type": "string"
+            },
+            "sourceUrl": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "originalFilename": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mediaType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "contentLength": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "processingStatus": {
+              "type": "string"
+            },
+            "summary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "knowledgePoints": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "processingWarnings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "contentReference": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "failureReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "title",
+            "materialType",
+            "category",
+            "privacyLevel",
+            "processingStatus",
+            "tags",
+            "knowledgePoints",
+            "processingWarnings"
+          ]
+        }
+      },
+      "materials.web.import": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "privacyLevel": {
+              "type": "string"
+            },
+            "sourceUrl": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "title",
+            "category",
+            "privacyLevel",
+            "sourceUrl"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "materialType": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "privacyLevel": {
+              "type": "string"
+            },
+            "sourceUrl": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "originalFilename": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "mediaType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "contentLength": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "processingStatus": {
+              "type": "string"
+            },
+            "summary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "knowledgePoints": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "processingWarnings": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "contentReference": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "failureReason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "title",
+            "materialType",
+            "category",
+            "privacyLevel",
+            "processingStatus",
+            "tags",
+            "knowledgePoints",
+            "processingWarnings"
+          ]
+        }
+      },
+      "navigation.resolve": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "routeKey": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "routeKey"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "routeKey": {
+              "type": "string"
+            },
+            "params": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "routeKey",
+            "params"
+          ]
+        }
+      },
+      "notifications.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              },
+              "read": {
+                "type": "boolean"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "readAt": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "title",
+              "content",
+              "read",
+              "createdAt"
+            ]
+          }
+        }
+      },
+      "notifications.mark_read": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "notificationId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "notificationId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "read": {
+              "type": "boolean"
+            },
+            "createdAt": {
+              "type": "string"
+            },
+            "readAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "type",
+            "title",
+            "content",
+            "read",
+            "createdAt"
+          ]
+        }
+      },
+      "roadmap.current.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "enrollmentId": {
+              "type": "string"
+            },
+            "roadmapCode": {
+              "type": "string"
+            },
+            "templateVersion": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "completedRequiredNodes": {
+              "type": "integer"
+            },
+            "totalRequiredNodes": {
+              "type": "integer"
+            },
+            "stages": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "order": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "completedRequiredNodes": {
+                    "type": "integer"
+                  },
+                  "totalRequiredNodes": {
+                    "type": "integer"
+                  },
+                  "nodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "displayStatus": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "code",
+                        "title",
+                        "displayStatus"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "code",
+                  "order",
+                  "title",
+                  "completedRequiredNodes",
+                  "totalRequiredNodes",
+                  "nodes"
+                ]
+              }
+            }
+          },
+          "required": [
+            "enrollmentId",
+            "roadmapCode",
+            "templateVersion",
+            "title",
+            "completedRequiredNodes",
+            "totalRequiredNodes",
+            "stages"
+          ]
+        }
+      },
+      "roadmap.enroll": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "roadmapCode": {
+              "type": "string"
+            },
+            "templateVersion": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "roadmapCode",
+            "templateVersion"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "roadmapCode": {
+              "type": "string"
+            },
+            "templateVersion": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "enrolledAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "roadmapCode",
+            "templateVersion",
+            "title",
+            "status",
+            "enrolledAt"
+          ]
+        }
+      },
+      "roadmap.module.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "moduleId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "moduleId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "stageId": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            },
+            "order": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "completedRequiredNodes": {
+              "type": "integer"
+            },
+            "totalRequiredNodes": {
+              "type": "integer"
+            },
+            "displayStatus": {
+              "type": "string"
+            },
+            "milestoneNode": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "order": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "objectives": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "highFrequency": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "commonMistakes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "searchKeywords": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "estimatedMinutes": {
+                  "type": "integer"
+                },
+                "practiceMinutes": {
+                  "type": "integer"
+                },
+                "difficulty": {
+                  "type": "string"
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "prerequisiteCodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "availabilityStatus": {
+                  "type": "string"
+                },
+                "learningStatus": {
+                  "type": "string"
+                },
+                "checkInStatus": {
+                  "type": "string"
+                },
+                "quizStatus": {
+                  "type": "string"
+                },
+                "artifactStatus": {
+                  "type": "string"
+                },
+                "completionStatus": {
+                  "type": "string"
+                },
+                "diagnosticMastered": {
+                  "type": "boolean"
+                },
+                "displayStatus": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "code",
+                "order",
+                "title",
+                "objectives",
+                "highFrequency",
+                "commonMistakes",
+                "searchKeywords",
+                "estimatedMinutes",
+                "practiceMinutes",
+                "difficulty",
+                "required",
+                "prerequisiteCodes",
+                "availabilityStatus",
+                "learningStatus",
+                "checkInStatus",
+                "quizStatus",
+                "artifactStatus",
+                "completionStatus",
+                "diagnosticMastered",
+                "displayStatus",
+                "version"
+              ]
+            },
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "order": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "objectives": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "highFrequency": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "commonMistakes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "searchKeywords": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "estimatedMinutes": {
+                    "type": "integer"
+                  },
+                  "practiceMinutes": {
+                    "type": "integer"
+                  },
+                  "difficulty": {
+                    "type": "string"
+                  },
+                  "required": {
+                    "type": "boolean"
+                  },
+                  "prerequisiteCodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "availabilityStatus": {
+                    "type": "string"
+                  },
+                  "learningStatus": {
+                    "type": "string"
+                  },
+                  "checkInStatus": {
+                    "type": "string"
+                  },
+                  "quizStatus": {
+                    "type": "string"
+                  },
+                  "artifactStatus": {
+                    "type": "string"
+                  },
+                  "completionStatus": {
+                    "type": "string"
+                  },
+                  "diagnosticMastered": {
+                    "type": "boolean"
+                  },
+                  "displayStatus": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "code",
+                  "order",
+                  "title",
+                  "objectives",
+                  "highFrequency",
+                  "commonMistakes",
+                  "searchKeywords",
+                  "estimatedMinutes",
+                  "practiceMinutes",
+                  "difficulty",
+                  "required",
+                  "prerequisiteCodes",
+                  "availabilityStatus",
+                  "learningStatus",
+                  "checkInStatus",
+                  "quizStatus",
+                  "artifactStatus",
+                  "completionStatus",
+                  "diagnosticMastered",
+                  "displayStatus",
+                  "version"
+                ]
+              }
+            }
+          },
+          "required": [
+            "id",
+            "stageId",
+            "code",
+            "order",
+            "title",
+            "completedRequiredNodes",
+            "totalRequiredNodes",
+            "displayStatus",
+            "nodes"
+          ]
+        }
+      },
+      "roadmap.node.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "nodeId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "nodeId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            },
+            "order": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "objectives": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "highFrequency": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "commonMistakes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "searchKeywords": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "estimatedMinutes": {
+              "type": "integer"
+            },
+            "practiceMinutes": {
+              "type": "integer"
+            },
+            "difficulty": {
+              "type": "string"
+            },
+            "required": {
+              "type": "boolean"
+            },
+            "prerequisiteCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "availabilityStatus": {
+              "type": "string"
+            },
+            "learningStatus": {
+              "type": "string"
+            },
+            "checkInStatus": {
+              "type": "string"
+            },
+            "quizStatus": {
+              "type": "string"
+            },
+            "artifactStatus": {
+              "type": "string"
+            },
+            "completionStatus": {
+              "type": "string"
+            },
+            "diagnosticMastered": {
+              "type": "boolean"
+            },
+            "displayStatus": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id",
+            "code",
+            "order",
+            "title",
+            "objectives",
+            "highFrequency",
+            "commonMistakes",
+            "searchKeywords",
+            "estimatedMinutes",
+            "practiceMinutes",
+            "difficulty",
+            "required",
+            "prerequisiteCodes",
+            "availabilityStatus",
+            "learningStatus",
+            "checkInStatus",
+            "quizStatus",
+            "artifactStatus",
+            "completionStatus",
+            "diagnosticMastered",
+            "displayStatus",
+            "version"
+          ]
+        }
+      },
+      "roadmap.stage.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "stageId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "stageId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "code": {
+              "type": "string"
+            },
+            "order": {
+              "type": "integer"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "graduationProjectTitle": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "completedRequiredNodes": {
+              "type": "integer"
+            },
+            "totalRequiredNodes": {
+              "type": "integer"
+            },
+            "modules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "order": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "completedRequiredNodes": {
+                    "type": "integer"
+                  },
+                  "totalRequiredNodes": {
+                    "type": "integer"
+                  },
+                  "milestoneNodeId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "milestoneNodeCode": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "displayStatus": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "code",
+                  "order",
+                  "title",
+                  "completedRequiredNodes",
+                  "totalRequiredNodes",
+                  "displayStatus"
+                ]
+              }
+            },
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "order": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "objectives": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "highFrequency": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "commonMistakes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "searchKeywords": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "estimatedMinutes": {
+                    "type": "integer"
+                  },
+                  "practiceMinutes": {
+                    "type": "integer"
+                  },
+                  "difficulty": {
+                    "type": "string"
+                  },
+                  "required": {
+                    "type": "boolean"
+                  },
+                  "prerequisiteCodes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "availabilityStatus": {
+                    "type": "string"
+                  },
+                  "learningStatus": {
+                    "type": "string"
+                  },
+                  "checkInStatus": {
+                    "type": "string"
+                  },
+                  "quizStatus": {
+                    "type": "string"
+                  },
+                  "artifactStatus": {
+                    "type": "string"
+                  },
+                  "completionStatus": {
+                    "type": "string"
+                  },
+                  "diagnosticMastered": {
+                    "type": "boolean"
+                  },
+                  "displayStatus": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "code",
+                  "order",
+                  "title",
+                  "objectives",
+                  "highFrequency",
+                  "commonMistakes",
+                  "searchKeywords",
+                  "estimatedMinutes",
+                  "practiceMinutes",
+                  "difficulty",
+                  "required",
+                  "prerequisiteCodes",
+                  "availabilityStatus",
+                  "learningStatus",
+                  "checkInStatus",
+                  "quizStatus",
+                  "artifactStatus",
+                  "completionStatus",
+                  "diagnosticMastered",
+                  "displayStatus",
+                  "version"
+                ]
+              }
+            }
+          },
+          "required": [
+            "id",
+            "code",
+            "order",
+            "title",
+            "completedRequiredNodes",
+            "totalRequiredNodes",
+            "modules",
+            "nodes"
+          ]
+        }
+      },
+      "roadmap.upgrade": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "upgradeId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "upgradeId"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "sourceVersion": {
+              "type": "integer"
+            },
+            "targetVersion": {
+              "type": "integer"
+            },
+            "status": {
+              "type": "string"
+            },
+            "unchangedNodeCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "addedNodeCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removedNodeCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "manualReviewNodeCodes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "addedModuleCount": {
+              "type": "integer"
+            },
+            "removedModuleCount": {
+              "type": "integer"
+            },
+            "changedModuleCount": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "id",
+            "sourceVersion",
+            "targetVersion",
+            "status",
+            "unchangedNodeCodes",
+            "addedNodeCodes",
+            "removedNodeCodes",
+            "manualReviewNodeCodes",
+            "addedModuleCount",
+            "removedModuleCount",
+            "changedModuleCount"
+          ]
+        }
+      },
+      "runner.check.run": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "workingDirectory": {
+              "type": "string"
+            },
+            "templateType": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "templateType"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "executionId": {
+              "type": "string"
+            },
+            "governanceExecutionId": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "templateType": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "exitCode": {
+              "type": "integer"
+            },
+            "commandTokens": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "stdoutSummary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "stderrSummary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "durationMillis": {
+              "type": "integer"
+            },
+            "executedAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "executionId",
+            "governanceExecutionId",
+            "workspaceId",
+            "templateType",
+            "status",
+            "exitCode",
+            "commandTokens",
+            "success",
+            "durationMillis",
+            "executedAt"
+          ]
+        }
+      },
+      "runner.dependencies.prepare": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "workingDirectory": {
+              "type": "string"
+            },
+            "templateType": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "templateType"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "executionId": {
+              "type": "string"
+            },
+            "governanceExecutionId": {
+              "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "templateType": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "exitCode": {
+              "type": "integer"
+            },
+            "commandTokens": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "stdoutSummary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "stderrSummary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "durationMillis": {
+              "type": "integer"
+            },
+            "executedAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "executionId",
+            "governanceExecutionId",
+            "workspaceId",
+            "templateType",
+            "status",
+            "exitCode",
+            "commandTokens",
+            "success",
+            "durationMillis",
+            "executedAt"
+          ]
+        }
+      },
+      "runner.execution.preview": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "workingDirectory": {
+              "type": "string"
+            },
+            "templateType": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "idempotencyKey",
+            "workspaceId",
+            "templateType"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspaceId": {
+              "type": "string"
+            },
+            "workspaceName": {
+              "type": "string"
+            },
+            "workspacePath": {
+              "type": "string"
+            },
+            "templateType": {
+              "type": "string"
+            },
+            "templateDescription": {
+              "type": "string"
+            },
+            "riskLevel": {
+              "type": "string"
+            },
+            "commandTokens": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "renderedCommand": {
+              "type": "string"
+            },
+            "timeoutSeconds": {
+              "type": "integer"
+            },
+            "confirmationRequired": {
+              "type": "boolean"
+            },
+            "explanation": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "workingDirectory": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "workspaceId",
+            "workspaceName",
+            "workspacePath",
+            "templateType",
+            "templateDescription",
+            "riskLevel",
+            "commandTokens",
+            "renderedCommand",
+            "timeoutSeconds",
+            "confirmationRequired",
+            "workingDirectory"
+          ]
+        }
+      },
+      "schedule.refresh": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "to": {
+              "type": "string"
+            },
+            "from": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scheduleId": {
+              "type": "string"
+            },
+            "timeZone": {
+              "type": "string"
+            },
+            "dailyCapacityMinutes": {
+              "type": "integer"
+            },
+            "weekendsEnabled": {
+              "type": "boolean"
+            },
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "date": {
+                    "type": "string"
+                  },
+                  "plannedMinutes": {
+                    "type": "integer"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "nodeId": {
+                          "type": "string"
+                        },
+                        "nodeCode": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "plannedMinutes": {
+                          "type": "integer"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "nodeId",
+                        "nodeCode",
+                        "title",
+                        "plannedMinutes",
+                        "status"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "date",
+                  "plannedMinutes",
+                  "items"
+                ]
+              }
+            }
+          },
+          "required": [
+            "scheduleId",
+            "timeZone",
+            "dailyCapacityMinutes",
+            "weekendsEnabled",
+            "days"
+          ]
+        }
+      },
+      "schedule.today.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "date"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "scheduleId": {
+              "type": "string"
+            },
+            "timeZone": {
+              "type": "string"
+            },
+            "dailyCapacityMinutes": {
+              "type": "integer"
+            },
+            "weekendsEnabled": {
+              "type": "boolean"
+            },
+            "days": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "date": {
+                    "type": "string"
+                  },
+                  "plannedMinutes": {
+                    "type": "integer"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "nodeId": {
+                          "type": "string"
+                        },
+                        "nodeCode": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "plannedMinutes": {
+                          "type": "integer"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "nodeId",
+                        "nodeCode",
+                        "title",
+                        "plannedMinutes",
+                        "status"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "date",
+                  "plannedMinutes",
+                  "items"
+                ]
+              }
+            }
+          },
+          "required": [
+            "scheduleId",
+            "timeZone",
+            "dailyCapacityMinutes",
+            "weekendsEnabled",
+            "days"
+          ]
+        }
+      },
+      "schedule.unfinished.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "to": {
+              "type": "string"
+            },
+            "from": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ]
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string"
+              },
+              "nodeId": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "date",
+              "nodeId",
+              "title",
+              "status"
+            ]
+          }
+        }
+      },
+      "settings.ai_status.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "modelProvider": {
+              "type": "string"
+            },
+            "modelName": {
+              "type": "string"
+            },
+            "deepseek": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "configured": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "maskedSuffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "available": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "configured",
+                "available"
+              ]
+            },
+            "tavily": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "configured": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "maskedSuffix": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "available": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "configured",
+                "available"
+              ]
+            },
+            "deepseekConfigured": {
+              "type": "boolean"
+            },
+            "deepseekMaskedSuffix": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "tavilyConfigured": {
+              "type": "boolean"
+            },
+            "tavilyMaskedSuffix": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "warning": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "modelProvider",
+            "modelName",
+            "deepseek",
+            "tavily",
+            "deepseekConfigured",
+            "tavilyConfigured"
+          ]
+        }
+      },
+      "settings.learning.get": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "timeZone": {
+              "type": "string"
+            },
+            "dailyStudyLimitMinutes": {
+              "type": "integer"
+            },
+            "weekendPreference": {
+              "type": "string"
+            },
+            "defaultPrivacyLevel": {
+              "type": "string"
+            },
+            "weeklyAvailability": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "dayOfWeek": {
+                    "type": "string"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "endTime": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "dayOfWeek",
+                  "startTime",
+                  "endTime"
+                ]
+              }
+            }
+          },
+          "required": [
+            "timeZone",
+            "dailyStudyLimitMinutes",
+            "weekendPreference",
+            "defaultPrivacyLevel",
+            "weeklyAvailability"
+          ]
+        }
+      },
+      "settings.learning.update": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "dailyStudyLimitMinutes": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "dailyStudyLimitMinutes"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "timeZone": {
+              "type": "string"
+            },
+            "dailyStudyLimitMinutes": {
+              "type": "integer"
+            },
+            "weekendPreference": {
+              "type": "string"
+            },
+            "defaultPrivacyLevel": {
+              "type": "string"
+            },
+            "weeklyAvailability": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "dayOfWeek": {
+                    "type": "string"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "endTime": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "dayOfWeek",
+                  "startTime",
+                  "endTime"
+                ]
+              }
+            }
+          },
+          "required": [
+            "timeZone",
+            "dailyStudyLimitMinutes",
+            "weekendPreference",
+            "defaultPrivacyLevel",
+            "weeklyAvailability"
+          ]
+        }
+      },
+      "workspaces.list": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "outputSchema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "rootPath": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "rootPath",
+              "status",
+              "createdAt"
+            ]
+          }
+        }
+      },
+      "workspaces.register": {
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "rootPath": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "rootPath"
+          ]
+        },
+        "outputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "rootPath": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "createdAt": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "rootPath",
+            "status",
+            "createdAt"
+          ]
+        }
+      }
+    }
   },
   "defectOverrides": {
     "note": "本端在真实 handler 与校验代码中静态推导出的基线契约缺陷：尚未运行 Java 行为复现，也没有启动后端、数据库或模型。因此这些工具按 pending 暴露并写明推导依据，而不是宣称已实测失败。缺陷属 Java 侧实现/契约不一致，修复归 Java Owner。",

@@ -103,17 +103,111 @@ tools:
         input: {}
         expect: "Aggregate object with learning collections, roadmap (object or null), wrong-question summary, counts, workspaces and warnings."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          generatedAt: "<shape-placeholder>"
-          learning: "<shape-placeholder>"
-          roadmap: "<shape-placeholder>"
-          wrongQuestions: "<shape-placeholder>"
-          unreadNotificationCount: "<shape-placeholder>"
-          pendingConfirmationCount: "<shape-placeholder>"
-          workspaces: "<shape-placeholder>"
-          warnings: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          generatedAt: synthetic-generatedAt
+          learning:
+            timeZone: synthetic-timeZone
+            goals:
+              - id: synthetic-id
+                title: synthetic-title
+                targetDate: synthetic-targetDate
+                weeklyStudyHours: 0
+                status: synthetic-status
+            plans:
+              - id: synthetic-id
+                goalId: synthetic-goalId
+                title: synthetic-title
+                startDate: synthetic-startDate
+                endDate: synthetic-endDate
+                status: synthetic-status
+                version: 0
+            tasks:
+              - id: synthetic-id
+                planId: synthetic-planId
+                title: synthetic-title
+                scheduledDate: synthetic-scheduledDate
+                estimatedMinutes: 0
+                status: synthetic-status
+                version: 0
+                completedAt: synthetic-completedAt
+                actualMinutes: 0
+                taskKind: synthetic-taskKind
+                knowledgePoint: synthetic-knowledgePoint
+                sourceAttemptId: synthetic-sourceAttemptId
+            materials:
+              - id: synthetic-id
+                title: synthetic-title
+                materialType: synthetic-materialType
+                category: synthetic-category
+                privacyLevel: synthetic-privacyLevel
+                sourceUrl: synthetic-sourceUrl
+                originalFilename: synthetic-originalFilename
+                mediaType: synthetic-mediaType
+                contentLength: 0
+                processingStatus: synthetic-processingStatus
+                summary: synthetic-summary
+                tags:
+                  - synthetic-tags
+                knowledgePoints:
+                  - synthetic-knowledgePoints
+                processingWarnings:
+                  - synthetic-processingWarnings
+                contentReference: synthetic-contentReference
+                failureReason: synthetic-failureReason
+            mastery:
+              - knowledgePoint: synthetic-knowledgePoint
+                score: 0
+                quizScore: 0
+                taskScore: 0
+                selfAssessmentScore: 0
+                evidenceCount: 0
+                attemptCount: 0
+                updatedAt: synthetic-updatedAt
+          roadmap:
+            enrollmentId: synthetic-enrollmentId
+            roadmapCode: synthetic-roadmapCode
+            templateVersion: 0
+            title: synthetic-title
+            completedRequiredNodes: 0
+            totalRequiredNodes: 0
+            stages:
+              - id: synthetic-id
+                code: synthetic-code
+                order: 0
+                title: synthetic-title
+                completedRequiredNodes: 0
+                totalRequiredNodes: 0
+                nodes:
+                  - id: synthetic-id
+                    code: synthetic-code
+                    title: synthetic-title
+                    displayStatus: synthetic-displayStatus
+          wrongQuestions:
+            activeCount: 0
+            masteredCount: 0
+            chapters:
+              - chapterKey: synthetic-chapterKey
+                chapterTitle: synthetic-chapterTitle
+                activeCount: 0
+                masteredCount: 0
+            currentReview:
+              id: synthetic-id
+              quizId: synthetic-quizId
+              status: synthetic-status
+              questionCount: 0
+              remainingCount: 0
+          unreadNotificationCount: 0
+          pendingConfirmationCount: 0
+          workspaces:
+            - id: synthetic-id
+              name: synthetic-name
+              rootPath: synthetic-rootPath
+              status: synthetic-status
+              createdAt: synthetic-createdAt
+          warnings:
+            - synthetic-warnings
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L51-L57
       handler: "AgentLearningContextService.get — bean learningContextTool calls service.get with the caller identity injected by Java"
@@ -154,14 +248,14 @@ tools:
         input: {}
         expect: "Array of goal objects (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            title: "<shape-placeholder>"
-            targetDate: "<shape-placeholder>"
-            weeklyStudyHours: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            title: synthetic-title
+            targetDate: synthetic-targetDate
+            weeklyStudyHours: 0
+            status: synthetic-status
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L59-L64
       handler: "CreateLearningGoalService.list — bean learningGoalsTool maps service.list through LearningGoalResponse::from"
@@ -202,16 +296,16 @@ tools:
         input: {}
         expect: "Array of plan objects (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            goalId: "<shape-placeholder>"
-            title: "<shape-placeholder>"
-            startDate: "<shape-placeholder>"
-            endDate: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-            version: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            goalId: synthetic-goalId
+            title: synthetic-title
+            startDate: synthetic-startDate
+            endDate: synthetic-endDate
+            status: synthetic-status
+            version: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L66-L71
       handler: "LearningPlanService.list — bean learningPlansTool maps service.list through LearningPlanResponse::from"
@@ -252,16 +346,16 @@ tools:
           planId: "<plan-id from learning.plans.list>"
         expect: "The plan object for that id, or a not-found error if it is not owned by the caller."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          goalId: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          startDate: "<shape-placeholder>"
-          endDate: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          version: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          goalId: synthetic-goalId
+          title: synthetic-title
+          startDate: synthetic-startDate
+          endDate: synthetic-endDate
+          status: synthetic-status
+          version: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L73-L79
       handler: "LearningPlanService.requireOwnedPlan — bean learningPlanTool calls service.requireOwnedPlan with the caller identity and the planId argument, projected through LearningPlanResponse::from"
@@ -304,40 +398,40 @@ tools:
           date: "2026-03-01"
         expect: "Array of task objects scheduled for that date (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            planId: "<shape-placeholder>"
-            title: "<shape-placeholder>"
-            scheduledDate: "<shape-placeholder>"
-            estimatedMinutes: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-            version: "<shape-placeholder>"
-            completedAt: "<shape-placeholder>"
-            actualMinutes: "<shape-placeholder>"
-            taskKind: "<shape-placeholder>"
-            knowledgePoint: "<shape-placeholder>"
-            sourceAttemptId: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            planId: synthetic-planId
+            title: synthetic-title
+            scheduledDate: synthetic-scheduledDate
+            estimatedMinutes: 0
+            status: synthetic-status
+            version: 0
+            completedAt: synthetic-completedAt
+            actualMinutes: 0
+            taskKind: synthetic-taskKind
+            knowledgePoint: synthetic-knowledgePoint
+            sourceAttemptId: synthetic-sourceAttemptId
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
       - name: "all tasks"
         input: {}
         expect: "Array of every task owned by the caller."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            planId: "<shape-placeholder>"
-            title: "<shape-placeholder>"
-            scheduledDate: "<shape-placeholder>"
-            estimatedMinutes: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-            version: "<shape-placeholder>"
-            completedAt: "<shape-placeholder>"
-            actualMinutes: "<shape-placeholder>"
-            taskKind: "<shape-placeholder>"
-            knowledgePoint: "<shape-placeholder>"
-            sourceAttemptId: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            planId: synthetic-planId
+            title: synthetic-title
+            scheduledDate: synthetic-scheduledDate
+            estimatedMinutes: 0
+            status: synthetic-status
+            version: 0
+            completedAt: synthetic-completedAt
+            actualMinutes: 0
+            taskKind: synthetic-taskKind
+            knowledgePoint: synthetic-knowledgePoint
+            sourceAttemptId: synthetic-sourceAttemptId
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L81-L88
       handler: "LearningTaskService.list — bean learningTasksTool calls service.list with the injected caller identity and a date parsed from the optional date argument (null when absent)"
@@ -378,22 +472,33 @@ tools:
         input: {}
         expect: "Compact roadmap object, or null when the user has not enrolled."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          enrollmentId: "<shape-placeholder>"
-          roadmapCode: "<shape-placeholder>"
-          templateVersion: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          completedRequiredNodes: "<shape-placeholder>"
-          totalRequiredNodes: "<shape-placeholder>"
-          stages: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          enrollmentId: synthetic-enrollmentId
+          roadmapCode: synthetic-roadmapCode
+          templateVersion: 0
+          title: synthetic-title
+          completedRequiredNodes: 0
+          totalRequiredNodes: 0
+          stages:
+            - id: synthetic-id
+              code: synthetic-code
+              order: 0
+              title: synthetic-title
+              completedRequiredNodes: 0
+              totalRequiredNodes: 0
+              nodes:
+                - id: synthetic-id
+                  code: synthetic-code
+                  title: synthetic-title
+                  displayStatus: synthetic-displayStatus
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
       - name: "no current roadmap (valid empty state)"
         outcome: ok
         input: {}
         output: null
         fixture_kind: nullable_empty
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
         expect: "A null result: roadmap.current.get is the only tool whose registered top-level output is nullable, and null means the user has no current roadmap rather than an error."
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L90-L95
@@ -436,19 +541,56 @@ tools:
           stageId: "<stage-id from roadmap.current.get>"
         expect: "Stage object with module summaries and full nodes, or not-found if the id is not in the enrolled template."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          code: "<shape-placeholder>"
-          order: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          description: "<shape-placeholder>"
-          graduationProjectTitle: "<shape-placeholder>"
-          completedRequiredNodes: "<shape-placeholder>"
-          totalRequiredNodes: "<shape-placeholder>"
-          modules: "<shape-placeholder>"
-          nodes: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          code: synthetic-code
+          order: 0
+          title: synthetic-title
+          description: synthetic-description
+          graduationProjectTitle: synthetic-graduationProjectTitle
+          completedRequiredNodes: 0
+          totalRequiredNodes: 0
+          modules:
+            - id: synthetic-id
+              code: synthetic-code
+              order: 0
+              title: synthetic-title
+              description: synthetic-description
+              completedRequiredNodes: 0
+              totalRequiredNodes: 0
+              milestoneNodeId: synthetic-milestoneNodeId
+              milestoneNodeCode: synthetic-milestoneNodeCode
+              displayStatus: synthetic-displayStatus
+          nodes:
+            - id: synthetic-id
+              code: synthetic-code
+              order: 0
+              title: synthetic-title
+              objectives:
+                - synthetic-objectives
+              highFrequency:
+                - synthetic-highFrequency
+              commonMistakes:
+                - synthetic-commonMistakes
+              searchKeywords:
+                - synthetic-searchKeywords
+              estimatedMinutes: 0
+              practiceMinutes: 0
+              difficulty: synthetic-difficulty
+              required: false
+              prerequisiteCodes:
+                - synthetic-prerequisiteCodes
+              availabilityStatus: synthetic-availabilityStatus
+              learningStatus: synthetic-learningStatus
+              checkInStatus: synthetic-checkInStatus
+              quizStatus: synthetic-quizStatus
+              artifactStatus: synthetic-artifactStatus
+              completionStatus: synthetic-completionStatus
+              diagnosticMastered: false
+              displayStatus: synthetic-displayStatus
+              version: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L97-L103
       handler: "RoadmapQueryService.currentStage — bean roadmapStageTool calls service.currentStage with the injected caller identity and the stageId argument"
@@ -491,20 +633,74 @@ tools:
           moduleId: "<module-id from roadmap.stage.get>"
         expect: "Module object with counters, milestone node and node list."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          stageId: "<shape-placeholder>"
-          code: "<shape-placeholder>"
-          order: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          description: "<shape-placeholder>"
-          completedRequiredNodes: "<shape-placeholder>"
-          totalRequiredNodes: "<shape-placeholder>"
-          displayStatus: "<shape-placeholder>"
-          milestoneNode: "<shape-placeholder>"
-          nodes: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          stageId: synthetic-stageId
+          code: synthetic-code
+          order: 0
+          title: synthetic-title
+          description: synthetic-description
+          completedRequiredNodes: 0
+          totalRequiredNodes: 0
+          displayStatus: synthetic-displayStatus
+          milestoneNode:
+            id: synthetic-id
+            code: synthetic-code
+            order: 0
+            title: synthetic-title
+            objectives:
+              - synthetic-objectives
+            highFrequency:
+              - synthetic-highFrequency
+            commonMistakes:
+              - synthetic-commonMistakes
+            searchKeywords:
+              - synthetic-searchKeywords
+            estimatedMinutes: 0
+            practiceMinutes: 0
+            difficulty: synthetic-difficulty
+            required: false
+            prerequisiteCodes:
+              - synthetic-prerequisiteCodes
+            availabilityStatus: synthetic-availabilityStatus
+            learningStatus: synthetic-learningStatus
+            checkInStatus: synthetic-checkInStatus
+            quizStatus: synthetic-quizStatus
+            artifactStatus: synthetic-artifactStatus
+            completionStatus: synthetic-completionStatus
+            diagnosticMastered: false
+            displayStatus: synthetic-displayStatus
+            version: 0
+          nodes:
+            - id: synthetic-id
+              code: synthetic-code
+              order: 0
+              title: synthetic-title
+              objectives:
+                - synthetic-objectives
+              highFrequency:
+                - synthetic-highFrequency
+              commonMistakes:
+                - synthetic-commonMistakes
+              searchKeywords:
+                - synthetic-searchKeywords
+              estimatedMinutes: 0
+              practiceMinutes: 0
+              difficulty: synthetic-difficulty
+              required: false
+              prerequisiteCodes:
+                - synthetic-prerequisiteCodes
+              availabilityStatus: synthetic-availabilityStatus
+              learningStatus: synthetic-learningStatus
+              checkInStatus: synthetic-checkInStatus
+              quizStatus: synthetic-quizStatus
+              artifactStatus: synthetic-artifactStatus
+              completionStatus: synthetic-completionStatus
+              diagnosticMastered: false
+              displayStatus: synthetic-displayStatus
+              version: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L105-L111
       handler: "RoadmapQueryService.currentModule — bean roadmapModuleTool calls service.currentModule with the injected caller identity and the moduleId argument"
@@ -546,31 +742,36 @@ tools:
           nodeId: "<node-id from roadmap.current.get>"
         expect: "Full node blueprint including objectives, prerequisites and status flags."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          code: "<shape-placeholder>"
-          order: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          objectives: "<shape-placeholder>"
-          highFrequency: "<shape-placeholder>"
-          commonMistakes: "<shape-placeholder>"
-          searchKeywords: "<shape-placeholder>"
-          estimatedMinutes: "<shape-placeholder>"
-          practiceMinutes: "<shape-placeholder>"
-          difficulty: "<shape-placeholder>"
-          required: "<shape-placeholder>"
-          prerequisiteCodes: "<shape-placeholder>"
-          availabilityStatus: "<shape-placeholder>"
-          learningStatus: "<shape-placeholder>"
-          checkInStatus: "<shape-placeholder>"
-          quizStatus: "<shape-placeholder>"
-          artifactStatus: "<shape-placeholder>"
-          completionStatus: "<shape-placeholder>"
-          diagnosticMastered: "<shape-placeholder>"
-          displayStatus: "<shape-placeholder>"
-          version: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          code: synthetic-code
+          order: 0
+          title: synthetic-title
+          objectives:
+            - synthetic-objectives
+          highFrequency:
+            - synthetic-highFrequency
+          commonMistakes:
+            - synthetic-commonMistakes
+          searchKeywords:
+            - synthetic-searchKeywords
+          estimatedMinutes: 0
+          practiceMinutes: 0
+          difficulty: synthetic-difficulty
+          required: false
+          prerequisiteCodes:
+            - synthetic-prerequisiteCodes
+          availabilityStatus: synthetic-availabilityStatus
+          learningStatus: synthetic-learningStatus
+          checkInStatus: synthetic-checkInStatus
+          quizStatus: synthetic-quizStatus
+          artifactStatus: synthetic-artifactStatus
+          completionStatus: synthetic-completionStatus
+          diagnosticMastered: false
+          displayStatus: synthetic-displayStatus
+          version: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L113-L119
       handler: "RoadmapQueryService.currentNode — bean roadmapNodeTool calls service.currentNode with the injected caller identity and the nodeId argument"
@@ -660,13 +861,13 @@ tools:
           to: "2026-03-07"
         expect: "Array of unfinished items within that seven-day window (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - date: "<shape-placeholder>"
-            nodeId: "<shape-placeholder>"
-            title: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - date: synthetic-date
+            nodeId: synthetic-nodeId
+            title: synthetic-title
+            status: synthetic-status
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L131-L151
       handler: "RoadmapScheduleService.getOrCreate — bean unfinishedScheduleTool then applies an in-config stream filter that drops COMPLETED items"
@@ -709,14 +910,23 @@ tools:
           nodeId: "<node-id from roadmap.current.get>"
         expect: "Node quiz status object with quiz id, latest attempt id and generation detail."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          nodeId: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          quizId: "<shape-placeholder>"
-          latestAttemptId: "<shape-placeholder>"
-          generation: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          nodeId: synthetic-nodeId
+          status: synthetic-status
+          quizId: synthetic-quizId
+          latestAttemptId: synthetic-latestAttemptId
+          generation:
+            jobId: synthetic-jobId
+            purpose: synthetic-purpose
+            status: synthetic-status
+            retrySequence: 0
+            attemptCount: 0
+            quizId: synthetic-quizId
+            lastError: synthetic-lastError
+            leaseUntil: synthetic-leaseUntil
+            updatedAt: synthetic-updatedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L153-L161
       handler: "RoadmapLearningLoopService.quiz — bean nodeQuizStatusTool calls service.quiz with the injected caller identity and the nodeId argument"
@@ -759,17 +969,34 @@ tools:
           quizId: "<quiz-id from assessment.node_quiz_status.get>"
         expect: "Quiz object with a question list that contains no correct answers, explanations or rubric."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          materialId: "<shape-placeholder>"
-          taskId: "<shape-placeholder>"
-          lessonId: "<shape-placeholder>"
-          kind: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          modelName: "<shape-placeholder>"
-          questions: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          materialId: synthetic-materialId
+          taskId: synthetic-taskId
+          lessonId: synthetic-lessonId
+          kind: synthetic-kind
+          title: synthetic-title
+          modelName: synthetic-modelName
+          questions:
+            - id: synthetic-id
+              type: synthetic-type
+              difficulty: synthetic-difficulty
+              codingKind: synthetic-codingKind
+              language: synthetic-language
+              knowledgePoint: synthetic-knowledgePoint
+              questionText: synthetic-questionText
+              options:
+                - synthetic-options
+              starterCode: synthetic-starterCode
+              sources:
+                - sourceType: synthetic-sourceType
+                  materialId: synthetic-materialId
+                  webResultId: synthetic-webResultId
+                  title: synthetic-title
+                  locator: synthetic-locator
+                  snippet: synthetic-snippet
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L163-L172
       handler: "QuizService.get — bean quizTool calls service.get and projects the bundle through QuizResponse.from(quiz, questions)"
@@ -811,16 +1038,35 @@ tools:
           attemptId: "<attempt-id from assessment.node_quiz_status.get>"
         expect: "Attempt object with score, per-question results and review progress."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          quizId: "<shape-placeholder>"
-          score: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          warning: "<shape-placeholder>"
-          results: "<shape-placeholder>"
-          reviewProgress: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          quizId: synthetic-quizId
+          score: 0
+          status: synthetic-status
+          warning: synthetic-warning
+          results:
+            - questionId: synthetic-questionId
+              type: synthetic-type
+              questionText: synthetic-questionText
+              options:
+                - synthetic-options
+              selectedAnswers:
+                - synthetic-selectedAnswers
+              codeAnswer: synthetic-codeAnswer
+              correctAnswers:
+                - synthetic-correctAnswers
+              referenceAnswer: synthetic-referenceAnswer
+              correct: false
+              knowledgePoint: synthetic-knowledgePoint
+              explanation: synthetic-explanation
+              evaluationMethod: synthetic-evaluationMethod
+              score: 0
+              evaluation: {}
+          reviewProgress:
+            clearedCount: 0
+            remainingCount: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L174-L180
       handler: "QuizService.getAttempt — bean quizAttemptTool calls service.getAttempt with the injected caller identity and the attemptId argument"
@@ -861,17 +1107,17 @@ tools:
         input: {}
         expect: "Array of mastery records (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - knowledgePoint: "<shape-placeholder>"
-            score: "<shape-placeholder>"
-            quizScore: "<shape-placeholder>"
-            taskScore: "<shape-placeholder>"
-            selfAssessmentScore: "<shape-placeholder>"
-            evidenceCount: "<shape-placeholder>"
-            attemptCount: "<shape-placeholder>"
-            updatedAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - knowledgePoint: synthetic-knowledgePoint
+            score: 0
+            quizScore: 0
+            taskScore: 0
+            selfAssessmentScore: 0
+            evidenceCount: 0
+            attemptCount: 0
+            updatedAt: synthetic-updatedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L182-L187
       handler: "QuizService.listMastery — bean masteryTool maps service.listMastery through MasteryResponse::from"
@@ -911,13 +1157,22 @@ tools:
         input: {}
         expect: "Summary object with counts, per-chapter list and current review (or null)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          activeCount: "<shape-placeholder>"
-          masteredCount: "<shape-placeholder>"
-          chapters: "<shape-placeholder>"
-          currentReview: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          activeCount: 0
+          masteredCount: 0
+          chapters:
+            - chapterKey: synthetic-chapterKey
+              chapterTitle: synthetic-chapterTitle
+              activeCount: 0
+              masteredCount: 0
+          currentReview:
+            id: synthetic-id
+            quizId: synthetic-quizId
+            status: synthetic-status
+            questionCount: 0
+            remainingCount: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L189-L196
       handler: "WrongQuestionService.summary — bean wrongQuestionSummaryTool calls service.summary with the injected caller identity"
@@ -1020,25 +1275,28 @@ tools:
         input: {}
         expect: "Array of material metadata objects (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            title: "<shape-placeholder>"
-            materialType: "<shape-placeholder>"
-            category: "<shape-placeholder>"
-            privacyLevel: "<shape-placeholder>"
-            sourceUrl: "<shape-placeholder>"
-            originalFilename: "<shape-placeholder>"
-            mediaType: "<shape-placeholder>"
-            contentLength: "<shape-placeholder>"
-            processingStatus: "<shape-placeholder>"
-            summary: "<shape-placeholder>"
-            tags: "<shape-placeholder>"
-            knowledgePoints: "<shape-placeholder>"
-            processingWarnings: "<shape-placeholder>"
-            contentReference: "<shape-placeholder>"
-            failureReason: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            title: synthetic-title
+            materialType: synthetic-materialType
+            category: synthetic-category
+            privacyLevel: synthetic-privacyLevel
+            sourceUrl: synthetic-sourceUrl
+            originalFilename: synthetic-originalFilename
+            mediaType: synthetic-mediaType
+            contentLength: 0
+            processingStatus: synthetic-processingStatus
+            summary: synthetic-summary
+            tags:
+              - synthetic-tags
+            knowledgePoints:
+              - synthetic-knowledgePoints
+            processingWarnings:
+              - synthetic-processingWarnings
+            contentReference: synthetic-contentReference
+            failureReason: synthetic-failureReason
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L214-L219
       handler: "MaterialService.list — bean materialsTool maps service.list through MaterialResponse::from"
@@ -1080,25 +1338,28 @@ tools:
           materialId: "<material-id from materials.list>"
         expect: "Material metadata object with summary, tags and processing outcome."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          materialType: "<shape-placeholder>"
-          category: "<shape-placeholder>"
-          privacyLevel: "<shape-placeholder>"
-          sourceUrl: "<shape-placeholder>"
-          originalFilename: "<shape-placeholder>"
-          mediaType: "<shape-placeholder>"
-          contentLength: "<shape-placeholder>"
-          processingStatus: "<shape-placeholder>"
-          summary: "<shape-placeholder>"
-          tags: "<shape-placeholder>"
-          knowledgePoints: "<shape-placeholder>"
-          processingWarnings: "<shape-placeholder>"
-          contentReference: "<shape-placeholder>"
-          failureReason: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          title: synthetic-title
+          materialType: synthetic-materialType
+          category: synthetic-category
+          privacyLevel: synthetic-privacyLevel
+          sourceUrl: synthetic-sourceUrl
+          originalFilename: synthetic-originalFilename
+          mediaType: synthetic-mediaType
+          contentLength: 0
+          processingStatus: synthetic-processingStatus
+          summary: synthetic-summary
+          tags:
+            - synthetic-tags
+          knowledgePoints:
+            - synthetic-knowledgePoints
+          processingWarnings:
+            - synthetic-processingWarnings
+          contentReference: synthetic-contentReference
+          failureReason: synthetic-failureReason
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L221-L227
       handler: "MaterialService.get — bean materialTool calls service.get with the injected caller identity and the materialId argument, projected through MaterialResponse::from"
@@ -1139,16 +1400,16 @@ tools:
         input: {}
         expect: "Array of notification objects, newest first (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            type: "<shape-placeholder>"
-            title: "<shape-placeholder>"
-            content: "<shape-placeholder>"
-            read: "<shape-placeholder>"
-            createdAt: "<shape-placeholder>"
-            readAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            type: synthetic-type
+            title: synthetic-title
+            content: synthetic-content
+            read: false
+            createdAt: synthetic-createdAt
+            readAt: synthetic-readAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L229-L234
       handler: "NotificationService.list — bean notificationsTool maps service.list through NotificationResponse::from"
@@ -1189,25 +1450,25 @@ tools:
         input: {}
         expect: "Array of execution records, newest first (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            idempotencyKey: "<shape-placeholder>"
-            executionType: "<shape-placeholder>"
-            triggerType: "<shape-placeholder>"
-            riskLevel: "<shape-placeholder>"
-            requiredScope: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-            summary: "<shape-placeholder>"
-            resultSummary: "<shape-placeholder>"
-            errorMessage: "<shape-placeholder>"
-            modelName: "<shape-placeholder>"
-            promptTokens: "<shape-placeholder>"
-            completionTokens: "<shape-placeholder>"
-            latencyMs: "<shape-placeholder>"
-            estimatedCost: "<shape-placeholder>"
-            createdAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            idempotencyKey: synthetic-idempotencyKey
+            executionType: synthetic-executionType
+            triggerType: synthetic-triggerType
+            riskLevel: synthetic-riskLevel
+            requiredScope: synthetic-requiredScope
+            status: synthetic-status
+            summary: synthetic-summary
+            resultSummary: synthetic-resultSummary
+            errorMessage: synthetic-errorMessage
+            modelName: synthetic-modelName
+            promptTokens: 0
+            completionTokens: 0
+            latencyMs: 0
+            estimatedCost: 0
+            createdAt: synthetic-createdAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L236-L241
       handler: "AgentGovernanceService.listExecutions — bean executionsTool maps service.listExecutions through AgentExecutionResponse::from"
@@ -1248,15 +1509,15 @@ tools:
         input: {}
         expect: "Array of audit entries, newest first (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            action: "<shape-placeholder>"
-            targetType: "<shape-placeholder>"
-            targetId: "<shape-placeholder>"
-            details: "<shape-placeholder>"
-            createdAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: 0
+            action: synthetic-action
+            targetType: synthetic-targetType
+            targetId: synthetic-targetId
+            details: synthetic-details
+            createdAt: synthetic-createdAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L243-L248
       handler: "AgentGovernanceService.listAuditLogs — bean auditLogsTool maps service.listAuditLogs through AuditLogResponse::from"
@@ -1297,14 +1558,14 @@ tools:
         input: {}
         expect: "Array of workspace records, oldest first (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            name: "<shape-placeholder>"
-            rootPath: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-            createdAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            name: synthetic-name
+            rootPath: synthetic-rootPath
+            status: synthetic-status
+            createdAt: synthetic-createdAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L250-L254
       handler: "RoadmapArtifactService.workspaces — bean workspacesTool calls service.workspaces with the injected caller identity"
@@ -1394,26 +1655,40 @@ tools:
           artifactId: "<artifact-id from artifacts.list>"
         expect: "Artifact object with status, review history and any recorded scan/rubric outcome."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          workspaceId: "<shape-placeholder>"
-          relativePath: "<shape-placeholder>"
-          canonicalPath: "<shape-placeholder>"
-          description: "<shape-placeholder>"
-          testEvidence: "<shape-placeholder>"
-          evaluationMode: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          submissionVersion: "<shape-placeholder>"
-          roadmapNode: "<shape-placeholder>"
-          reviewHistory: "<shape-placeholder>"
-          rubricScore: "<shape-placeholder>"
-          rubricFeedback: "<shape-placeholder>"
-          sensitiveScanPassed: "<shape-placeholder>"
-          sensitiveFindings: "<shape-placeholder>"
-          acceptedAt: "<shape-placeholder>"
-          createdAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          workspaceId: synthetic-workspaceId
+          relativePath: synthetic-relativePath
+          canonicalPath: synthetic-canonicalPath
+          description: synthetic-description
+          testEvidence: synthetic-testEvidence
+          evaluationMode: synthetic-evaluationMode
+          status: synthetic-status
+          submissionVersion: 0
+          roadmapNode:
+            id: synthetic-id
+            moduleId: synthetic-moduleId
+            stageId: synthetic-stageId
+            title: synthetic-title
+            moduleTitle: synthetic-moduleTitle
+            stageTitle: synthetic-stageTitle
+          reviewHistory:
+            - id: synthetic-id
+              fromStatus: synthetic-fromStatus
+              toStatus: synthetic-toStatus
+              eventType: synthetic-eventType
+              details: synthetic-details
+              score: 0
+              rubricBreakdownJson: synthetic-rubricBreakdownJson
+              createdAt: synthetic-createdAt
+          rubricScore: 0
+          rubricFeedback: synthetic-rubricFeedback
+          sensitiveScanPassed: false
+          sensitiveFindings: synthetic-sensitiveFindings
+          acceptedAt: synthetic-acceptedAt
+          createdAt: synthetic-createdAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L264-L270
       handler: "RoadmapArtifactService.artifact — bean artifactTool calls service.artifact with the injected caller identity and the artifactId argument"
@@ -1454,26 +1729,40 @@ tools:
         input: {}
         expect: "Array of artifact records, newest first (possibly empty, or a truncation envelope if too large)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            workspaceId: "<shape-placeholder>"
-            relativePath: "<shape-placeholder>"
-            canonicalPath: "<shape-placeholder>"
-            description: "<shape-placeholder>"
-            testEvidence: "<shape-placeholder>"
-            evaluationMode: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-            submissionVersion: "<shape-placeholder>"
-            roadmapNode: "<shape-placeholder>"
-            reviewHistory: "<shape-placeholder>"
-            rubricScore: "<shape-placeholder>"
-            rubricFeedback: "<shape-placeholder>"
-            sensitiveScanPassed: "<shape-placeholder>"
-            sensitiveFindings: "<shape-placeholder>"
-            acceptedAt: "<shape-placeholder>"
-            createdAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            workspaceId: synthetic-workspaceId
+            relativePath: synthetic-relativePath
+            canonicalPath: synthetic-canonicalPath
+            description: synthetic-description
+            testEvidence: synthetic-testEvidence
+            evaluationMode: synthetic-evaluationMode
+            status: synthetic-status
+            submissionVersion: 0
+            roadmapNode:
+              id: synthetic-id
+              moduleId: synthetic-moduleId
+              stageId: synthetic-stageId
+              title: synthetic-title
+              moduleTitle: synthetic-moduleTitle
+              stageTitle: synthetic-stageTitle
+            reviewHistory:
+              - id: synthetic-id
+                fromStatus: synthetic-fromStatus
+                toStatus: synthetic-toStatus
+                eventType: synthetic-eventType
+                details: synthetic-details
+                score: 0
+                rubricBreakdownJson: synthetic-rubricBreakdownJson
+                createdAt: synthetic-createdAt
+            rubricScore: 0
+            rubricFeedback: synthetic-rubricFeedback
+            sensitiveScanPassed: false
+            sensitiveFindings: synthetic-sensitiveFindings
+            acceptedAt: synthetic-acceptedAt
+            createdAt: synthetic-createdAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L272-L276
       handler: "RoadmapArtifactService.artifacts — bean artifactsTool calls service.artifacts with the injected caller identity"
@@ -1514,14 +1803,17 @@ tools:
         input: {}
         expect: "Settings object, or a not-found error when the user never saved settings."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          timeZone: "<shape-placeholder>"
-          dailyStudyLimitMinutes: "<shape-placeholder>"
-          weekendPreference: "<shape-placeholder>"
-          defaultPrivacyLevel: "<shape-placeholder>"
-          weeklyAvailability: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          timeZone: synthetic-timeZone
+          dailyStudyLimitMinutes: 0
+          weekendPreference: synthetic-weekendPreference
+          defaultPrivacyLevel: synthetic-defaultPrivacyLevel
+          weeklyAvailability:
+            - dayOfWeek: synthetic-dayOfWeek
+              startTime: synthetic-startTime
+              endTime: synthetic-endTime
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L278-L282
       handler: "UserSettingsService.get — bean learningSettingsTool calls service.get with the injected caller identity, projected through UserSettingsResponse::from"
@@ -1564,18 +1856,26 @@ tools:
         input: {}
         expect: "Desensitized status object with provider/model names, per-provider configured flags and masked suffixes, and a warning when defaults are unverifiable."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          modelProvider: "<shape-placeholder>"
-          modelName: "<shape-placeholder>"
-          deepseek: "<shape-placeholder>"
-          tavily: "<shape-placeholder>"
-          deepseekConfigured: "<shape-placeholder>"
-          deepseekMaskedSuffix: "<shape-placeholder>"
-          tavilyConfigured: "<shape-placeholder>"
-          tavilyMaskedSuffix: "<shape-placeholder>"
-          warning: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          modelProvider: synthetic-modelProvider
+          modelName: synthetic-modelName
+          deepseek:
+            configured: false
+            source: synthetic-source
+            maskedSuffix: synthetic-maskedSuffix
+            available: false
+          tavily:
+            configured: false
+            source: synthetic-source
+            maskedSuffix: synthetic-maskedSuffix
+            available: false
+          deepseekConfigured: false
+          deepseekMaskedSuffix: synthetic-deepseekMaskedSuffix
+          tavilyConfigured: false
+          tavilyMaskedSuffix: synthetic-tavilyMaskedSuffix
+          warning: synthetic-warning
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L284-L288
       handler: "AiCredentialService.settings — bean aiSettingsStatusTool calls service.settings with the injected caller identity; internally uses DefaultCredentialStatusClient over HTTP and AiCredentialCipher to derive the masked suffix"
@@ -1612,11 +1912,11 @@ tools:
         input: {}
         expect: "Object with paused and an updated timestamp (epoch when never configured)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          paused: "<shape-placeholder>"
-          updatedAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          paused: false
+          updatedAt: synthetic-updatedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L290-L297
       handler: "AssistantAutomationService.settings — bean automationSettingsTool calls service.settings with the injected caller identity, projected through AutomationSettingsResponse::from"
@@ -1657,18 +1957,18 @@ tools:
         input: {}
         expect: "Array of rule records, newest first (possibly empty)."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          - id: "<shape-placeholder>"
-            type: "<shape-placeholder>"
-            status: "<shape-placeholder>"
-            timezone: "<shape-placeholder>"
-            localTime: "<shape-placeholder>"
-            riskLevel: "<shape-placeholder>"
-            requiredScope: "<shape-placeholder>"
-            createdAt: "<shape-placeholder>"
-            updatedAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          - id: synthetic-id
+            type: synthetic-type
+            status: synthetic-status
+            timezone: synthetic-timezone
+            localTime: synthetic-localTime
+            riskLevel: synthetic-riskLevel
+            requiredScope: synthetic-requiredScope
+            createdAt: synthetic-createdAt
+            updatedAt: synthetic-updatedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L299-L306
       handler: "AssistantAutomationService.list — bean automationRulesTool maps service.list through AutomationRuleResponse::from"
@@ -1717,15 +2017,15 @@ tools:
           templateVersion: 3
         expect: "An action awaiting confirmation with a null result; after the user confirms, an enrollment object with id, roadmapCode, templateVersion, title, status and enrolledAt."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          roadmapCode: "<shape-placeholder>"
-          templateVersion: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          enrolledAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          roadmapCode: synthetic-roadmapCode
+          templateVersion: 0
+          title: synthetic-title
+          status: synthetic-status
+          enrolledAt: synthetic-enrolledAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L52-L63
       handler: "RoadmapEnrollmentService.enroll(the Java-injected caller identity, roadmapCode, templateVersion) via the GovernedFunctionalAgentToolHandler bean roadmapEnrollTool."
@@ -1770,20 +2070,24 @@ tools:
           upgradeId: upg-9f2c1a
         expect: "An action awaiting confirmation first; after confirmation an upgrade object with sourceVersion, targetVersion, status and the node and module delta lists."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          sourceVersion: "<shape-placeholder>"
-          targetVersion: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          unchangedNodeCodes: "<shape-placeholder>"
-          addedNodeCodes: "<shape-placeholder>"
-          removedNodeCodes: "<shape-placeholder>"
-          manualReviewNodeCodes: "<shape-placeholder>"
-          addedModuleCount: "<shape-placeholder>"
-          removedModuleCount: "<shape-placeholder>"
-          changedModuleCount: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          sourceVersion: 0
+          targetVersion: 0
+          status: synthetic-status
+          unchangedNodeCodes:
+            - synthetic-unchangedNodeCodes
+          addedNodeCodes:
+            - synthetic-addedNodeCodes
+          removedNodeCodes:
+            - synthetic-removedNodeCodes
+          manualReviewNodeCodes:
+            - synthetic-manualReviewNodeCodes
+          addedModuleCount: 0
+          removedModuleCount: 0
+          changedModuleCount: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L65-L73
       handler: "RoadmapUpgradeService.confirm(the Java-injected caller identity, upgradeId) via the GovernedFunctionalAgentToolHandler bean roadmapUpgradeTool."
@@ -1828,14 +2132,14 @@ tools:
           weeklyStudyHours: 8
         expect: "Either an immediate goal object when a LEARNING_MANAGEMENT grant is active, or an action awaiting authorization; on success the goal has id, title, targetDate, weeklyStudyHours and status."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          targetDate: "<shape-placeholder>"
-          weeklyStudyHours: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          title: synthetic-title
+          targetDate: synthetic-targetDate
+          weeklyStudyHours: 0
+          status: synthetic-status
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L75-L95
       handler: "CreateLearningGoalService.create(the Java-injected caller identity, title, targetDate, weeklyStudyHours) wrapped by AgentToolRequestValidator.requireValid, via the GovernedFunctionalAgentToolHandler bean learningGoalCreateTool."
@@ -1883,16 +2187,16 @@ tools:
           endDate: "2026-01-18"
         expect: "A plan object with id, goalId, title, startDate, endDate, status and version, or an action awaiting authorization when no active PLAN_GENERATION grant exists."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          goalId: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          startDate: "<shape-placeholder>"
-          endDate: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          version: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          goalId: synthetic-goalId
+          title: synthetic-title
+          startDate: synthetic-startDate
+          endDate: synthetic-endDate
+          status: synthetic-status
+          version: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L97-L112
       handler: "LearningPlanService.create(the Java-injected caller identity, validated CreateLearningPlanRequest) via the GovernedFunctionalAgentToolHandler bean learningPlanCreateTool."
@@ -1936,14 +2240,23 @@ tools:
           to: "2026-01-11"
         expect: "A schedule object with scheduleId, timeZone, dailyCapacityMinutes, weekendsEnabled and the day list, or an action awaiting authorization when the grant is missing."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          scheduleId: "<shape-placeholder>"
-          timeZone: "<shape-placeholder>"
-          dailyCapacityMinutes: "<shape-placeholder>"
-          weekendsEnabled: "<shape-placeholder>"
-          days: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          scheduleId: synthetic-scheduleId
+          timeZone: synthetic-timeZone
+          dailyCapacityMinutes: 0
+          weekendsEnabled: false
+          days:
+            - date: synthetic-date
+              plannedMinutes: 0
+              items:
+                - id: synthetic-id
+                  nodeId: synthetic-nodeId
+                  nodeCode: synthetic-nodeCode
+                  title: synthetic-title
+                  plannedMinutes: 0
+                  status: synthetic-status
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L114-L123
       handler: "RoadmapScheduleService.refresh(the Java-injected caller identity, LocalDate from, LocalDate to) via the GovernedFunctionalAgentToolHandler bean scheduleRefreshTool."
@@ -1993,21 +2306,21 @@ tools:
           actualMinutes: 45
         expect: "An action awaiting confirmation first; after confirmation a task object whose status is COMPLETED, whose version is incremented and whose actualMinutes is recorded."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          planId: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          scheduledDate: "<shape-placeholder>"
-          estimatedMinutes: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          version: "<shape-placeholder>"
-          completedAt: "<shape-placeholder>"
-          actualMinutes: "<shape-placeholder>"
-          taskKind: "<shape-placeholder>"
-          knowledgePoint: "<shape-placeholder>"
-          sourceAttemptId: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          planId: synthetic-planId
+          title: synthetic-title
+          scheduledDate: synthetic-scheduledDate
+          estimatedMinutes: 0
+          status: synthetic-status
+          version: 0
+          completedAt: synthetic-completedAt
+          actualMinutes: 0
+          taskKind: synthetic-taskKind
+          knowledgePoint: synthetic-knowledgePoint
+          sourceAttemptId: synthetic-sourceAttemptId
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L125-L143
       handler: "LearningTaskService.changeStatusIdempotently(taskId, validated InternalChangeTaskStatusRequest) via the GovernedFunctionalAgentToolHandler bean taskStatusWriteTool."
@@ -2051,14 +2364,14 @@ tools:
           chapterKey: ch-transactions
         expect: "A wrong-review object with id, quizId, status, questionCount and remainingCount, or an action awaiting authorization without an active QUIZ_GENERATION grant."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          quizId: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          questionCount: "<shape-placeholder>"
-          remainingCount: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          quizId: synthetic-quizId
+          status: synthetic-status
+          questionCount: 0
+          remainingCount: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L145-L158
       handler: "WrongQuestionReviewService.create(the Java-injected caller identity, validated CreateWrongQuestionReviewRequest) via the GovernedFunctionalAgentToolHandler bean wrongQuestionReviewWriteTool."
@@ -2101,14 +2414,23 @@ tools:
           nodeId: node-spring-tx
         expect: "A node-quiz object with nodeId, status and the nested generation job fields, or an action awaiting authorization."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          nodeId: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          quizId: "<shape-placeholder>"
-          latestAttemptId: "<shape-placeholder>"
-          generation: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          nodeId: synthetic-nodeId
+          status: synthetic-status
+          quizId: synthetic-quizId
+          latestAttemptId: synthetic-latestAttemptId
+          generation:
+            jobId: synthetic-jobId
+            purpose: synthetic-purpose
+            status: synthetic-status
+            retrySequence: 0
+            attemptCount: 0
+            quizId: synthetic-quizId
+            lastError: synthetic-lastError
+            leaseUntil: synthetic-leaseUntil
+            updatedAt: synthetic-updatedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L160-L173
       handler: "RoadmapLearningLoopService.retryQuiz(the Java-injected caller identity, nodeId, validated RetryRoadmapQuizRequest) via the GovernedFunctionalAgentToolHandler bean roadmapQuizRetryWriteTool."
@@ -2151,14 +2473,23 @@ tools:
           nodeId: node-spring-tx
         expect: "A node-quiz object with nodeId, status, quizId or latestAttemptId and the nested generation record, or an action awaiting authorization. Behaviour is currently identical to assessment.node_quiz.retry."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          nodeId: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          quizId: "<shape-placeholder>"
-          latestAttemptId: "<shape-placeholder>"
-          generation: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          nodeId: synthetic-nodeId
+          status: synthetic-status
+          quizId: synthetic-quizId
+          latestAttemptId: synthetic-latestAttemptId
+          generation:
+            jobId: synthetic-jobId
+            purpose: synthetic-purpose
+            status: synthetic-status
+            retrySequence: 0
+            attemptCount: 0
+            quizId: synthetic-quizId
+            lastError: synthetic-lastError
+            leaseUntil: synthetic-leaseUntil
+            updatedAt: synthetic-updatedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L175-L188
       handler: "RoadmapLearningLoopService.retryQuiz(the Java-injected caller identity, nodeId, validated RetryRoadmapQuizRequest) via the GovernedFunctionalAgentToolHandler bean roadmapQuizGenerateWriteTool."
@@ -2201,16 +2532,16 @@ tools:
           notificationId: ntf-10231
         expect: "A notification object with read true and readAt set, or an action awaiting authorization."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          type: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          content: "<shape-placeholder>"
-          read: "<shape-placeholder>"
-          createdAt: "<shape-placeholder>"
-          readAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          type: synthetic-type
+          title: synthetic-title
+          content: synthetic-content
+          read: false
+          createdAt: synthetic-createdAt
+          readAt: synthetic-readAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L190-L201
       handler: "NotificationService.markRead(the Java-injected caller identity, notificationId) via the GovernedFunctionalAgentToolHandler bean notificationMarkReadTool."
@@ -2253,14 +2584,17 @@ tools:
           dailyStudyLimitMinutes: 90
         expect: "An action awaiting confirmation first; after confirmation a settings object whose dailyStudyLimitMinutes is 90 and whose other fields are unchanged."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          timeZone: "<shape-placeholder>"
-          dailyStudyLimitMinutes: "<shape-placeholder>"
-          weekendPreference: "<shape-placeholder>"
-          defaultPrivacyLevel: "<shape-placeholder>"
-          weeklyAvailability: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          timeZone: synthetic-timeZone
+          dailyStudyLimitMinutes: 0
+          weekendPreference: synthetic-weekendPreference
+          defaultPrivacyLevel: synthetic-defaultPrivacyLevel
+          weeklyAvailability:
+            - dayOfWeek: synthetic-dayOfWeek
+              startTime: synthetic-startTime
+              endTime: synthetic-endTime
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L203-L227
       handler: "UserSettingsService.get then UserSettingsService.save(the Java-injected caller identity, validated UpdateUserSettingsRequest) via the GovernedFunctionalAgentToolHandler bean learningSettingsUpdateTool."
@@ -2303,14 +2637,14 @@ tools:
           rootPath: "/Users/owner/projects/studypilot/backend"
         expect: "An action awaiting confirmation first; after confirmation a workspace object with id, name, rootPath, status and createdAt."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          name: "<shape-placeholder>"
-          rootPath: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          createdAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          name: synthetic-name
+          rootPath: synthetic-rootPath
+          status: synthetic-status
+          createdAt: synthetic-createdAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L229-L241
       handler: "RoadmapArtifactService.createWorkspace(the Java-injected caller identity, validated CreateProjectWorkspaceRequest) via the GovernedFunctionalAgentToolHandler bean workspaceRegisterTool."
@@ -2362,26 +2696,40 @@ tools:
           testEvidence: "mvn test 通过，共 12 项，已复核日志"
         expect: "An action awaiting confirmation first; after confirmation an artifact object with status SUBMITTED, submissionVersion, sensitiveScanPassed and null acceptedAt."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          workspaceId: "<shape-placeholder>"
-          relativePath: "<shape-placeholder>"
-          canonicalPath: "<shape-placeholder>"
-          description: "<shape-placeholder>"
-          testEvidence: "<shape-placeholder>"
-          evaluationMode: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          submissionVersion: "<shape-placeholder>"
-          roadmapNode: "<shape-placeholder>"
-          reviewHistory: "<shape-placeholder>"
-          rubricScore: "<shape-placeholder>"
-          rubricFeedback: "<shape-placeholder>"
-          sensitiveScanPassed: "<shape-placeholder>"
-          sensitiveFindings: "<shape-placeholder>"
-          acceptedAt: "<shape-placeholder>"
-          createdAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          workspaceId: synthetic-workspaceId
+          relativePath: synthetic-relativePath
+          canonicalPath: synthetic-canonicalPath
+          description: synthetic-description
+          testEvidence: synthetic-testEvidence
+          evaluationMode: synthetic-evaluationMode
+          status: synthetic-status
+          submissionVersion: 0
+          roadmapNode:
+            id: synthetic-id
+            moduleId: synthetic-moduleId
+            stageId: synthetic-stageId
+            title: synthetic-title
+            moduleTitle: synthetic-moduleTitle
+            stageTitle: synthetic-stageTitle
+          reviewHistory:
+            - id: synthetic-id
+              fromStatus: synthetic-fromStatus
+              toStatus: synthetic-toStatus
+              eventType: synthetic-eventType
+              details: synthetic-details
+              score: 0
+              rubricBreakdownJson: synthetic-rubricBreakdownJson
+              createdAt: synthetic-createdAt
+          rubricScore: 0
+          rubricFeedback: synthetic-rubricFeedback
+          sensitiveScanPassed: false
+          sensitiveFindings: synthetic-sensitiveFindings
+          acceptedAt: synthetic-acceptedAt
+          createdAt: synthetic-createdAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L243-L264
       handler: "RoadmapArtifactService.submit(the Java-injected caller identity, validated CreateRoadmapArtifactRequest) via the GovernedFunctionalAgentToolHandler bean artifactSubmitTool."
@@ -2429,25 +2777,28 @@ tools:
           privacyLevel: NORMAL
         expect: "A material object with id, materialType TEXT, processingStatus PROCESSING and empty extraction fields, or an action awaiting authorization."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          materialType: "<shape-placeholder>"
-          category: "<shape-placeholder>"
-          privacyLevel: "<shape-placeholder>"
-          sourceUrl: "<shape-placeholder>"
-          originalFilename: "<shape-placeholder>"
-          mediaType: "<shape-placeholder>"
-          contentLength: "<shape-placeholder>"
-          processingStatus: "<shape-placeholder>"
-          summary: "<shape-placeholder>"
-          tags: "<shape-placeholder>"
-          knowledgePoints: "<shape-placeholder>"
-          processingWarnings: "<shape-placeholder>"
-          contentReference: "<shape-placeholder>"
-          failureReason: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          title: synthetic-title
+          materialType: synthetic-materialType
+          category: synthetic-category
+          privacyLevel: synthetic-privacyLevel
+          sourceUrl: synthetic-sourceUrl
+          originalFilename: synthetic-originalFilename
+          mediaType: synthetic-mediaType
+          contentLength: 0
+          processingStatus: synthetic-processingStatus
+          summary: synthetic-summary
+          tags:
+            - synthetic-tags
+          knowledgePoints:
+            - synthetic-knowledgePoints
+          processingWarnings:
+            - synthetic-processingWarnings
+          contentReference: synthetic-contentReference
+          failureReason: synthetic-failureReason
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L266-L281
       handler: "MaterialService.createText(the Java-injected caller identity, validated CreateTextMaterialRequest) via the GovernedFunctionalAgentToolHandler bean textMaterialImportWriteTool."
@@ -2495,25 +2846,28 @@ tools:
           privacyLevel: NORMAL
         expect: "A material object with id, sourceUrl, materialType WEB_PAGE and processingStatus PROCESSING, or an action awaiting authorization."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          id: "<shape-placeholder>"
-          title: "<shape-placeholder>"
-          materialType: "<shape-placeholder>"
-          category: "<shape-placeholder>"
-          privacyLevel: "<shape-placeholder>"
-          sourceUrl: "<shape-placeholder>"
-          originalFilename: "<shape-placeholder>"
-          mediaType: "<shape-placeholder>"
-          contentLength: "<shape-placeholder>"
-          processingStatus: "<shape-placeholder>"
-          summary: "<shape-placeholder>"
-          tags: "<shape-placeholder>"
-          knowledgePoints: "<shape-placeholder>"
-          processingWarnings: "<shape-placeholder>"
-          contentReference: "<shape-placeholder>"
-          failureReason: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          id: synthetic-id
+          title: synthetic-title
+          materialType: synthetic-materialType
+          category: synthetic-category
+          privacyLevel: synthetic-privacyLevel
+          sourceUrl: synthetic-sourceUrl
+          originalFilename: synthetic-originalFilename
+          mediaType: synthetic-mediaType
+          contentLength: 0
+          processingStatus: synthetic-processingStatus
+          summary: synthetic-summary
+          tags:
+            - synthetic-tags
+          knowledgePoints:
+            - synthetic-knowledgePoints
+          processingWarnings:
+            - synthetic-processingWarnings
+          contentReference: synthetic-contentReference
+          failureReason: synthetic-failureReason
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L283-L298
       handler: "MaterialService.createWeb(the Java-injected caller identity, validated CreateWebMaterialRequest) via the GovernedFunctionalAgentToolHandler bean webMaterialImportWriteTool."
@@ -2563,21 +2917,22 @@ tools:
           templateType: MAVEN_TEST
         expect: "Without an active RUNNER_MANAGEMENT grant an action awaiting authorization; with a grant an immediate runner result with status, exitCode, commandTokens, success and stdout or stderr summaries."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          executionId: "<shape-placeholder>"
-          governanceExecutionId: "<shape-placeholder>"
-          workspaceId: "<shape-placeholder>"
-          templateType: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          exitCode: "<shape-placeholder>"
-          commandTokens: "<shape-placeholder>"
-          stdoutSummary: "<shape-placeholder>"
-          stderrSummary: "<shape-placeholder>"
-          success: "<shape-placeholder>"
-          durationMillis: "<shape-placeholder>"
-          executedAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          executionId: synthetic-executionId
+          governanceExecutionId: synthetic-governanceExecutionId
+          workspaceId: synthetic-workspaceId
+          templateType: synthetic-templateType
+          status: synthetic-status
+          exitCode: 0
+          commandTokens:
+            - synthetic-commandTokens
+          stdoutSummary: synthetic-stdoutSummary
+          stderrSummary: synthetic-stderrSummary
+          success: false
+          durationMillis: 0
+          executedAt: synthetic-executedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L301-L322
       handler: "RunnerGovernanceService.submitExecution(the Java-injected caller identity, RunnerExecutionRequest) wrapped by requireRunnerSuccess and runnerIdempotencyKey, via the GovernedFunctionalAgentToolHandler bean runnerCheckRunTool."
@@ -2623,21 +2978,22 @@ tools:
           templateType: PREPARE_DEPENDENCIES
         expect: "An action awaiting confirmation first; after the user confirms, a runner result with status, exitCode, commandTokens and success."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          executionId: "<shape-placeholder>"
-          governanceExecutionId: "<shape-placeholder>"
-          workspaceId: "<shape-placeholder>"
-          templateType: "<shape-placeholder>"
-          status: "<shape-placeholder>"
-          exitCode: "<shape-placeholder>"
-          commandTokens: "<shape-placeholder>"
-          stdoutSummary: "<shape-placeholder>"
-          stderrSummary: "<shape-placeholder>"
-          success: "<shape-placeholder>"
-          durationMillis: "<shape-placeholder>"
-          executedAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          executionId: synthetic-executionId
+          governanceExecutionId: synthetic-governanceExecutionId
+          workspaceId: synthetic-workspaceId
+          templateType: synthetic-templateType
+          status: synthetic-status
+          exitCode: 0
+          commandTokens:
+            - synthetic-commandTokens
+          stdoutSummary: synthetic-stdoutSummary
+          stderrSummary: synthetic-stderrSummary
+          success: false
+          durationMillis: 0
+          executedAt: synthetic-executedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L324-L345
       handler: "RunnerGovernanceService.submitExecution(the Java-injected caller identity, RunnerExecutionRequest) wrapped by requireRunnerSuccess, via the GovernedFunctionalAgentToolHandler bean runnerDependenciesPrepareTool."
@@ -2687,18 +3043,19 @@ tools:
           explanation: "修正事务传播说明"
         expect: "An action awaiting confirmation first; after confirmation a patch preview shaped result with safeToApply true, conflict false and the resultSha256 of the written file."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          targetFile: "<shape-placeholder>"
-          unifiedDiff: "<shape-placeholder>"
-          expectedSha256: "<shape-placeholder>"
-          resultSha256: "<shape-placeholder>"
-          conflict: "<shape-placeholder>"
-          conflictReason: "<shape-placeholder>"
-          affectedLines: "<shape-placeholder>"
-          safeToApply: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          targetFile: synthetic-targetFile
+          unifiedDiff: synthetic-unifiedDiff
+          expectedSha256: synthetic-expectedSha256
+          resultSha256: synthetic-resultSha256
+          conflict: false
+          conflictReason: synthetic-conflictReason
+          affectedLines:
+            - synthetic-affectedLines
+          safeToApply: false
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L370-L386
       handler: "WorkspaceDeveloperService.validatePatchRequest as preflight, then WorkspaceDeveloperService.applyConfirmedPatch on confirmation, via the GovernedFunctionalAgentToolHandler bean developerPatchApplyTool."
@@ -2748,14 +3105,15 @@ tools:
           changeFingerprint: b7d3f1c9a2e4...
         expect: "An action awaiting confirmation first; after confirmation a commit result with commitId, message, paths and committedAt."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          commitId: "<shape-placeholder>"
-          message: "<shape-placeholder>"
-          paths: "<shape-placeholder>"
-          committedAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          commitId: synthetic-commitId
+          message: synthetic-message
+          paths:
+            - synthetic-paths
+          committedAt: synthetic-committedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L388-L403
       handler: "WorkspaceDeveloperService.validateGitCommit as preflight, then WorkspaceDeveloperService.commitConfirmed on confirmation, via the GovernedFunctionalAgentToolHandler bean developerGitCommitTool."
@@ -2807,14 +3165,14 @@ tools:
           timeoutSeconds: 30
         expect: "An action awaiting confirmation first; after confirmation a push result with pushedCommit, remoteName, branch and pushedAt."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          remoteName: "<shape-placeholder>"
-          branch: "<shape-placeholder>"
-          pushedCommit: "<shape-placeholder>"
-          pushedAt: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          remoteName: synthetic-remoteName
+          branch: synthetic-branch
+          pushedCommit: synthetic-pushedCommit
+          pushedAt: synthetic-pushedAt
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L405-L423
       handler: "WorkspaceDeveloperService.validateGitPush as preflight, then WorkspaceDeveloperService.pushConfirmed on confirmation, via the GovernedFunctionalAgentToolHandler bean developerGitPushTool."
@@ -2865,19 +3223,19 @@ tools:
           targetKey: ASSISTANT
         expect: "An action awaiting confirmation first; after confirmation a local interface execution result with channel, actionKey, targetKey, localAdapterInvoked true and receiptStatus, or a deterministic local adapter error when the adapter fails."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          channel: "<shape-placeholder>"
-          actionKey: "<shape-placeholder>"
-          targetKey: "<shape-placeholder>"
-          localAdapterInvoked: "<shape-placeholder>"
-          adapter: "<shape-placeholder>"
-          targetDigest: "<shape-placeholder>"
-          receiptStatus: "<shape-placeholder>"
-          startedAt: "<shape-placeholder>"
-          finishedAt: "<shape-placeholder>"
-          message: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          channel: synthetic-channel
+          actionKey: synthetic-actionKey
+          targetKey: synthetic-targetKey
+          localAdapterInvoked: false
+          adapter: synthetic-adapter
+          targetDigest: synthetic-targetDigest
+          receiptStatus: synthetic-receiptStatus
+          startedAt: synthetic-startedAt
+          finishedAt: synthetic-finishedAt
+          message: synthetic-message
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
       - name: "business API preferred"
         input:
           businessApiAvailable: true
@@ -2886,19 +3244,19 @@ tools:
           targetKey: ASSISTANT
         expect: "A result with localAdapterInvoked false because the policy returned the BUSINESS_API decision and no local adapter was invoked."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          channel: "<shape-placeholder>"
-          actionKey: "<shape-placeholder>"
-          targetKey: "<shape-placeholder>"
-          localAdapterInvoked: "<shape-placeholder>"
-          adapter: "<shape-placeholder>"
-          targetDigest: "<shape-placeholder>"
-          receiptStatus: "<shape-placeholder>"
-          startedAt: "<shape-placeholder>"
-          finishedAt: "<shape-placeholder>"
-          message: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          channel: synthetic-channel
+          actionKey: synthetic-actionKey
+          targetKey: synthetic-targetKey
+          localAdapterInvoked: false
+          adapter: synthetic-adapter
+          targetDigest: synthetic-targetDigest
+          receiptStatus: synthetic-receiptStatus
+          startedAt: synthetic-startedAt
+          finishedAt: synthetic-finishedAt
+          message: synthetic-message
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L445-L473
       handler: "LocalInterfaceFallbackService.validate as preflight, then LocalInterfaceFallbackService.execute on confirmation; those two are the direct binding to this tool, and they in turn use InterfaceFallbackPolicy.preview and LocalAutomationClient.invoke (declared as unverified deeper collaborators), via the GovernedFunctionalAgentToolHandler bean developerInterfaceFallbackExecuteTool."
@@ -2941,11 +3299,11 @@ tools:
           routeKey: TODAY
         expect: "A navigation target with routeKey TODAY and an empty params map."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          routeKey: "<shape-placeholder>"
-          params: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          routeKey: synthetic-routeKey
+          params: {}
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
       - name: "open a roadmap node"
         input:
           routeKey: ROADMAP_NODE
@@ -2953,11 +3311,11 @@ tools:
             nodeId: node-spring-tx
         expect: "A navigation target with routeKey ROADMAP_NODE and params containing nodeId set to node-spring-tx."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          routeKey: "<shape-placeholder>"
-          params: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          routeKey: synthetic-routeKey
+          params: {}
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
       - name: "reject an unknown route"
         input:
           routeKey: ADMIN_CONSOLE
@@ -3017,21 +3375,22 @@ tools:
           idempotencyKey: run-2026-01-05-1
         expect: "A runner preview object with workspaceId, workspaceName, templateType, commandTokens, renderedCommand, confirmationRequired, riskLevel, timeoutSeconds and workingDirectory."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          workspaceName: "<shape-placeholder>"
-          workspacePath: "<shape-placeholder>"
-          templateType: "<shape-placeholder>"
-          templateDescription: "<shape-placeholder>"
-          riskLevel: "<shape-placeholder>"
-          commandTokens: "<shape-placeholder>"
-          renderedCommand: "<shape-placeholder>"
-          timeoutSeconds: "<shape-placeholder>"
-          confirmationRequired: "<shape-placeholder>"
-          explanation: "<shape-placeholder>"
-          workingDirectory: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          workspaceName: synthetic-workspaceName
+          workspacePath: synthetic-workspacePath
+          templateType: synthetic-templateType
+          templateDescription: synthetic-templateDescription
+          riskLevel: synthetic-riskLevel
+          commandTokens:
+            - synthetic-commandTokens
+          renderedCommand: synthetic-renderedCommand
+          timeoutSeconds: 0
+          confirmationRequired: false
+          explanation: synthetic-explanation
+          workingDirectory: synthetic-workingDirectory
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L309-L328
       handler: "RunnerGovernanceService.preview(the Java-injected caller identity, RunnerExecutionRequest) via the FunctionalAgentToolHandler bean runnerExecutionPreviewTool."
@@ -3072,12 +3431,16 @@ tools:
           workspaceId: ws-1f2a
         expect: "A file tree object with workspaceId, rootPath and a bounded entries array."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          rootPath: "<shape-placeholder>"
-          entries: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          rootPath: synthetic-rootPath
+          entries:
+            - relativePath: synthetic-relativePath
+              name: synthetic-name
+              directory: false
+              sizeBytes: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L329-L338
       handler: "WorkspaceDeveloperService.getFileTree(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerFileTreeTool."
@@ -3121,14 +3484,14 @@ tools:
           path: src/main/java/demo/TxDemo.java
         expect: "A file read object with workspaceId, relativePath, content, sizeBytes and truncated."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          relativePath: "<shape-placeholder>"
-          content: "<shape-placeholder>"
-          sizeBytes: "<shape-placeholder>"
-          truncated: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          relativePath: synthetic-relativePath
+          content: synthetic-content
+          sizeBytes: 0
+          truncated: false
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L340-L351
       handler: "WorkspaceDeveloperService.readFile(the Java-injected caller identity, workspaceId, path) via the FunctionalAgentToolHandler bean developerFileReadTool."
@@ -3170,12 +3533,15 @@ tools:
           q: changeStatusIdempotently
         expect: "A code search object with workspaceId, query and a bounded matches array of relativePath, lineNumber and lineContent."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          query: "<shape-placeholder>"
-          matches: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          query: synthetic-query
+          matches:
+            - relativePath: synthetic-relativePath
+              lineNumber: 0
+              lineContent: synthetic-lineContent
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L353-L364
       handler: "WorkspaceDeveloperService.searchCode(the Java-injected caller identity, workspaceId, q) via the FunctionalAgentToolHandler bean developerCodeSearchTool."
@@ -3221,16 +3587,18 @@ tools:
           workspaceId: ws-1f2a
         expect: "A Git status object with gitRepository, branch, currentCommit, clean and the modified and untracked lists."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          gitRepository: "<shape-placeholder>"
-          branch: "<shape-placeholder>"
-          currentCommit: "<shape-placeholder>"
-          clean: "<shape-placeholder>"
-          modifiedFiles: "<shape-placeholder>"
-          untrackedFiles: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          gitRepository: false
+          branch: synthetic-branch
+          currentCommit: synthetic-currentCommit
+          clean: false
+          modifiedFiles:
+            - synthetic-modifiedFiles
+          untrackedFiles:
+            - synthetic-untrackedFiles
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L366-L375
       handler: "WorkspaceDeveloperService.getGitStatus(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitStatusTool."
@@ -3270,12 +3638,12 @@ tools:
           workspaceId: ws-1f2a
         expect: "A Git text object with workspaceId, content and truncated."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          content: "<shape-placeholder>"
-          truncated: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          content: synthetic-content
+          truncated: false
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L377-L386
       handler: "WorkspaceDeveloperService.getGitDiff(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitDiffTool."
@@ -3316,23 +3684,23 @@ tools:
           limit: 10
         expect: "A Git text object with workspaceId, content and truncated."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          content: "<shape-placeholder>"
-          truncated: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          content: synthetic-content
+          truncated: false
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
       - name: "default log"
         input:
           workspaceId: ws-1f2a
         expect: "A Git text object using the service default limit of 20 entries worth of log text."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          content: "<shape-placeholder>"
-          truncated: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          content: synthetic-content
+          truncated: false
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L388-L398
       handler: "WorkspaceDeveloperService.getGitLog(the Java-injected caller identity, workspaceId, limit) via the FunctionalAgentToolHandler bean developerGitLogTool."
@@ -3381,18 +3749,19 @@ tools:
           diff: "@@ -1,1 +1,1 @@\n-old\n+new\n"
         expect: "A patch preview object with expectedSha256, resultSha256, conflict, conflictReason, affectedLines and safeToApply."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          targetFile: "<shape-placeholder>"
-          unifiedDiff: "<shape-placeholder>"
-          expectedSha256: "<shape-placeholder>"
-          resultSha256: "<shape-placeholder>"
-          conflict: "<shape-placeholder>"
-          conflictReason: "<shape-placeholder>"
-          affectedLines: "<shape-placeholder>"
-          safeToApply: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          targetFile: synthetic-targetFile
+          unifiedDiff: synthetic-unifiedDiff
+          expectedSha256: synthetic-expectedSha256
+          resultSha256: synthetic-resultSha256
+          conflict: false
+          conflictReason: synthetic-conflictReason
+          affectedLines:
+            - synthetic-affectedLines
+          safeToApply: false
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L400-L411
       handler: "WorkspaceDeveloperService.previewPatch(the Java-injected caller identity, workspaceId, targetFile, diff) via the FunctionalAgentToolHandler bean developerPatchPreviewTool."
@@ -3436,16 +3805,18 @@ tools:
             - src/main/java/demo/TxDemo.java
         expect: "A test recommendation object with workspaceId, templates, executions, requiresDependencyPreparation and reasons."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          templates: "<shape-placeholder>"
-          executions: "<shape-placeholder>"
-          templateType: "<shape-placeholder>"
-          workingDirectory: "<shape-placeholder>"
-          requiresDependencyPreparation: "<shape-placeholder>"
-          reasons: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          templates:
+            - synthetic-templates
+          executions:
+            - templateType: synthetic-templateType
+              workingDirectory: synthetic-workingDirectory
+          requiresDependencyPreparation: false
+          reasons:
+            - synthetic-reasons
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L413-L424
       handler: "WorkspaceDeveloperService.recommendTests(the Java-injected caller identity, workspaceId, changedFiles) via the FunctionalAgentToolHandler bean developerTestsRecommendTool."
@@ -3493,15 +3864,16 @@ tools:
           message: "fix: correct transaction propagation demo"
         expect: "A commit preview object with workspaceId, branch, expectedHead, changeFingerprint, paths and message."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          branch: "<shape-placeholder>"
-          expectedHead: "<shape-placeholder>"
-          changeFingerprint: "<shape-placeholder>"
-          paths: "<shape-placeholder>"
-          message: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          branch: synthetic-branch
+          expectedHead: synthetic-expectedHead
+          changeFingerprint: synthetic-changeFingerprint
+          paths:
+            - synthetic-paths
+          message: synthetic-message
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L426-L437
       handler: "WorkspaceDeveloperService.previewGitCommit(the Java-injected caller identity, workspaceId, paths, message) via the FunctionalAgentToolHandler bean developerGitCommitPreviewTool."
@@ -3547,18 +3919,18 @@ tools:
           workspaceId: ws-1f2a
         expect: "A push preview object with remoteName, remoteUrlDigest, branch, expectedHead, expectedRemoteRef, expectedRemoteRefCommit, aheadCount and timeoutSeconds."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          workspaceId: "<shape-placeholder>"
-          remoteName: "<shape-placeholder>"
-          remoteUrlDigest: "<shape-placeholder>"
-          branch: "<shape-placeholder>"
-          expectedHead: "<shape-placeholder>"
-          expectedRemoteRef: "<shape-placeholder>"
-          expectedRemoteRefCommit: "<shape-placeholder>"
-          aheadCount: "<shape-placeholder>"
-          timeoutSeconds: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          workspaceId: synthetic-workspaceId
+          remoteName: synthetic-remoteName
+          remoteUrlDigest: synthetic-remoteUrlDigest
+          branch: synthetic-branch
+          expectedHead: synthetic-expectedHead
+          expectedRemoteRef: synthetic-expectedRemoteRef
+          expectedRemoteRefCommit: synthetic-expectedRemoteRefCommit
+          aheadCount: 0
+          timeoutSeconds: 0
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L439-L448
       handler: "WorkspaceDeveloperService.previewGitPush(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitPushPreviewTool."
@@ -3606,14 +3978,14 @@ tools:
           targetKey: ASSISTANT
         expect: "An interface fallback decision with fallbackRequired true and the policy reason."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          channel: "<shape-placeholder>"
-          actionKey: "<shape-placeholder>"
-          targetKey: "<shape-placeholder>"
-          fallbackRequired: "<shape-placeholder>"
-          reason: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          channel: synthetic-channel
+          actionKey: synthetic-actionKey
+          targetKey: synthetic-targetKey
+          fallbackRequired: false
+          reason: synthetic-reason
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
       - name: "business API available"
         input:
           businessApiAvailable: true
@@ -3622,14 +3994,14 @@ tools:
           targetKey: ASSISTANT
         expect: "A decision with channel BUSINESS_API, fallbackRequired false and the reason that a deterministic business API exists."
         outcome: ok
-        fixture_kind: shape_placeholder
+        fixture_kind: synthetic_typed
         output:
-          channel: "<shape-placeholder>"
-          actionKey: "<shape-placeholder>"
-          targetKey: "<shape-placeholder>"
-          fallbackRequired: "<shape-placeholder>"
-          reason: "<shape-placeholder>"
-        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+          channel: synthetic-channel
+          actionKey: synthetic-actionKey
+          targetKey: synthetic-targetKey
+          fallbackRequired: false
+          reason: synthetic-reason
+        fixture_source: scripts/harness/capability-semantics-instances.mjs
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L450-L463
       handler: "InterfaceFallbackPolicy.preview(businessApiAvailable, channel, actionKey, targetKey) via the FunctionalAgentToolHandler bean developerInterfaceFallbackPreviewTool."

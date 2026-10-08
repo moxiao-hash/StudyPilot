@@ -12,6 +12,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 
 import { collectCapabilityFacts, REPO_ROOT } from './capability-semantics-extract.mjs';
+import { generateInstance } from './capability-semantics-instances.mjs';
 import {
   DEFAULT_METADATA,
   checkExampleInput,
@@ -19,6 +20,8 @@ import {
   expectedExposure,
   checkExampleOutput,
   loadMetadata,
+  schemaUnsupportedKeywords,
+  validateAgainstSchema,
   parseYamlSubset,
   runValidation,
   validateMetadata,
@@ -479,8 +482,33 @@ test('output: accepts a contract-shaped instance and rejects undeclared fields',
   assert.throws(() => checkExampleOutput(OUT_TOOL, { unexpected: 'x' }, 'shape_placeholder'), (e) => e.code === 'E_OUTPUT_INSTANCE');
 });
 
-test('output: a shape fixture may not smuggle real values', () => {
-  assert.throws(() => checkExampleOutput(OUT_TOOL, { a: 0.99 }, 'shape_placeholder'), (e) => e.code === 'E_OUTPUT_INSTANCE');
+test('output: an instance must satisfy the registered contract, not just look shaped', () => {
+  const typed = { ...OUT_TOOL, outputSchema: { type: 'object', additionalProperties: false, properties: { a: { type: 'number' } }, required: ['a'] } };
+  checkExampleOutput(typed, { a: 0 }, 'synthetic_typed');
+  assert.throws(() => checkExampleOutput(typed, { a: '0' }, 'synthetic_typed'), (e) => e.code === 'E_SCHEMA_INSTANCE');
+  assert.throws(() => checkExampleOutput(typed, {}, 'synthetic_typed'), (e) => e.code === 'E_SCHEMA_INSTANCE');
+  assert.throws(() => checkExampleOutput(typed, { a: 0, extra: 1 }, 'synthetic_typed'), (e) => e.code === 'E_SCHEMA_INSTANCE');
+});
+
+test('schema: the validator reports keywords outside its subset instead of skipping them', () => {
+  assert.deepEqual(schemaUnsupportedKeywords({ type: 'object', properties: { a: { type: 'string' } } }), []);
+  const unsupported = schemaUnsupportedKeywords({ type: 'object', properties: { a: { enum: ['x'] } } });
+  assert.equal(unsupported.length, 1);
+  assert.match(unsupported[0], /enum/);
+});
+
+test('schema: primitive and nested validation behaves like the Java contract subset', () => {
+  const schema = {
+    type: ['object', 'null'],
+    additionalProperties: false,
+    properties: { n: { type: 'integer' }, list: { type: 'array', items: { type: 'string' } } },
+    required: ['n'],
+  };
+  assert.deepEqual(validateAgainstSchema(schema, { n: 0, list: ['x'] }), []);
+  assert.deepEqual(validateAgainstSchema(schema, null), []);
+  assert.equal(validateAgainstSchema(schema, { n: 1.5 }).length, 1);
+  assert.equal(validateAgainstSchema(schema, { n: 0, list: [1] }).length, 1);
+  assert.equal(validateAgainstSchema(schema, []).length, 1);
 });
 
 test('output: container kind must match the registered contract', () => {
@@ -509,7 +537,7 @@ test('examples: every shipped example declares outcome, fixture_kind and fixture
     for (const example of entry.examples) {
       assert.ok(['ok', 'rejected', 'unavailable'].includes(example.outcome), `${entry.name}: outcome`);
       assert.ok(
-        ['shape_placeholder', 'rejection', 'contract_defect', 'nullable_empty'].includes(example.fixture_kind),
+        ['synthetic_typed', 'rejection', 'contract_defect', 'nullable_empty'].includes(example.fixture_kind),
         `${entry.name}: fixture_kind`,
       );
       assert.equal(typeof example.fixture_source, 'string', `${entry.name}: fixture_source`);
@@ -601,7 +629,7 @@ test('metadata: the nullable tool carries both a shape and an explicit empty-sta
   assert.ok(empty, 'the nullable tool must have an explicit null example');
   assert.equal(empty.output, null);
   assert.equal(empty.outcome, 'ok');
-  assert.ok(entry.examples.some((example) => example.fixture_kind === 'shape_placeholder'));
+  assert.ok(entry.examples.some((example) => example.fixture_kind === 'synthetic_typed'));
   // Every other tool must declare an output for each of its ok examples.
   for (const other of doc.tools) {
     for (const example of other.examples) {
@@ -610,4 +638,88 @@ test('metadata: the nullable tool carries both a shape and an explicit empty-sta
       }
     }
   }
+});
+
+// --- R-D4: typed instances derived from the real descriptor export ---------
+
+test('typed fixtures: descriptor provenance is frozen with hashes and a commit', () => {
+  const provenance = fixture.frozenFacts.descriptorProvenance;
+  assert.ok(provenance, 'descriptorProvenance is required');
+  assert.match(provenance.artifactSha256, /^[0-9a-f]{64}$/);
+  assert.match(provenance.manifestSchemaSha256, /^[0-9a-f]{64}$/);
+  assert.match(provenance.sourceCommit, /^[0-9a-f]{40}$/);
+  assert.match(provenance.artifact, /descriptors\.json$/);
+});
+
+test('typed fixtures: the real contract is frozen for all 65 tools', () => {
+  const schemas = fixture.frozenFacts.toolSchemas;
+  assert.equal(Object.keys(schemas).length, 65);
+  for (const tool of fixture.frozenFacts.tools) {
+    assert.ok(schemas[tool.name]?.outputSchema, `${tool.name}: output schema must be frozen`);
+    assert.ok(schemas[tool.name]?.inputSchema, `${tool.name}: input schema must be frozen`);
+  }
+  assert.ok(schemas['navigation.resolve']?.outputSchema, 'navigation must be covered too');
+});
+
+test('typed fixtures: no schema uses a keyword outside the validated subset', () => {
+  for (const [name, schema] of Object.entries(fixture.frozenFacts.toolSchemas)) {
+    assert.deepEqual(schemaUnsupportedKeywords(schema.outputSchema, `${name}/output`), [], `${name}: output`);
+    assert.deepEqual(schemaUnsupportedKeywords(schema.inputSchema, `${name}/input`), [], `${name}: input`);
+  }
+});
+
+test('typed fixtures: every shipped synthetic instance satisfies its registered output schema', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  const schemas = fixture.frozenFacts.toolSchemas;
+  let checked = 0;
+  for (const entry of doc.tools) {
+    for (const example of entry.examples) {
+      if (example.fixture_kind !== 'synthetic_typed') continue;
+      const violations = validateAgainstSchema(schemas[entry.name].outputSchema, example.output);
+      assert.deepEqual(violations, [], `${entry.name}: ${violations.join('; ')}`);
+      checked += 1;
+    }
+  }
+  assert.ok(checked >= 60, `expected most examples to be typed instances, checked ${checked}`);
+});
+
+test('typed fixtures: every ok input satisfies the registered input schema', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  const schemas = fixture.frozenFacts.toolSchemas;
+  for (const entry of doc.tools) {
+    for (const example of entry.examples) {
+      if (example.outcome !== 'ok') continue;
+      const violations = validateAgainstSchema(schemas[entry.name].inputSchema, example.input);
+      assert.deepEqual(violations, [], `${entry.name}: ${violations.join('; ')}`);
+    }
+  }
+});
+
+test('typed fixtures: the placeholder era is gone', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  for (const entry of doc.tools) {
+    for (const example of entry.examples) {
+      assert.notEqual(example.fixture_kind, 'shape_placeholder', `${entry.name}: placeholders are not acceptable positives`);
+      if (example.output === undefined) continue;
+      assert.ok(
+        !JSON.stringify(example.output).includes('<shape-placeholder>'),
+        `${entry.name}: no placeholder values may remain`,
+      );
+    }
+  }
+});
+
+test('generator: produces a contract-valid instance for every frozen schema', () => {
+  const schemas = fixture.frozenFacts.toolSchemas;
+  let generated = 0;
+  for (const [name, schema] of Object.entries(schemas)) {
+    const instance = generateInstance(schema.outputSchema, 'result');
+    assert.deepEqual(
+      validateAgainstSchema(schema.outputSchema, instance),
+      [],
+      `${name}: the generator must produce a conforming instance`,
+    );
+    generated += 1;
+  }
+  assert.equal(generated, 65);
 });

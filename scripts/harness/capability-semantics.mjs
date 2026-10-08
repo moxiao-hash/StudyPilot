@@ -47,6 +47,16 @@ class SemanticError extends Error {
   }
 }
 
+function isPlainObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+const IS_SHA256 = /^[0-9a-f]{64}$/;
+
 function fail(code, message) {
   throw new SemanticError(code, message);
 }
@@ -313,24 +323,77 @@ export function expectedConfirmation(tool, policy) {
  * manifest schema, which is not delivered yet, so they stay BLOCKED rather than
  * being asserted or silently skipped.
  */
-const SHAPE_PLACEHOLDER = '<shape-placeholder>';
+/**
+ * Validate a value against the subset of JSON Schema the Java output/input
+ * contracts actually use: `type` (string or a nullable type array), `properties`,
+ * `required`, `additionalProperties` and `items`. Returns a list of violations
+ * (empty means conforming). Anything the subset does not cover is reported as
+ * uncovered rather than silently accepted.
+ */
+export const SUPPORTED_SCHEMA_KEYWORDS = ['type', 'properties', 'required', 'additionalProperties', 'items'];
+const UNSUPPORTED_SCHEMA_KEYWORDS = ['oneOf', 'anyOf', 'allOf', 'enum', 'const', 'pattern', 'format', 'minimum', 'maximum', 'minItems', 'maxItems', 'uniqueItems'];
 
-/** Every leaf of a shape fixture must be the documented placeholder. */
-function assertPlaceholderLeaves(tool, value, path) {
+export function schemaUnsupportedKeywords(schema, path = '$', out = []) {
+  if (!schema || typeof schema !== 'object') return out;
+  if (Array.isArray(schema)) {
+    schema.forEach((item, index) => schemaUnsupportedKeywords(item, `${path}[${index}]`, out));
+    return out;
+  }
+  for (const key of Object.keys(schema)) {
+    if (!SUPPORTED_SCHEMA_KEYWORDS.includes(key)) out.push(`${path}.${key}`);
+  }
+  for (const [key, value] of Object.entries(schema.properties ?? {})) {
+    schemaUnsupportedKeywords(value, `${path}.properties.${key}`, out);
+  }
+  if (schema.items) schemaUnsupportedKeywords(schema.items, `${path}.items`, out);
+  return out;
+}
+
+function jsonTypeOf(value) {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  if (typeof value === 'number') return Number.isInteger(value) ? 'integer' : 'number';
+  if (typeof value === 'object') return 'object';
+  return typeof value;
+}
+
+export function validateAgainstSchema(schema, value, path = '$', violations = []) {
+  if (!schema || typeof schema !== 'object') return violations;
+  const declared = schema.type === undefined
+    ? null
+    : (Array.isArray(schema.type) ? schema.type : [schema.type]);
+  if (declared) {
+    const actual = jsonTypeOf(value);
+    const conforms = declared.includes(actual) || (actual === 'integer' && declared.includes('number'));
+    if (!conforms) {
+      violations.push(`${path}: expected ${declared.join('|')}, got ${actual}`);
+      return violations;
+    }
+  }
+  if (value === null) return violations;
   if (Array.isArray(value)) {
-    value.forEach((item, index) => assertPlaceholderLeaves(tool, item, `${path}[${index}]`));
-    return;
+    if (schema.items) {
+      value.forEach((item, index) => validateAgainstSchema(schema.items, item, `${path}[${index}]`, violations));
+    }
+    return violations;
   }
-  if (value && typeof value === 'object') {
-    for (const [key, child] of Object.entries(value)) assertPlaceholderLeaves(tool, child, `${path}.${key}`);
-    return;
+  if (typeof value === 'object') {
+    const properties = schema.properties ?? {};
+    for (const required of schema.required ?? []) {
+      if (!Object.prototype.hasOwnProperty.call(value, required)) {
+        violations.push(`${path}: missing required property "${required}"`);
+      }
+    }
+    if (schema.additionalProperties === false) {
+      for (const key of Object.keys(value)) {
+        if (!(key in properties)) violations.push(`${path}: undeclared property "${key}"`);
+      }
+    }
+    for (const [key, child] of Object.entries(value)) {
+      if (key in properties) validateAgainstSchema(properties[key], child, `${path}.${key}`, violations);
+    }
   }
-  if (value !== SHAPE_PLACEHOLDER) {
-    fail(
-      'E_OUTPUT_INSTANCE',
-      `${tool.name}: a shape_placeholder fixture must use "${SHAPE_PLACEHOLDER}" leaves, got ${JSON.stringify(value)} at ${path}`,
-    );
-  }
+  return violations;
 }
 
 export function checkExampleOutput(tool, output, fixtureKind, present = true) {
@@ -357,8 +420,14 @@ export function checkExampleOutput(tool, output, fixtureKind, present = true) {
   }
   const container = tool.outputContainer;
   const declared = new Set(tool.outputFields ?? []);
-  // A shape fixture must not smuggle real business values in as a "shape".
-  if (fixtureKind === 'shape_placeholder') assertPlaceholderLeaves(tool, output, 'output');
+  // The instance must actually satisfy the registered contract, not merely look
+  // shaped: this is what makes the placeholder era unacceptable as a positive.
+  if (tool.outputSchema) {
+    const violations = validateAgainstSchema(tool.outputSchema, output);
+    if (violations.length > 0) {
+      fail('E_SCHEMA_INSTANCE', `${tool.name}: output violates the registered output_schema: ${violations.slice(0, 4).join('; ')}`);
+    }
+  }
   if (container === 'array') {
     if (!Array.isArray(output)) {
       fail('E_OUTPUT_INSTANCE', `${tool.name}: output must be a JSON array`);
@@ -708,6 +777,30 @@ export function validateMetadata(doc, fixture, tools) {
   const byName = new Map();
   for (const tool of tools) byName.set(tool.name, tool);
   const navigation = fixture.frozenFacts.navigation;
+
+  // The typed fixtures are derived from the upstream descriptor export, so that
+  // provenance and the contracts themselves must be frozen, not inferred.
+  const provenance = fixture.frozenFacts.descriptorProvenance;
+  if (!isPlainObject(provenance)) {
+    fail('E_SCHEMA_INSTANCE', 'frozenFacts.descriptorProvenance is missing: the typed fixtures must record their source');
+  }
+  for (const field of ['artifact', 'artifactSha256', 'manifestSchema', 'manifestSchemaSha256', 'sourceCommit']) {
+    if (!isNonEmptyString(provenance[field])) {
+      fail('E_SCHEMA_INSTANCE', `frozenFacts.descriptorProvenance.${field} is required`);
+    }
+  }
+  for (const field of ['artifactSha256', 'manifestSchemaSha256']) {
+    if (!IS_SHA256.test(provenance[field])) {
+      fail('E_SCHEMA_INSTANCE', `frozenFacts.descriptorProvenance.${field} must be a sha256 digest`);
+    }
+  }
+  if (!/^[0-9a-f]{40}$/.test(provenance.sourceCommit)) {
+    fail('E_SCHEMA_INSTANCE', 'frozenFacts.descriptorProvenance.sourceCommit must be a full commit hash');
+  }
+  const toolSchemas = fixture.frozenFacts.toolSchemas;
+  if (!isPlainObject(toolSchemas) || Object.keys(toolSchemas).length === 0) {
+    fail('E_SCHEMA_INSTANCE', 'frozenFacts.toolSchemas is missing: the registered contracts must be frozen for offline validation');
+  }
   const all = [
     ...tools,
     {
@@ -725,6 +818,15 @@ export function validateMetadata(doc, fixture, tools) {
       routes: navigation.routes,
     },
   ];
+  for (const tool of all) {
+    const schemas = toolSchemas[tool.name];
+    if (schemas) {
+      tool.inputSchema = schemas.inputSchema;
+      tool.outputSchema = schemas.outputSchema;
+    } else {
+      fail('E_SCHEMA_INSTANCE', `${tool.name}: no frozen input/output schema is recorded`);
+    }
+  }
   const expectedNames = new Set(all.map((tool) => tool.name));
 
   if (!Array.isArray(doc.tools)) fail('E_REQUIRED_FIELD_MISSING', 'metadata.tools must be a sequence');
@@ -820,27 +922,24 @@ export function validateMetadata(doc, fixture, tools) {
       fail('E_REQUIRED_FIELD_MISSING', `${entry.name}: examples must be a non-empty list`);
     }
     const contractDefect = (fixture.defectOverrides?.items ?? []).find((item) => item.tool === entry.name);
+    // A tool with a verified defect has no success path, so it may not carry a
+    // successful example at all. Checked before the per-example loop so the
+    // reason is the defect, not a downstream kind mismatch.
+    if (contractDefect && entry.examples.some((example) => example?.outcome === 'ok')) {
+      fail(
+        'E_OUTPUT_INSTANCE',
+        `${entry.name}: a tool with verified defect ${contractDefect.defectId} must not claim a successful example`,
+      );
+    }
+
     for (const example of entry.examples) {
       const outcome = example?.outcome;
       if (!['ok', 'rejected', 'unavailable'].includes(outcome)) {
         fail('E_OUTPUT_INSTANCE', `${entry.name}: example outcome "${outcome}" must be ok|rejected|unavailable`);
       }
-      const FIXTURE_KINDS = ['shape_placeholder', 'rejection', 'contract_defect', 'nullable_empty'];
+      const FIXTURE_KINDS = ['synthetic_typed', 'rejection', 'contract_defect', 'nullable_empty'];
       if (!FIXTURE_KINDS.includes(example.fixture_kind)) {
         fail('E_OUTPUT_INSTANCE', `${entry.name}: example fixture_kind "${example.fixture_kind}" is not recognised`);
-      }
-      // An empty-state fixture is only meaningful where the registered output is
-      // actually nullable, and it must be an explicit null.
-      if (example.fixture_kind === 'nullable_empty') {
-        if (tool.nullableTopLevel !== true) {
-          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty used on a non-nullable output contract`);
-        }
-        if (!Object.prototype.hasOwnProperty.call(example, 'output') || example.output !== null) {
-          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty must declare an explicit null output`);
-        }
-        if (example.outcome !== 'ok') {
-          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty describes a valid empty state, so outcome must be ok`);
-        }
       }
       if (typeof example.fixture_source !== 'string' || !existsSync(join(REPO_ROOT, example.fixture_source))) {
         fail('E_OUTPUT_INSTANCE', `${entry.name}: example fixture_source must point at an existing file`);
@@ -848,7 +947,37 @@ export function validateMetadata(doc, fixture, tools) {
       if (typeof example.expect !== 'string' || example.expect.trim() === '') {
         fail('E_OUTPUT_INSTANCE', `${entry.name}: example expect is required`);
       }
+      // outcome and fixture_kind must agree: a schema-valid synthetic instance is
+      // the only acceptable positive, an explicit null only for a nullable
+      // contract, a rejection only for a provably illegal input, and a contract
+      // defect only where the tool genuinely has no success path.
+      const expectedKind = outcome === 'ok'
+        ? (example.fixture_kind === 'nullable_empty' ? 'nullable_empty' : 'synthetic_typed')
+        : (outcome === 'rejected' ? 'rejection' : 'contract_defect');
+      if (example.fixture_kind !== expectedKind) {
+        fail(
+          'E_SCHEMA_INSTANCE',
+          `${entry.name}: outcome "${outcome}" requires fixture_kind "${expectedKind}", got "${example.fixture_kind}"`,
+        );
+      }
+      if (example.fixture_kind === 'synthetic_typed'
+        && example.fixture_source !== 'scripts/harness/capability-semantics-instances.mjs') {
+        fail('E_SCHEMA_INSTANCE', `${entry.name}: a synthetic instance must name its generator as fixture_source`);
+      }
+      if (example.fixture_kind === 'nullable_empty') {
+        if (tool.nullableTopLevel !== true) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty used on a non-nullable output contract`);
+        }
+        if (!Object.prototype.hasOwnProperty.call(example, 'output') || example.output !== null) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty must declare an explicit null output`);
+        }
+        if (outcome !== 'ok') {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty describes a valid empty state, so outcome must be ok`);
+        }
+      }
 
+      // Input legality: our own derived checks give the specific cause, and the
+      // registered input_schema confirms it against the real contract.
       let inputError = null;
       try {
         checkExampleInput(tool, example.input);
@@ -856,14 +985,19 @@ export function validateMetadata(doc, fixture, tools) {
         if (!(error instanceof SemanticError)) throw error;
         inputError = error;
       }
+      const inputViolations = tool.inputSchema ? validateAgainstSchema(tool.inputSchema, example.input) : [];
+      const inputIllegal = Boolean(inputError) || inputViolations.length > 0;
 
       if (outcome === 'ok') {
         if (inputError) {
           // Propagate the specific cause (owner injection, route, params,
           // credentials) rather than flattening everything to a schema error.
+          fail(inputError.code, `${entry.name}: outcome "ok" but the input is illegal (${inputError.message})`);
+        }
+        if (inputViolations.length > 0) {
           fail(
-            inputError.code,
-            `${entry.name}: outcome "ok" but the input is illegal (${inputError.message})`,
+            'E_SCHEMA_INSTANCE',
+            `${entry.name}: input violates the registered input_schema: ${inputViolations.slice(0, 4).join('; ')}`,
           );
         }
         checkExampleOutput(tool, example.output, example.fixture_kind, Object.prototype.hasOwnProperty.call(example, 'output'));
@@ -871,7 +1005,7 @@ export function validateMetadata(doc, fixture, tools) {
           fail('E_OUTPUT_INSTANCE', `${entry.name}: an "ok" example must not declare an error`);
         }
       } else if (outcome === 'rejected') {
-        if (!inputError) {
+        if (!inputIllegal) {
           fail('E_OUTPUT_INSTANCE', `${entry.name}: outcome "rejected" but the input passes every rule`);
         }
         if (!example.error || typeof example.error.code !== 'string' || !example.error.message) {
@@ -882,31 +1016,16 @@ export function validateMetadata(doc, fixture, tools) {
         }
       } else {
         // unavailable: the input is legal but the tool cannot currently succeed.
-        if (inputError) {
-          fail(
-            'E_OUTPUT_INSTANCE',
-            `${entry.name}: outcome "unavailable" requires a legal input (${inputError.code})`,
-          );
+        if (inputIllegal) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: outcome "unavailable" requires a legal input`);
         }
         if (!contractDefect) {
           fail('E_OUTPUT_INSTANCE', `${entry.name}: outcome "unavailable" needs a frozen contract defect`);
-        }
-        if (example.fixture_kind !== 'contract_defect') {
-          fail('E_OUTPUT_INSTANCE', `${entry.name}: an unavailable example must be fixture_kind contract_defect`);
         }
         if (!example.error || typeof example.error.code !== 'string' || !example.error.message) {
           fail('E_OUTPUT_INSTANCE', `${entry.name}: an unavailable example must declare the real error`);
         }
         checkExampleOutput(tool, example.output, example.fixture_kind, Object.prototype.hasOwnProperty.call(example, 'output'));
-      }
-    }
-    if (contractDefect) {
-      const acceptable = entry.examples.filter((example) => example.outcome === 'ok');
-      if (acceptable.length > 0) {
-        fail(
-          'E_OUTPUT_INSTANCE',
-          `${entry.name}: a tool with verified defect ${contractDefect.defectId} must not claim a successful example`,
-        );
       }
     }
 
