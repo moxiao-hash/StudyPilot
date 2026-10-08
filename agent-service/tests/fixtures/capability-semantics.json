@@ -1,0 +1,2993 @@
+{
+  "fixtureVersion": "1.0.0",
+  "task": "H02",
+  "owner": "deepseek-harness",
+  "purpose": "H02 语义元数据的人工正反例。正例证明完整目录可被接受；反例逐条证明校验器真的能拒绝来源遗漏、无依据权威指标、伪造完成、用户专属行为错误授权与未实现工具。",
+  "evidenceLevel": "mock/offline",
+  "metadataContract": {
+    "file": "contracts/agent-capabilities/metadata.yaml",
+    "schemaOwner": "MiniMax",
+    "format": "受限 YAML 子集（缩进映射、序列、流式 {}/[]、纯量、引号、注释）。JSON 文档同样被接受，因为它是合法 YAML 子集。不使用锚点、块标量或多文档。",
+    "purpose": "只补充用途语义。Java descriptor 是 name/version/category/effect/riskLevel/requiredScope/idempotency/timeout/input_schema/output_schema 的唯一事实来源。",
+    "requiredToolKeys": [
+      "name",
+      "description",
+      "when_to_use",
+      "when_not_to_use",
+      "error_contract",
+      "cost_hint",
+      "exposure",
+      "confirmation",
+      "authoritative_facts",
+      "examples",
+      "source_provenance"
+    ],
+    "forbiddenToolKeys": [
+      "effect",
+      "riskLevel",
+      "risk_level",
+      "scope",
+      "requiredScope",
+      "required_scope",
+      "input_schema",
+      "output_schema",
+      "idempotency",
+      "idempotencyRequired",
+      "timeoutMillis",
+      "version",
+      "category"
+    ],
+    "forbiddenFieldReason": "这些是 Java descriptor 的事实；元数据重复或覆盖会造成两个真值来源。",
+    "forbiddenAnywhereKeys": [
+      "ownerId",
+      "owner_id",
+      "grant",
+      "grants",
+      "authorization",
+      "permissions",
+      "secret",
+      "apiKey",
+      "token"
+    ],
+    "forbiddenAnywhereReason": "模型不得指定 owner、不得自我扩权、不得携带凭据材料。"
+  },
+  "exposurePolicy": {
+    "note": "exposure 由 H02 shared 边界决定，不由 effect 或风险等级猜测。allowed 只表示满足后续权限与实现条件时可进入候选目录，不等于当前开通运行。",
+    "rules": [
+      {
+        "id": "writes_disabled_until_h11",
+        "when": "effect == WRITE",
+        "state": "disabled"
+      },
+      {
+        "id": "coding_runner_local_disabled",
+        "when": "category in [RUNNER, DEVELOPER]",
+        "state": "disabled"
+      },
+      {
+        "id": "navigation_readonly",
+        "when": "effect == NAVIGATE",
+        "state": "allowed"
+      },
+      {
+        "id": "read_only_business",
+        "when": "effect == READ and category not in [RUNNER, DEVELOPER]",
+        "state": "allowed"
+      }
+    ],
+    "reasonText": {
+      "writes_disabled_until_h11": "写操作在 H11 治理与确认链路验收前保持禁用；目录中登记不等于当前开通。",
+      "coding_runner_local_disabled": "coding / runner / 本地自动化默认禁用，产品 Agent 不开放终端或本机执行能力。",
+      "navigation_readonly": "导航只解析白名单 routeKey 与安全标识参数，返回确定性目标，无副作用。",
+      "read_only_business": "只读业务查询；owner 由 Java 登录态注入，事实以业务服务返回值为准。"
+    }
+  },
+  "confirmationPolicy": {
+    "note": "确认条件取自实际治理代码 AgentGovernanceService.createNewExecution，不由风险等级猜测。",
+    "source": "backend/src/main/java/com/moxiao/studypilot/agent/application/AgentGovernanceService.java",
+    "rule": {
+      "HIGH": {
+        "mode": "always_user_confirmation",
+        "waitingStatus": "WAITING_CONFIRMATION"
+      },
+      "LOW_ungranted": {
+        "mode": "conditional_scope_grant",
+        "waitingStatus": "WAITING_AUTHORIZATION"
+      },
+      "LOW_granted": {
+        "mode": "conditional_scope_grant",
+        "waitingStatus": "PENDING"
+      },
+      "NONE": {
+        "mode": "none",
+        "waitingStatus": null
+      }
+    },
+    "grantRule": "授权有效且 scope 集合包含 requiredScope 时才算已授权（AgentGrantEntity.includes）。",
+    "ttlMinutes": 15,
+    "leaseMinutes": 5,
+    "idempotency": "写工具必须提供幂等键；同 owner 同键但工具名或参数不同时拒绝；重复确认不重复执行。"
+  },
+  "redLines": {
+    "note": "来自 docs/agent-capability-matrix-v2.md §4 与 Java 事实。结构性检查只能验证边界被声明；边界表述是否充分仍需人工复核。",
+    "items": [
+      {
+        "id": "user_only_quiz_answering",
+        "tools": [
+          "assessment.quiz.get",
+          "assessment.node_quiz_status.get"
+        ],
+        "requireWhenNotToUseAnyOf": [
+          "代答",
+          "作答",
+          "答题"
+        ],
+        "why": "测验作答是掌握度检验的核心，必须由用户本人完成。",
+        "sentence": "不得用本工具代替用户作答或获取答案：测验作答必须由用户本人完成，本工具只提供题目与状态。"
+      },
+      {
+        "id": "user_only_checkin_summary",
+        "tools": [
+          "learning.task.update",
+          "learning.tasks.list"
+        ],
+        "requireWhenNotToUseAnyOf": [
+          "打卡",
+          "反思",
+          "总结"
+        ],
+        "why": "打卡总结与学习反思必须由用户独立思考并填写。",
+        "sentence": "不得用本工具代替用户编写或提交打卡、学习总结与反思：这些必须由用户独立思考并填写。"
+      },
+      {
+        "id": "user_only_artifact_acceptance",
+        "tools": [
+          "artifacts.submit",
+          "artifacts.evaluate"
+        ],
+        "requireWhenNotToUseAnyOf": [
+          "用户",
+          "验收",
+          "接受"
+        ],
+        "why": "AI Rubric 评分通过不等于节点完成，最终接受必须由用户亲自决定。",
+        "sentence": "AI Rubric 评分通过不等于节点完成；成果物的最终接受必须由用户本人在工作台确认，本工具不得代替用户验收。"
+      },
+      {
+        "id": "no_credential_plaintext",
+        "tools": [
+          "settings.ai_status.get"
+        ],
+        "requireWhenNotToUseAnyOf": [
+          "凭据",
+          "Key",
+          "密钥"
+        ],
+        "why": "模型不得读取或注入第三方服务密钥明文；读取只返回脱敏状态。",
+        "sentence": "不得读取、回显或注入第三方服务凭据/密钥明文；本工具只返回脱敏状态。"
+      },
+      {
+        "id": "no_self_grant_expansion",
+        "tools": [
+          "*"
+        ],
+        "requireWhenNotToUseAnyOf": [],
+        "why": "模型不得自行增加或修改自己的 Tool Grant 权限；metadata 中不得出现授权字段。"
+      }
+    ]
+  },
+  "positiveCases": [
+    {
+      "id": "P01",
+      "title": "完整目录被接受",
+      "expect": "metadata 的 wire name 集合与注册目录完全一致（64 个 descriptor 工具 + navigation.resolve = 65），每个都通过结构、事实、暴露、确认与示例校验。"
+    },
+    {
+      "id": "P02",
+      "title": "暴露分类符合 H02 边界",
+      "expect": "READ 业务与导航为 allowed；21 个 WRITE 与 RUNNER/DEVELOPER 平台工具为 disabled。"
+    },
+    {
+      "id": "P03",
+      "title": "示例符合真实 Java 输入 schema 且不含 ownerId",
+      "expect": "每个 examples[].input 只含已声明属性、包含全部 required、类型正确，且任何位置都不出现 ownerId。"
+    },
+    {
+      "id": "P04",
+      "title": "已核实缺陷的 READ 工具为 pending 而非 allowed",
+      "expect": "schedule.today.get、assessment.wrong_questions.list、governance.health.get、artifacts.evaluate 暴露为 pending，且原因各自写明真实失败条件。"
+    }
+  ],
+  "negativeCases": [
+    {
+      "id": "N01",
+      "intent": "来源遗漏",
+      "ops": [
+        {
+          "op": "remove_tool",
+          "tool": "assessment.mastery.list"
+        }
+      ],
+      "expectErrorCode": "E_COVERAGE_MISSING"
+    },
+    {
+      "id": "N02",
+      "intent": "重复 wire name",
+      "ops": [
+        {
+          "op": "duplicate_tool",
+          "tool": "learning.context.get"
+        }
+      ],
+      "expectErrorCode": "E_DUPLICATE_TOOL"
+    },
+    {
+      "id": "N03",
+      "intent": "未实现工具/伪造 wire name",
+      "ops": [
+        {
+          "op": "append_tool",
+          "value": {
+            "name": "studypilot.quiz.answer",
+            "description": "代用户提交测验答案",
+            "when_to_use": [
+              "用户想省事时"
+            ],
+            "when_not_to_use": [
+              "无"
+            ],
+            "error_contract": [
+              "无"
+            ],
+            "cost_hint": {
+              "local": true,
+              "notes": "无"
+            },
+            "exposure": {
+              "state": "allowed",
+              "reason": "便捷"
+            },
+            "confirmation": {
+              "mode": "none",
+              "waiting_status": null,
+              "notes": "无"
+            },
+            "authoritative_facts": [
+              {
+                "fact": "score",
+                "meaning": "分数"
+              }
+            ],
+            "examples": [
+              {
+                "name": "提交",
+                "input": {
+                  "quizId": "q-1"
+                },
+                "expect": "完成"
+              }
+            ],
+            "source_provenance": {
+              "registration": "n/a",
+              "handler": "n/a",
+              "output_schema": "n/a"
+            }
+          }
+        }
+      ],
+      "expectErrorCode": "E_COVERAGE_UNKNOWN"
+    },
+    {
+      "id": "N04",
+      "intent": "写操作错误开放/伪造完成",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "learning.task.update",
+          "field": "exposure.state",
+          "value": "allowed"
+        }
+      ],
+      "expectErrorCode": "E_EXPOSURE_POLICY"
+    },
+    {
+      "id": "N05",
+      "intent": "coding/runner 能力错误开放",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "runner.check.run",
+          "field": "exposure.state",
+          "value": "allowed"
+        }
+      ],
+      "expectErrorCode": "E_EXPOSURE_POLICY"
+    },
+    {
+      "id": "N06",
+      "intent": "元数据覆盖 Java 事实",
+      "ops": [
+        {
+          "op": "add_tool_field",
+          "tool": "assessment.mastery.list",
+          "field": "effect",
+          "value": "WRITE"
+        }
+      ],
+      "expectErrorCode": "E_JAVA_FACT_OVERRIDE"
+    },
+    {
+      "id": "N07",
+      "intent": "无依据权威指标",
+      "ops": [
+        {
+          "op": "push_tool_array",
+          "tool": "assessment.mastery.list",
+          "field": "authoritative_facts",
+          "value": {
+            "fact": "overallGpa",
+            "meaning": "模型自算的总 GPA"
+          }
+        }
+      ],
+      "expectErrorCode": "E_FABRICATED_FACT"
+    },
+    {
+      "id": "N08",
+      "intent": "非法示例：缺必填参数",
+      "ops": [
+        {
+          "op": "set_example_input",
+          "tool": "learning.plan.get",
+          "index": 0,
+          "value": {}
+        }
+      ],
+      "expectErrorCode": "E_EXAMPLE_SCHEMA"
+    },
+    {
+      "id": "N09",
+      "intent": "示例注入 owner",
+      "ops": [
+        {
+          "op": "set_example_input",
+          "tool": "learning.plan.get",
+          "index": 0,
+          "value": {
+            "planId": "p-1",
+            "ownerId": "u-2"
+          }
+        }
+      ],
+      "expectErrorCode": "E_OWNER_INJECTION"
+    },
+    {
+      "id": "N10",
+      "intent": "非法示例：类型错误",
+      "ops": [
+        {
+          "op": "set_example_input",
+          "tool": "learning.tasks.list",
+          "index": 0,
+          "value": {
+            "date": 20261009
+          }
+        }
+      ],
+      "expectErrorCode": "E_EXAMPLE_SCHEMA"
+    },
+    {
+      "id": "N11",
+      "intent": "绕过确认",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "learning.task.update",
+          "field": "confirmation.mode",
+          "value": "none"
+        }
+      ],
+      "expectErrorCode": "E_CONFIRMATION_POLICY"
+    },
+    {
+      "id": "N12",
+      "intent": "用风险等级猜确认条件",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "schedule.refresh",
+          "field": "confirmation.mode",
+          "value": "always_user_confirmation"
+        }
+      ],
+      "expectErrorCode": "E_CONFIRMATION_POLICY"
+    },
+    {
+      "id": "N13",
+      "intent": "用户专属行为边界未声明",
+      "ops": [
+        {
+          "op": "delete_tool_field",
+          "tool": "assessment.quiz.get",
+          "field": "when_not_to_use"
+        }
+      ],
+      "expectErrorCode": "E_REQUIRED_FIELD_MISSING"
+    },
+    {
+      "id": "N14",
+      "intent": "允许读取凭据明文",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "settings.ai_status.get",
+          "field": "when_not_to_use",
+          "value": [
+            "可以读取用户 API Key 明文用于排障"
+          ]
+        }
+      ],
+      "expectErrorCode": "E_REDLINE_CREDENTIAL"
+    },
+    {
+      "id": "N15",
+      "intent": "自我扩权字段",
+      "ops": [
+        {
+          "op": "add_tool_field",
+          "tool": "learning.task.update",
+          "field": "permissions",
+          "value": [
+            "*"
+          ]
+        }
+      ],
+      "expectErrorCode": "E_AUTHORIZATION_LEAK"
+    },
+    {
+      "id": "N16",
+      "intent": "把 AI 评分当成完成",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "artifacts.submit",
+          "field": "exposure.reason",
+          "value": "AI Rubric 通过即视为节点完成"
+        }
+      ],
+      "expectErrorCode": "E_FABRICATED_COMPLETION"
+    },
+    {
+      "id": "N17",
+      "intent": "套话代替语义（两工具描述完全相同）",
+      "ops": [
+        {
+          "op": "copy_tool_field",
+          "fromTool": "materials.list",
+          "toTool": "notifications.list",
+          "field": "description"
+        }
+      ],
+      "expectErrorCode": "E_MISSING_SEMANTICS"
+    },
+    {
+      "id": "N18",
+      "intent": "写工具缺少确认声明",
+      "ops": [
+        {
+          "op": "delete_tool_field",
+          "tool": "roadmap.enroll",
+          "field": "confirmation"
+        }
+      ],
+      "expectErrorCode": "E_REQUIRED_FIELD_MISSING"
+    },
+    {
+      "id": "N19",
+      "intent": "权威事实取自错误来源（字段属于别的工具）",
+      "ops": [
+        {
+          "op": "push_tool_array",
+          "tool": "notifications.list",
+          "field": "authoritative_facts",
+          "value": {
+            "fact": "knowledgePoint",
+            "meaning": "掌握度知识点"
+          }
+        }
+      ],
+      "expectErrorCode": "E_FABRICATED_FACT"
+    },
+    {
+      "id": "N20",
+      "intent": "手工重复 Java schema（禁止项）",
+      "ops": [
+        {
+          "op": "add_tool_field",
+          "tool": "learning.tasks.list",
+          "field": "input_schema",
+          "value": {
+            "type": "object"
+          }
+        }
+      ],
+      "expectErrorCode": "E_JAVA_FACT_OVERRIDE"
+    },
+    {
+      "id": "N21",
+      "intent": "来源出处指向不存在的文件",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "learning.plan.get",
+          "field": "source_provenance.registration",
+          "value": "backend/src/main/java/com/moxiao/studypilot/agent/tool/NoSuchFile.java#L1-L2"
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N22",
+      "intent": "来源出处行号与实际登记不符",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "learning.plan.get",
+          "field": "source_provenance.registration",
+          "value": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L1-L3"
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N23",
+      "intent": "来源出处虚构 handler 类",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "learning.plan.get",
+          "field": "source_provenance.handler",
+          "value": "ImaginaryService.list"
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N24",
+      "intent": "来源出处缺少 output_schema 指向",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "learning.plan.get",
+          "field": "source_provenance.output_schema",
+          "value": "docs/does-not-exist.java"
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N25",
+      "intent": "把已核实缺陷工具标为可用",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "schedule.today.get",
+          "field": "exposure.state",
+          "value": "allowed"
+        }
+      ],
+      "expectErrorCode": "E_EXPOSURE_POLICY"
+    },
+    {
+      "id": "N26",
+      "intent": "缺陷原因未写明真实失败条件",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "governance.health.get",
+          "field": "exposure.reason",
+          "value": "暂时不可用"
+        }
+      ],
+      "expectErrorCode": "E_EXPOSURE_POLICY"
+    },
+    {
+      "id": "N27",
+      "intent": "成本提示无依据地宣称存在外部依赖",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "notifications.mark_read",
+          "field": "cost_hint.local",
+          "value": false
+        }
+      ],
+      "expectErrorCode": "E_COST_HINT"
+    },
+    {
+      "id": "N28",
+      "intent": "同地声明却填了外部依赖",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "notifications.mark_read",
+          "field": "cost_hint.external_dependency",
+          "value": "某个服务"
+        }
+      ],
+      "expectErrorCode": "E_COST_HINT"
+    },
+    {
+      "id": "N29",
+      "intent": "外部依赖声明为空串",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "settings.ai_status.get",
+          "field": "cost_hint.external_dependency",
+          "value": ""
+        }
+      ],
+      "expectErrorCode": "E_COST_HINT"
+    }
+  ],
+  "frozenFacts": {
+    "extractor": "scripts/harness/capability-semantics-extract.mjs",
+    "extractorVersion": "1.0.0",
+    "capturedFrom": "本树 Java 源码静态提取（只读）。权威目录导出仍归 MiniMax 的 descriptor 导出；此块只用于漂移与覆盖交叉核对。",
+    "javaSourceDigests": {
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolRegistry.java": "1ea2322d5f8b7eee8e24caa3c11bde6c102d873176fffe10c063b293a0ec3d63",
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolDescriptor.java": "2282a6282e0faf71ef09fa1a65bdc847f688febd44f1d9896a84a3de17873e1e",
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java": "1b97d48b6f01e68858c9959d83aa47e4275e592d7f0045da616bb4fa628ea2fc",
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java": "54b18d719ff17e55c41371f24444ccbfc419056398f06ae4d4ab14f63c89f4b0",
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/NavigationToolHandler.java": "f131f4648e482a21f47abddf118d8182fb43b58c31e9c74637a39eb1cc4d2251",
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java": "5ddace53d7ce0ec08cdd86b5ad914a6ef6e00546afd3f8c06e2b3bcacb661d1c",
+      "backend/src/main/java/com/moxiao/studypilot/agent/application/AgentGovernanceService.java": "f00b90d5ae0de38221736d4f69bf92ca8f406bb7f9b02665cdb6f5a36cf95d28",
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolActionService.java": "5a2e91881cb3c03667c07362b8ba9b7f40204ebdc43a4b33ddbcc1145c4b1cc9",
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolEffect.java": "d99f8303ba34f45ffc9bd4a87650fe0f0801a79e7b8443335d1d176d3674e39d",
+      "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolRiskLevel.java": "269b370e11a5e3b997a5ef5b03b013b12eb4c78b38b21abe5c2e436a4e3fdf07",
+      "backend/src/main/java/com/moxiao/studypilot/agent/domain/AgentScope.java": "75475596de597c64781dcf93ac5f6475cd7dc1eeb48f733b292ee2110661250e",
+      "docs/agent-capability-matrix-v2.md": "7edb5005ce68ed81cd3993ff59ac4ba182f0ac481f816523ec3f061319d65dbb"
+    },
+    "toolCount": 65,
+    "descriptorToolCount": 64,
+    "byEffect": {
+      "READ": 43,
+      "WRITE": 21,
+      "NAVIGATE": 1,
+      "LOCAL": 0
+    },
+    "outputSchemasRegistered": 65,
+    "outputSchemasMissing": [],
+    "declaredScopes": [
+      "MATERIAL_PROCESSING",
+      "QUIZ_GENERATION",
+      "PLAN_GENERATION",
+      "TASK_MANAGEMENT",
+      "SMALL_PLAN_ADJUSTMENT",
+      "LARGE_PLAN_ADJUSTMENT",
+      "LEARNING_MANAGEMENT",
+      "SETTINGS_MANAGEMENT",
+      "NOTIFICATION_MANAGEMENT",
+      "WORKSPACE_MANAGEMENT",
+      "ARTIFACT_MANAGEMENT",
+      "ROADMAP_MANAGEMENT",
+      "RUNNER_MANAGEMENT",
+      "DEVELOPER_MANAGEMENT"
+    ],
+    "unusedScopes": [
+      "LARGE_PLAN_ADJUSTMENT"
+    ],
+    "governanceRule": {
+      "highRiskStatus": "WAITING_CONFIRMATION",
+      "ungrantedStatus": "WAITING_AUTHORIZATION",
+      "grantedStatus": "PENDING",
+      "scopeGrantActive": true,
+      "confirmationTtlMinutes": 15,
+      "leaseMinutes": 5
+    },
+    "navigation": {
+      "name": "navigation.resolve",
+      "category": "NAVIGATION",
+      "effect": "NAVIGATE",
+      "riskLevel": "NONE",
+      "routeCount": 28,
+      "routes": {
+        "DASHBOARD": [],
+        "ASSISTANT": [],
+        "ASSISTANT_HEALTH": [],
+        "ROADMAP": [],
+        "ROADMAP_STAGE": [
+          "stageId"
+        ],
+        "ROADMAP_MODULE": [
+          "moduleId"
+        ],
+        "ROADMAP_NODE": [
+          "nodeId"
+        ],
+        "LEARNING_GOALS": [],
+        "LEARNING_PLANS": [],
+        "LEARNING_PLAN": [
+          "planId"
+        ],
+        "COURSES": [],
+        "COURSE_DETAIL": [
+          "courseSlug"
+        ],
+        "LESSON": [
+          "lessonId"
+        ],
+        "TODAY": [],
+        "MATERIALS": [],
+        "MATERIAL_DETAIL": [
+          "materialId"
+        ],
+        "QUIZ": [
+          "quizId"
+        ],
+        "QUIZ_ATTEMPT": [
+          "attemptId"
+        ],
+        "WRONG_QUESTIONS": [],
+        "MASTERY": [],
+        "KNOWLEDGE": [],
+        "PLAN_ASSISTANT": [],
+        "TASK_ASSISTANT": [],
+        "AGENT_ACTIVITY": [],
+        "NOTIFICATIONS": [],
+        "LEARNING_SETTINGS": [],
+        "AI_SETTINGS": [],
+        "WORKSPACE_ARTIFACTS": []
+      },
+      "outputFields": [
+        "routeKey",
+        "params"
+      ]
+    },
+    "tools": [
+      {
+        "name": "artifacts.evaluate",
+        "category": "WORKSPACE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "artifactEvaluateTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 258,
+        "inputProperties": {
+          "artifactId": "string"
+        },
+        "inputRequired": [
+          "artifactId"
+        ],
+        "outputFields": [
+          "id",
+          "workspaceId",
+          "relativePath",
+          "canonicalPath",
+          "description",
+          "testEvidence",
+          "evaluationMode",
+          "status",
+          "submissionVersion",
+          "roadmapNode",
+          "reviewHistory",
+          "rubricScore",
+          "rubricFeedback",
+          "sensitiveScanPassed",
+          "sensitiveFindings",
+          "acceptedAt",
+          "createdAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "artifacts.get",
+        "category": "WORKSPACE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "artifactTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 266,
+        "inputProperties": {
+          "artifactId": "string"
+        },
+        "inputRequired": [
+          "artifactId"
+        ],
+        "outputFields": [
+          "id",
+          "workspaceId",
+          "relativePath",
+          "canonicalPath",
+          "description",
+          "testEvidence",
+          "evaluationMode",
+          "status",
+          "submissionVersion",
+          "roadmapNode",
+          "reviewHistory",
+          "rubricScore",
+          "rubricFeedback",
+          "sensitiveScanPassed",
+          "sensitiveFindings",
+          "acceptedAt",
+          "createdAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "artifacts.list",
+        "category": "WORKSPACE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "artifactsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 274,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "workspaceId",
+          "relativePath",
+          "canonicalPath",
+          "description",
+          "testEvidence",
+          "evaluationMode",
+          "status",
+          "submissionVersion",
+          "roadmapNode",
+          "reviewHistory",
+          "rubricScore",
+          "rubricFeedback",
+          "sensitiveScanPassed",
+          "sensitiveFindings",
+          "acceptedAt",
+          "createdAt"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "artifacts.submit",
+        "category": "WORKSPACE",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "ARTIFACT_MANAGEMENT",
+        "executionType": "ARTIFACT_SUBMISSION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "artifactSubmitTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 248,
+        "inputProperties": {
+          "workspaceId": "string",
+          "roadmapNodeId": "string",
+          "relativePath": "string",
+          "description": "string",
+          "testEvidence": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "roadmapNodeId",
+          "relativePath",
+          "description",
+          "testEvidence"
+        ],
+        "outputFields": [
+          "id",
+          "workspaceId",
+          "relativePath",
+          "canonicalPath",
+          "description",
+          "testEvidence",
+          "evaluationMode",
+          "status",
+          "submissionVersion",
+          "roadmapNode",
+          "reviewHistory",
+          "rubricScore",
+          "rubricFeedback",
+          "sensitiveScanPassed",
+          "sensitiveFindings",
+          "acceptedAt",
+          "createdAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.attempt.get",
+        "category": "ASSESSMENT",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "quizAttemptTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 176,
+        "inputProperties": {
+          "attemptId": "string"
+        },
+        "inputRequired": [
+          "attemptId"
+        ],
+        "outputFields": [
+          "id",
+          "quizId",
+          "score",
+          "status",
+          "warning",
+          "results",
+          "reviewProgress"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.mastery.list",
+        "category": "ASSESSMENT",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "masteryTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 184,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "knowledgePoint",
+          "score",
+          "quizScore",
+          "taskScore",
+          "selfAssessmentScore",
+          "evidenceCount",
+          "attemptCount",
+          "updatedAt"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.node_quiz.generate",
+        "category": "ASSESSMENT",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "QUIZ_GENERATION",
+        "executionType": "QUIZ_GENERATION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "roadmapQuizGenerateWriteTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 180,
+        "inputProperties": {
+          "nodeId": "string"
+        },
+        "inputRequired": [
+          "nodeId"
+        ],
+        "outputFields": [
+          "nodeId",
+          "status",
+          "quizId",
+          "latestAttemptId",
+          "generation"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.node_quiz.retry",
+        "category": "ASSESSMENT",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "QUIZ_GENERATION",
+        "executionType": "QUIZ_GENERATION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "roadmapQuizRetryWriteTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 165,
+        "inputProperties": {
+          "nodeId": "string"
+        },
+        "inputRequired": [
+          "nodeId"
+        ],
+        "outputFields": [
+          "nodeId",
+          "status",
+          "quizId",
+          "latestAttemptId",
+          "generation"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.node_quiz_status.get",
+        "category": "ASSESSMENT",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "nodeQuizStatusTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 157,
+        "inputProperties": {
+          "nodeId": "string"
+        },
+        "inputRequired": [
+          "nodeId"
+        ],
+        "outputFields": [
+          "nodeId",
+          "status",
+          "quizId",
+          "latestAttemptId",
+          "generation"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.quiz.get",
+        "category": "ASSESSMENT",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "quizTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 165,
+        "inputProperties": {
+          "quizId": "string"
+        },
+        "inputRequired": [
+          "quizId"
+        ],
+        "outputFields": [
+          "id",
+          "materialId",
+          "taskId",
+          "lessonId",
+          "kind",
+          "title",
+          "modelName",
+          "questions"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.wrong_question_review.create",
+        "category": "ASSESSMENT",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "QUIZ_GENERATION",
+        "executionType": "QUIZ_GENERATION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "wrongQuestionReviewWriteTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 150,
+        "inputProperties": {
+          "chapterKey": "string"
+        },
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "quizId",
+          "status",
+          "questionCount",
+          "remainingCount"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.wrong_questions.list",
+        "category": "ASSESSMENT",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "wrongQuestionsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 200,
+        "inputProperties": {
+          "status": "string",
+          "chapterKey": "string",
+          "page": "integer",
+          "size": "integer"
+        },
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "status",
+          "chapterKey",
+          "chapterTitle",
+          "type",
+          "difficulty",
+          "codingKind",
+          "language",
+          "knowledgePoint",
+          "questionText",
+          "options",
+          "latestSelectedAnswers",
+          "latestCodeAnswer",
+          "correctAnswers",
+          "referenceAnswer",
+          "explanation",
+          "sources",
+          "wrongCount",
+          "redoCount",
+          "firstWrongAt",
+          "lastWrongAt",
+          "masteredAt"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "assessment.wrong_questions.summary",
+        "category": "ASSESSMENT",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "wrongQuestionSummaryTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 193,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "activeCount",
+          "masteredCount",
+          "chapters",
+          "currentReview"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "automation.rules.list",
+        "category": "AUTOMATION",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "automationRulesTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 303,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "type",
+          "status",
+          "timezone",
+          "localTime",
+          "riskLevel",
+          "requiredScope",
+          "createdAt",
+          "updatedAt"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "automation.settings.get",
+        "category": "AUTOMATION",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "automationSettingsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 294,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "paused",
+          "updatedAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.code.search",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerCodeSearchTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 358,
+        "inputProperties": {
+          "workspaceId": "string",
+          "q": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "q"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "query",
+          "matches"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.file.read",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerFileReadTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 345,
+        "inputProperties": {
+          "workspaceId": "string",
+          "path": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "path"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "relativePath",
+          "content",
+          "sizeBytes",
+          "truncated"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.file_tree.get",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerFileTreeTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 334,
+        "inputProperties": {
+          "workspaceId": "string"
+        },
+        "inputRequired": [
+          "workspaceId"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "rootPath",
+          "entries"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.git.commit",
+        "category": "DEVELOPER",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "DEVELOPER_MANAGEMENT",
+        "executionType": "GIT_COMMIT",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "developerGitCommitTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 393,
+        "inputProperties": {
+          "workspaceId": "string",
+          "paths": "array",
+          "message": "string",
+          "expectedHead": "string",
+          "changeFingerprint": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "paths",
+          "message",
+          "expectedHead",
+          "changeFingerprint"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "commitId",
+          "message",
+          "paths",
+          "committedAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.git.commit.preview",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerGitCommitPreviewTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 431,
+        "inputProperties": {
+          "workspaceId": "string",
+          "paths": "array",
+          "message": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "paths",
+          "message"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "branch",
+          "expectedHead",
+          "changeFingerprint",
+          "paths",
+          "message"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.git.diff",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerGitDiffTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 382,
+        "inputProperties": {
+          "workspaceId": "string"
+        },
+        "inputRequired": [
+          "workspaceId"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "content",
+          "truncated"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.git.log",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerGitLogTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 393,
+        "inputProperties": {
+          "workspaceId": "string",
+          "limit": "integer"
+        },
+        "inputRequired": [
+          "workspaceId"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "content",
+          "truncated"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.git.push",
+        "category": "DEVELOPER",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "DEVELOPER_MANAGEMENT",
+        "executionType": "GIT_PUSH",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "developerGitPushTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 410,
+        "inputProperties": {
+          "workspaceId": "string",
+          "remoteName": "string",
+          "branch": "string",
+          "expectedHead": "string",
+          "remoteUrlDigest": "string",
+          "expectedRemoteRef": "string",
+          "expectedRemoteRefCommit": "string",
+          "timeoutSeconds": "integer"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "remoteName",
+          "branch",
+          "expectedHead",
+          "remoteUrlDigest",
+          "expectedRemoteRef",
+          "expectedRemoteRefCommit",
+          "timeoutSeconds"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "remoteName",
+          "branch",
+          "pushedCommit",
+          "pushedAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.git.push.preview",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerGitPushPreviewTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 444,
+        "inputProperties": {
+          "workspaceId": "string"
+        },
+        "inputRequired": [
+          "workspaceId"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "remoteName",
+          "remoteUrlDigest",
+          "branch",
+          "expectedHead",
+          "expectedRemoteRef",
+          "expectedRemoteRefCommit",
+          "aheadCount",
+          "timeoutSeconds"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.git.status",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerGitStatusTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 371,
+        "inputProperties": {
+          "workspaceId": "string"
+        },
+        "inputRequired": [
+          "workspaceId"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "gitRepository",
+          "branch",
+          "currentCommit",
+          "clean",
+          "modifiedFiles",
+          "untrackedFiles"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.interface_fallback.execute",
+        "category": "DEVELOPER",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "DEVELOPER_MANAGEMENT",
+        "executionType": "LOCAL_INTERFACE_AUTOMATION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "developerInterfaceFallbackExecuteTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 456,
+        "inputProperties": {
+          "businessApiAvailable": "boolean",
+          "channel": "string",
+          "actionKey": "string",
+          "targetKey": "string"
+        },
+        "inputRequired": [
+          "businessApiAvailable",
+          "channel",
+          "actionKey",
+          "targetKey"
+        ],
+        "outputFields": [
+          "channel",
+          "actionKey",
+          "targetKey",
+          "localAdapterInvoked",
+          "adapter",
+          "targetDigest",
+          "receiptStatus",
+          "startedAt",
+          "finishedAt",
+          "message"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.interface_fallback.preview",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerInterfaceFallbackPreviewTool",
+        "handlerServices": [
+          "policy"
+        ],
+        "registrationLine": 455,
+        "inputProperties": {
+          "businessApiAvailable": "boolean",
+          "channel": "string",
+          "actionKey": "string",
+          "targetKey": "string"
+        },
+        "inputRequired": [
+          "businessApiAvailable",
+          "channel",
+          "actionKey",
+          "targetKey"
+        ],
+        "outputFields": [
+          "channel",
+          "actionKey",
+          "targetKey",
+          "fallbackRequired",
+          "reason"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.patch.apply",
+        "category": "DEVELOPER",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "DEVELOPER_MANAGEMENT",
+        "executionType": "CODE_PATCH_APPLICATION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "developerPatchApplyTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 376,
+        "inputProperties": {
+          "workspaceId": "string",
+          "targetFile": "string",
+          "unifiedDiff": "string",
+          "expectedSha256": "string",
+          "explanation": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "targetFile",
+          "unifiedDiff",
+          "expectedSha256"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "targetFile",
+          "unifiedDiff",
+          "expectedSha256",
+          "resultSha256",
+          "conflict",
+          "conflictReason",
+          "affectedLines",
+          "safeToApply"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.patch.preview",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerPatchPreviewTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 405,
+        "inputProperties": {
+          "workspaceId": "string",
+          "targetFile": "string",
+          "diff": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "targetFile",
+          "diff"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "targetFile",
+          "unifiedDiff",
+          "expectedSha256",
+          "resultSha256",
+          "conflict",
+          "conflictReason",
+          "affectedLines",
+          "safeToApply"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "developer.tests.recommend",
+        "category": "DEVELOPER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "developerTestsRecommendTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 418,
+        "inputProperties": {
+          "workspaceId": "string",
+          "changedFiles": "array"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "changedFiles"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "templates",
+          "executions",
+          "templateType",
+          "workingDirectory",
+          "requiresDependencyPreparation",
+          "reasons"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "governance.audit.list",
+        "category": "GOVERNANCE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "auditLogsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 245,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "action",
+          "targetType",
+          "targetId",
+          "details",
+          "createdAt"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "governance.executions.list",
+        "category": "GOVERNANCE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "executionsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 238,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "idempotencyKey",
+          "executionType",
+          "triggerType",
+          "riskLevel",
+          "requiredScope",
+          "status",
+          "summary",
+          "resultSummary",
+          "errorMessage",
+          "modelName",
+          "promptTokens",
+          "completionTokens",
+          "latencyMs",
+          "estimatedCost",
+          "createdAt"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "governance.health.get",
+        "category": "GOVERNANCE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "assistantHealthTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 47,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "totalExecutions",
+          "successfulExecutions",
+          "failedExecutions",
+          "successRate",
+          "promptTokens",
+          "completionTokens",
+          "estimatedCost",
+          "averageLatencyMs",
+          "pendingConfirmations",
+          "costSamples",
+          "tokenSamples",
+          "latencySamples"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "learning.context.get",
+        "category": "CONTEXT",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "learningContextTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 55,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "generatedAt",
+          "learning",
+          "roadmap",
+          "wrongQuestions",
+          "unreadNotificationCount",
+          "pendingConfirmationCount",
+          "workspaces",
+          "warnings"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "learning.goal.create",
+        "category": "LEARNING",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "LEARNING_MANAGEMENT",
+        "executionType": "LEARNING_GOAL_CHANGE",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "learningGoalCreateTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 80,
+        "inputProperties": {
+          "title": "string",
+          "targetDate": "string",
+          "weeklyStudyHours": "integer"
+        },
+        "inputRequired": [
+          "title",
+          "targetDate",
+          "weeklyStudyHours"
+        ],
+        "outputFields": [
+          "id",
+          "title",
+          "targetDate",
+          "weeklyStudyHours",
+          "status"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "learning.goals.list",
+        "category": "LEARNING",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "learningGoalsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 61,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "title",
+          "targetDate",
+          "weeklyStudyHours",
+          "status"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "learning.plan.create",
+        "category": "LEARNING",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "PLAN_GENERATION",
+        "executionType": "PLAN_GENERATION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "learningPlanCreateTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 102,
+        "inputProperties": {
+          "goalId": "string",
+          "title": "string",
+          "startDate": "string",
+          "endDate": "string"
+        },
+        "inputRequired": [
+          "goalId",
+          "title",
+          "startDate",
+          "endDate"
+        ],
+        "outputFields": [
+          "id",
+          "goalId",
+          "title",
+          "startDate",
+          "endDate",
+          "status",
+          "version"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "learning.plan.get",
+        "category": "LEARNING",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "learningPlanTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 75,
+        "inputProperties": {
+          "planId": "string"
+        },
+        "inputRequired": [
+          "planId"
+        ],
+        "outputFields": [
+          "id",
+          "goalId",
+          "title",
+          "startDate",
+          "endDate",
+          "status",
+          "version"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "learning.plans.list",
+        "category": "LEARNING",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "learningPlansTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 68,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "goalId",
+          "title",
+          "startDate",
+          "endDate",
+          "status",
+          "version"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "learning.task.update",
+        "category": "LEARNING",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "TASK_MANAGEMENT",
+        "executionType": "TASK_STATUS_CHANGE",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "taskStatusWriteTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 129,
+        "inputProperties": {
+          "taskId": "string",
+          "expectedVersion": "integer",
+          "status": "string",
+          "scheduledDate": "string",
+          "reason": "string",
+          "actualMinutes": "integer"
+        },
+        "inputRequired": [
+          "taskId",
+          "expectedVersion",
+          "status"
+        ],
+        "outputFields": [
+          "id",
+          "planId",
+          "title",
+          "scheduledDate",
+          "estimatedMinutes",
+          "status",
+          "version",
+          "completedAt",
+          "actualMinutes",
+          "taskKind",
+          "knowledgePoint",
+          "sourceAttemptId"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "learning.tasks.list",
+        "category": "LEARNING",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "learningTasksTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 83,
+        "inputProperties": {
+          "date": "string"
+        },
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "planId",
+          "title",
+          "scheduledDate",
+          "estimatedMinutes",
+          "status",
+          "version",
+          "completedAt",
+          "actualMinutes",
+          "taskKind",
+          "knowledgePoint",
+          "sourceAttemptId"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "materials.get",
+        "category": "MATERIAL",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "materialTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 223,
+        "inputProperties": {
+          "materialId": "string"
+        },
+        "inputRequired": [
+          "materialId"
+        ],
+        "outputFields": [
+          "id",
+          "title",
+          "materialType",
+          "category",
+          "privacyLevel",
+          "sourceUrl",
+          "originalFilename",
+          "mediaType",
+          "contentLength",
+          "processingStatus",
+          "summary",
+          "tags",
+          "knowledgePoints",
+          "processingWarnings",
+          "contentReference",
+          "failureReason"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "materials.list",
+        "category": "MATERIAL",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "materialsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 216,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "title",
+          "materialType",
+          "category",
+          "privacyLevel",
+          "sourceUrl",
+          "originalFilename",
+          "mediaType",
+          "contentLength",
+          "processingStatus",
+          "summary",
+          "tags",
+          "knowledgePoints",
+          "processingWarnings",
+          "contentReference",
+          "failureReason"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "materials.text.import",
+        "category": "MATERIAL",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "MATERIAL_PROCESSING",
+        "executionType": "MATERIAL_PROCESSING",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "textMaterialImportWriteTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 270,
+        "inputProperties": {
+          "title": "string",
+          "content": "string",
+          "category": "string",
+          "privacyLevel": "string"
+        },
+        "inputRequired": [
+          "title",
+          "content",
+          "category",
+          "privacyLevel"
+        ],
+        "outputFields": [
+          "id",
+          "title",
+          "materialType",
+          "category",
+          "privacyLevel",
+          "sourceUrl",
+          "originalFilename",
+          "mediaType",
+          "contentLength",
+          "processingStatus",
+          "summary",
+          "tags",
+          "knowledgePoints",
+          "processingWarnings",
+          "contentReference",
+          "failureReason"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "materials.web.import",
+        "category": "MATERIAL",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "MATERIAL_PROCESSING",
+        "executionType": "MATERIAL_PROCESSING",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "webMaterialImportWriteTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 287,
+        "inputProperties": {
+          "title": "string",
+          "sourceUrl": "string",
+          "category": "string",
+          "privacyLevel": "string"
+        },
+        "inputRequired": [
+          "title",
+          "sourceUrl",
+          "category",
+          "privacyLevel"
+        ],
+        "outputFields": [
+          "id",
+          "title",
+          "materialType",
+          "category",
+          "privacyLevel",
+          "sourceUrl",
+          "originalFilename",
+          "mediaType",
+          "contentLength",
+          "processingStatus",
+          "summary",
+          "tags",
+          "knowledgePoints",
+          "processingWarnings",
+          "contentReference",
+          "failureReason"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "notifications.list",
+        "category": "NOTIFICATION",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "notificationsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 231,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "type",
+          "title",
+          "content",
+          "read",
+          "createdAt",
+          "readAt"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "notifications.mark_read",
+        "category": "NOTIFICATION",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "NOTIFICATION_MANAGEMENT",
+        "executionType": "NOTIFICATION_CHANGE",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "notificationMarkReadTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 194,
+        "inputProperties": {
+          "notificationId": "string"
+        },
+        "inputRequired": [
+          "notificationId"
+        ],
+        "outputFields": [
+          "id",
+          "type",
+          "title",
+          "content",
+          "read",
+          "createdAt",
+          "readAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "roadmap.current.get",
+        "category": "ROADMAP",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "roadmapCurrentTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 92,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "enrollmentId",
+          "roadmapCode",
+          "templateVersion",
+          "title",
+          "completedRequiredNodes",
+          "totalRequiredNodes",
+          "stages"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": true
+      },
+      {
+        "name": "roadmap.enroll",
+        "category": "ROADMAP",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "ROADMAP_MANAGEMENT",
+        "executionType": "ROADMAP_CHANGE",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "roadmapEnrollTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 54,
+        "inputProperties": {
+          "roadmapCode": "string",
+          "templateVersion": "integer"
+        },
+        "inputRequired": [
+          "roadmapCode",
+          "templateVersion"
+        ],
+        "outputFields": [
+          "id",
+          "roadmapCode",
+          "templateVersion",
+          "title",
+          "status",
+          "enrolledAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "roadmap.module.get",
+        "category": "ROADMAP",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "roadmapModuleTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 107,
+        "inputProperties": {
+          "moduleId": "string"
+        },
+        "inputRequired": [
+          "moduleId"
+        ],
+        "outputFields": [
+          "id",
+          "stageId",
+          "code",
+          "order",
+          "title",
+          "description",
+          "completedRequiredNodes",
+          "totalRequiredNodes",
+          "displayStatus",
+          "milestoneNode",
+          "nodes"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "roadmap.node.get",
+        "category": "ROADMAP",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "roadmapNodeTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 115,
+        "inputProperties": {
+          "nodeId": "string"
+        },
+        "inputRequired": [
+          "nodeId"
+        ],
+        "outputFields": [
+          "id",
+          "code",
+          "order",
+          "title",
+          "objectives",
+          "highFrequency",
+          "commonMistakes",
+          "searchKeywords",
+          "estimatedMinutes",
+          "practiceMinutes",
+          "difficulty",
+          "required",
+          "prerequisiteCodes",
+          "availabilityStatus",
+          "learningStatus",
+          "checkInStatus",
+          "quizStatus",
+          "artifactStatus",
+          "completionStatus",
+          "diagnosticMastered",
+          "displayStatus",
+          "version"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "roadmap.stage.get",
+        "category": "ROADMAP",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "roadmapStageTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 99,
+        "inputProperties": {
+          "stageId": "string"
+        },
+        "inputRequired": [
+          "stageId"
+        ],
+        "outputFields": [
+          "id",
+          "code",
+          "order",
+          "title",
+          "description",
+          "graduationProjectTitle",
+          "completedRequiredNodes",
+          "totalRequiredNodes",
+          "modules",
+          "nodes"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "roadmap.upgrade",
+        "category": "ROADMAP",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "ROADMAP_MANAGEMENT",
+        "executionType": "ROADMAP_CHANGE",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "roadmapUpgradeTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 67,
+        "inputProperties": {
+          "upgradeId": "string"
+        },
+        "inputRequired": [
+          "upgradeId"
+        ],
+        "outputFields": [
+          "id",
+          "sourceVersion",
+          "targetVersion",
+          "status",
+          "unchangedNodeCodes",
+          "addedNodeCodes",
+          "removedNodeCodes",
+          "manualReviewNodeCodes",
+          "addedModuleCount",
+          "removedModuleCount",
+          "changedModuleCount"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "runner.check.run",
+        "category": "RUNNER",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "RUNNER_MANAGEMENT",
+        "executionType": "RUNNER_EXECUTION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "runnerCheckRunTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 306,
+        "inputProperties": {
+          "workspaceId": "string",
+          "templateType": "string",
+          "idempotencyKey": "string",
+          "workingDirectory": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "templateType"
+        ],
+        "outputFields": [
+          "executionId",
+          "governanceExecutionId",
+          "workspaceId",
+          "templateType",
+          "status",
+          "exitCode",
+          "commandTokens",
+          "stdoutSummary",
+          "stderrSummary",
+          "success",
+          "durationMillis",
+          "executedAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "runner.dependencies.prepare",
+        "category": "RUNNER",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "RUNNER_MANAGEMENT",
+        "executionType": "RUNNER_EXECUTION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "runnerDependenciesPrepareTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 329,
+        "inputProperties": {
+          "workspaceId": "string",
+          "templateType": "string",
+          "idempotencyKey": "string",
+          "workingDirectory": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "templateType"
+        ],
+        "outputFields": [
+          "executionId",
+          "governanceExecutionId",
+          "workspaceId",
+          "templateType",
+          "status",
+          "exitCode",
+          "commandTokens",
+          "stdoutSummary",
+          "stderrSummary",
+          "success",
+          "durationMillis",
+          "executedAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "runner.execution.preview",
+        "category": "RUNNER",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "runnerExecutionPreviewTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 314,
+        "inputProperties": {
+          "workspaceId": "string",
+          "templateType": "string",
+          "idempotencyKey": "string",
+          "workingDirectory": "string"
+        },
+        "inputRequired": [
+          "workspaceId",
+          "templateType",
+          "idempotencyKey"
+        ],
+        "outputFields": [
+          "workspaceId",
+          "workspaceName",
+          "workspacePath",
+          "templateType",
+          "templateDescription",
+          "riskLevel",
+          "commandTokens",
+          "renderedCommand",
+          "timeoutSeconds",
+          "confirmationRequired",
+          "explanation",
+          "workingDirectory"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "schedule.refresh",
+        "category": "SCHEDULE",
+        "effect": "WRITE",
+        "riskLevel": "LOW",
+        "requiredScope": "SMALL_PLAN_ADJUSTMENT",
+        "executionType": "PLAN_ADJUSTMENT",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "scheduleRefreshTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 116,
+        "inputProperties": {
+          "from": "string",
+          "to": "string"
+        },
+        "inputRequired": [
+          "from",
+          "to"
+        ],
+        "outputFields": [
+          "scheduleId",
+          "timeZone",
+          "dailyCapacityMinutes",
+          "weekendsEnabled",
+          "days"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "schedule.today.get",
+        "category": "SCHEDULE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "todayScheduleTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 123,
+        "inputProperties": {
+          "date": "string"
+        },
+        "inputRequired": [
+          "date"
+        ],
+        "outputFields": [
+          "scheduleId",
+          "timeZone",
+          "dailyCapacityMinutes",
+          "weekendsEnabled",
+          "days"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "schedule.unfinished.get",
+        "category": "SCHEDULE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "unfinishedScheduleTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 133,
+        "inputProperties": {
+          "from": "string",
+          "to": "string"
+        },
+        "inputRequired": [
+          "from",
+          "to"
+        ],
+        "outputFields": [
+          "date",
+          "nodeId",
+          "title",
+          "status"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "settings.ai_status.get",
+        "category": "SETTINGS",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "aiSettingsStatusTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 286,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "modelProvider",
+          "modelName",
+          "deepseek",
+          "tavily",
+          "deepseekConfigured",
+          "deepseekMaskedSuffix",
+          "tavilyConfigured",
+          "tavilyMaskedSuffix",
+          "warning"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "settings.learning.get",
+        "category": "SETTINGS",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "learningSettingsTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 280,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "timeZone",
+          "dailyStudyLimitMinutes",
+          "weekendPreference",
+          "defaultPrivacyLevel",
+          "weeklyAvailability"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "settings.learning.update",
+        "category": "SETTINGS",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "SETTINGS_MANAGEMENT",
+        "executionType": "USER_SETTINGS_CHANGE",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "learningSettingsUpdateTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 208,
+        "inputProperties": {
+          "dailyStudyLimitMinutes": "integer"
+        },
+        "inputRequired": [
+          "dailyStudyLimitMinutes"
+        ],
+        "outputFields": [
+          "timeZone",
+          "dailyStudyLimitMinutes",
+          "weekendPreference",
+          "defaultPrivacyLevel",
+          "weeklyAvailability"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "workspaces.list",
+        "category": "WORKSPACE",
+        "effect": "READ",
+        "riskLevel": "NONE",
+        "requiredScope": null,
+        "executionType": null,
+        "idempotencyRequired": false,
+        "timeoutMillis": 15000,
+        "beanMethod": "workspacesTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 252,
+        "inputProperties": {},
+        "inputRequired": [],
+        "outputFields": [
+          "id",
+          "name",
+          "rootPath",
+          "status",
+          "createdAt"
+        ],
+        "outputContainer": "array",
+        "nullableTopLevel": false
+      },
+      {
+        "name": "workspaces.register",
+        "category": "WORKSPACE",
+        "effect": "WRITE",
+        "riskLevel": "HIGH",
+        "requiredScope": "WORKSPACE_MANAGEMENT",
+        "executionType": "WORKSPACE_REGISTRATION",
+        "idempotencyRequired": true,
+        "timeoutMillis": 120000,
+        "beanMethod": "workspaceRegisterTool",
+        "handlerServices": [
+          "service"
+        ],
+        "registrationLine": 234,
+        "inputProperties": {
+          "name": "string",
+          "rootPath": "string"
+        },
+        "inputRequired": [
+          "name",
+          "rootPath"
+        ],
+        "outputFields": [
+          "id",
+          "name",
+          "rootPath",
+          "status",
+          "createdAt"
+        ],
+        "outputContainer": "object",
+        "nullableTopLevel": false
+      }
+    ]
+  },
+  "defectOverrides": {
+    "note": "本端在真实 handler 代码中核实到的基线缺陷。这些工具已注册并实现，但当前无法满足其声明契约，因此不满足 shared 中 allowed 的“实现条件”，必须以 pending 暴露并写明原因，而不是按 READ 一律 allowed。缺陷属 Java 侧实现/契约不一致，修复归 Java Owner，本端只登记事实与证据。",
+    "items": [
+      {
+        "tool": "schedule.today.get",
+        "state": "pending",
+        "defectId": "D1",
+        "reasonMustContain": [
+          "连续七天"
+        ],
+        "evidence": "AgentReadToolConfiguration.java#L123-L128 以 getOrCreate(ownerId, date, date) 调用，start==end；RoadmapScheduleService.validateWindow L317-L320 要求 end == start+6，故恒定抛 IllegalArgumentException(\"路线日程必须是包含首尾日期的连续七天\")。且 getOrCreate 为 @Transactional，成功路径会惰性创建/刷新排期行，不是纯只读。"
+      },
+      {
+        "tool": "assessment.wrong_questions.list",
+        "state": "pending",
+        "defectId": "D2",
+        "reasonMustContain": [
+          "WrongQuestionPageResponse"
+        ],
+        "evidence": "AgentToolOutputSchemas.java#L379 登记为 array(WRONG_QUESTION)，但 WrongQuestionService.list L143 返回 WrongQuestionPageResponse{items,totalElements,page,size}（record 定义 L5-L10）。AgentToolRegistry.invoke L82 在调用边界强校验输出，数组期望与对象实际不一致 → 恒定失败。"
+      },
+      {
+        "tool": "governance.health.get",
+        "state": "pending",
+        "defectId": "D3",
+        "reasonMustContain": [
+          "AssistantHealthResponse"
+        ],
+        "evidence": "AgentToolOutputSchemas.java#L132-L137 登记 HEALTH 共 12 个字段且闭合；AssistantHealthService.summarize L47 返回 AssistantHealthResponse，含 modelCalls/failedModelCalls/modelFailureRate/model*Tokens/unknownPriceCalls/usageEstimatedCost/currency/priceStatus/priceVersion 等约 29 个组件。AgentToolOutputValidator L83-L89 对未声明字段抛“存在未声明的输出字段” → 恒定失败。"
+      },
+      {
+        "tool": "artifacts.evaluate",
+        "state": "pending",
+        "defectId": "D4",
+        "reasonMustContain": [
+          "Rubric"
+        ],
+        "evidence": "RoadmapArtifactService.evaluate L278-L283 在属主校验后无条件抛 ConflictException(\"真实 DeepSeek Rubric 评审尚未接入…\")，agent 路径无法返回结果，也不调用模型。真实 AI Rubric 在 REST 侧 ArtifactReviewService，Agent 工具触达不到。"
+      }
+    ]
+  }
+}
