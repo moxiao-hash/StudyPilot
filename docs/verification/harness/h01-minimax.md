@@ -154,7 +154,8 @@ Secret 全链路策略（H04/H05/H07）、跨进程真实顺序与投递（H03 �
 只提交本轮所有权文件（见 §1）；不含 `backend/**`、`ai-service/**`、`web/**`、
 共享计划/交接/基线文件或 Obsidian。**未 push**。
 
-commit：`<见 READY_FOR_CODEX 回执>`（本地）
+commit：`793039940e3ee0364f65d179811aaf0044454d32`（`feat(contracts): add H01 agent runtime contract draft with offline validation`，本地、未 push）
+基线：`f7311079a83b84c5e7f3a9076ce4efccb3044c86`
 
 复跑命令：
 
