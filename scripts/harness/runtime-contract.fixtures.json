@@ -1,0 +1,1873 @@
+{
+  "note": "H01 Runtime 契约离线实例。有效实例必须通过；无效实例必须被 schema 或 INVARIANT_* 规则拒绝。规则名用于断言，不是对外协议。",
+  "validMessages": [
+    {
+      "name": "request.open.create",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-open-create-0001",
+        "operation": "open",
+        "openMode": "create",
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.create",
+            "agent.read"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.open.resume",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-open-resume-0001",
+        "operation": "open",
+        "openMode": "resume",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.resume"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.prompt",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-prompt-0001",
+        "operation": "prompt",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "prompt": {
+          "messageId": "msg-000000000001",
+          "content": "继续昨天没学完的章节"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.prompt"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.subscribe",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-subscribe-0001",
+        "operation": "subscribe",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "subscribeFrom": 0,
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.subscribe"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.respond",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-respond-0001",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000001",
+          "kind": "question",
+          "questionId": "q-000000000001",
+          "answer": "两天"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.respond.confirmation",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-respond-conf-0001",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "actionId": "act-000000000001",
+          "decision": "CONFIRM",
+          "confirmed": true,
+          "expectedVersion": 1
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.cancel",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-cancel-0001",
+        "operation": "cancel",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "cancelReason": "user",
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.turn.cancel"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.close",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-close-0001",
+        "operation": "close",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.close"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "response.accepted",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "response",
+        "requestId": "req-prompt-0001",
+        "status": "ACCEPTED",
+        "session": {
+          "sessionId": "sess-000000000001"
+        },
+        "turn": {
+          "turnId": "turn-000000000001"
+        }
+      }
+    },
+    {
+      "name": "response.noop.close.already-closed",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "response",
+        "requestId": "req-close-0001",
+        "status": "NO_OP",
+        "session": {
+          "sessionId": "sess-000000000001"
+        }
+      }
+    },
+    {
+      "name": "response.rejected.sequence-expired",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "response",
+        "requestId": "req-subscribe-0001",
+        "status": "REJECTED",
+        "error": {
+          "code": "SEQUENCE_EXPIRED",
+          "message": "请求的事件序号已超出保留窗口，请改用快照重建",
+          "retryable": false
+        }
+      }
+    },
+    {
+      "name": "event.session-opened",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000001",
+        "sequence": 1,
+        "sessionId": "sess-000000000001",
+        "type": "SESSION_OPENED",
+        "occurredAt": "2026-10-08T00:00:00Z",
+        "payload": {
+          "configVersion": "cfg-000001"
+        }
+      }
+    },
+    {
+      "name": "event.turn-finished.completed",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000006",
+        "sequence": 5,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "TURN_FINISHED",
+        "occurredAt": "2026-10-08T00:00:05Z",
+        "payload": {
+          "endReason": "COMPLETED",
+          "ok": true,
+          "usage": {
+            "inputTokens": 900,
+            "outputTokens": 210,
+            "costMicros": 1800
+          }
+        }
+      }
+    },
+    {
+      "name": "event.turn-finished.max-tokens.is-not-success",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000007",
+        "sequence": 6,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "TURN_FINISHED",
+        "occurredAt": "2026-10-08T00:00:06Z",
+        "payload": {
+          "endReason": "MAX_TOKENS",
+          "ok": false
+        }
+      }
+    },
+    {
+      "name": "event.call-started.preserves-dotted-tool-name",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000003",
+        "sequence": 2,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "callId": "call-000000000001",
+        "type": "CALL_STARTED",
+        "occurredAt": "2026-10-08T00:00:02Z",
+        "payload": {
+          "toolName": "roadmap.current.get"
+        }
+      }
+    },
+    {
+      "name": "event.call-finished.pending-is-not-success",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000004",
+        "sequence": 3,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "callId": "call-000000000001",
+        "type": "CALL_FINISHED",
+        "occurredAt": "2026-10-08T00:00:03Z",
+        "payload": {
+          "status": "PENDING"
+        }
+      }
+    },
+    {
+      "name": "event.call-finished.enriched",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000025",
+        "sequence": 4,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "callId": "call-000000000001",
+        "type": "CALL_FINISHED",
+        "occurredAt": "2026-10-08T00:00:04Z",
+        "payload": {
+          "status": "SUCCEEDED",
+          "summary": "已获取当前路线结构",
+          "truncated": true,
+          "originalBytes": 19432,
+          "resultPreview": {
+            "summary": "12 阶段 / 125 节点",
+            "recordCount": 125
+          }
+        }
+      }
+    },
+    {
+      "name": "event.interaction-required.question",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-intr-q-0001",
+        "sequence": 4,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "INTERACTION_REQUIRED",
+        "occurredAt": "2026-10-08T00:00:04Z",
+        "payload": {
+          "interactionId": "intr-000000000001",
+          "kind": "question",
+          "question": {
+            "questionId": "q-000000000001",
+            "prompt": "选择哪一个路线？",
+            "text": "选择哪一个路线？",
+            "options": [
+              "路线 A",
+              "路线 B"
+            ],
+            "selectionMode": "single"
+          }
+        }
+      }
+    },
+    {
+      "name": "event.interaction-required.confirmation",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000005",
+        "sequence": 4,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "INTERACTION_REQUIRED",
+        "occurredAt": "2026-10-08T00:00:04Z",
+        "payload": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "confirmation": {
+            "executionId": "exec-000000000001",
+            "actionId": "act-000000000001",
+            "toolName": "roadmap.enroll",
+            "summary": "确认加入路线 studypilot-java-ai",
+            "expectedVersion": 1,
+            "riskLevel": "HIGH",
+            "expiresAt": "2026-10-08T00:15:00Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "event.usage-reported",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000008",
+        "sequence": 7,
+        "sessionId": "sess-000000000001",
+        "type": "USAGE_REPORTED",
+        "occurredAt": "2026-10-08T00:00:07Z",
+        "payload": {
+          "inputTokens": 900,
+          "outputTokens": 210
+        }
+      }
+    },
+    {
+      "name": "request.create.without-session-ref",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-create-0001",
+        "operation": "create",
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.create"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.steer",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-steer-0001",
+        "operation": "steer",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "steer": {
+          "content": "改成两天完成"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.turn.steer"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.resume.with-session-ref",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resume-0001",
+        "operation": "resume",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.resume"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "event.assistant-delta",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000021",
+        "sequence": 8,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "ASSISTANT_DELTA",
+        "occurredAt": "2026-10-08T00:00:08Z",
+        "payload": {
+          "content": "你当前路线"
+        }
+      }
+    },
+    {
+      "name": "event.session-closed",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-000000000022",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "type": "SESSION_CLOSED",
+        "occurredAt": "2026-10-08T00:00:09Z"
+      }
+    },
+    {
+      "name": "event.progress",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-prog-0001",
+        "sequence": 2,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "PROGRESS",
+        "occurredAt": "2026-10-08T00:00:02Z",
+        "payload": {
+          "kind": "CONTEXT_LOADED",
+          "stage": "context-retrieval",
+          "description": "已读取学习路线与任务上下文",
+          "step": 1,
+          "totalSteps": 3,
+          "details": {
+            "contextType": "LEARNING_CONTEXT",
+            "summary": "用户当前进度 4/123"
+          }
+        }
+      }
+    },
+    {
+      "name": "event.ui-action",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-ui-0001",
+        "sequence": 5,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "UI_ACTION",
+        "occurredAt": "2026-10-08T00:00:05Z",
+        "payload": {
+          "actionId": "act-ui-00000001",
+          "actionType": "NAVIGATE",
+          "routeKey": "ROADMAP_NODE",
+          "params": {
+            "nodeId": "node-java-001"
+          }
+        }
+      }
+    },
+    {
+      "name": "request.respond.confirmation.without-confirmed",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-respond-conf-opt-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "actionId": "act-000000000001",
+          "expectedVersion": 1,
+          "decision": "CONFIRM"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "request.respond.confirmation.reject.without-confirmed",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-respond-conf-opt-02",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "actionId": "act-000000000001",
+          "expectedVersion": 1,
+          "decision": "REJECT"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    }
+  ],
+  "validScenarios": [
+    {
+      "name": "scenario.happy-path.completed",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000001",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "type": "SESSION_OPENED",
+          "occurredAt": "2026-10-08T00:00:00Z",
+          "payload": {
+            "configVersion": "cfg-000001"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000002",
+          "sequence": 2,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_STARTED",
+          "occurredAt": "2026-10-08T00:00:01Z"
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000003",
+          "sequence": 3,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "callId": "call-000000000001",
+          "type": "CALL_STARTED",
+          "occurredAt": "2026-10-08T00:00:02Z",
+          "payload": {
+            "toolName": "roadmap.current.get"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000004",
+          "sequence": 4,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "callId": "call-000000000001",
+          "type": "CALL_FINISHED",
+          "occurredAt": "2026-10-08T00:00:03Z",
+          "payload": {
+            "status": "SUCCEEDED"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000005",
+          "sequence": 5,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "ASSISTANT_MESSAGE",
+          "occurredAt": "2026-10-08T00:00:04Z",
+          "payload": {
+            "content": "你当前路线已完成 4/123 个必修节点。"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000006",
+          "sequence": 6,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_FINISHED",
+          "occurredAt": "2026-10-08T00:00:05Z",
+          "payload": {
+            "endReason": "COMPLETED",
+            "ok": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "scenario.budget-exhausted.not-success",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000011",
+          "sequence": 1,
+          "sessionId": "sess-000000000002",
+          "type": "SESSION_OPENED",
+          "occurredAt": "2026-10-08T01:00:00Z",
+          "payload": {
+            "configVersion": "cfg-000002"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000012",
+          "sequence": 2,
+          "sessionId": "sess-000000000002",
+          "turnId": "turn-000000000002",
+          "type": "TURN_STARTED",
+          "occurredAt": "2026-10-08T01:00:01Z"
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000013",
+          "sequence": 3,
+          "sessionId": "sess-000000000002",
+          "turnId": "turn-000000000002",
+          "type": "ERROR",
+          "occurredAt": "2026-10-08T01:00:02Z",
+          "payload": {
+            "code": "BUDGET_EXHAUSTED",
+            "message": "本次预算已耗尽，请等待额度刷新",
+            "retryable": false
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-000000000014",
+          "sequence": 4,
+          "sessionId": "sess-000000000002",
+          "turnId": "turn-000000000002",
+          "type": "TURN_FINISHED",
+          "occurredAt": "2026-10-08T01:00:03Z",
+          "payload": {
+            "endReason": "BUDGET_EXHAUSTED",
+            "ok": false
+          }
+        }
+      ]
+    }
+  ],
+  "invalidMessages": [
+    {
+      "name": "invalid.extra-root-field",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-extra-0001",
+        "operation": "close",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.close"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        },
+        "unexpectedField": true
+      }
+    },
+    {
+      "name": "invalid.secret-in-payload",
+      "rule": "INVARIANT_FORBIDDEN_FIELD",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-secret-0001",
+        "operation": "prompt",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "prompt": {
+          "messageId": "msg-000000000001",
+          "content": "hi",
+          "apiKey": "sk-should-never-appear"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.prompt"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.client-supplied-owner-id",
+      "rule": "INVARIANT_FORBIDDEN_FIELD",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-owner-0001",
+        "operation": "prompt",
+        "ownerId": "user-supplied-owner",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "prompt": {
+          "messageId": "msg-000000000001",
+          "content": "hi"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.prompt"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.wrong-protocol-version",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "2.0-draft",
+        "kind": "response",
+        "requestId": "req-prompt-0001",
+        "status": "ACCEPTED"
+      }
+    },
+    {
+      "name": "invalid.unknown-operation",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-unknown-0001",
+        "operation": "shutdown",
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.close"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.prompt-without-session-ref",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-prompt-nosession",
+        "operation": "prompt",
+        "prompt": {
+          "messageId": "msg-000000000001",
+          "content": "hi"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.prompt"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.open-without-open-mode",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-open-nomode",
+        "operation": "open",
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.create"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.subscribe-without-from-sequence",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-subscribe-nofrom",
+        "operation": "subscribe",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.subscribe"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-payload-belongs-to-another-operation",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-respond-mismatch",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "subscribeFrom": 3,
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.sequence-as-string",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-bad-seq",
+        "sequence": "3",
+        "sessionId": "sess-000000000001",
+        "type": "USAGE_REPORTED",
+        "occurredAt": "2026-10-08T00:00:07Z",
+        "payload": {
+          "inputTokens": 1,
+          "outputTokens": 1
+        }
+      }
+    },
+    {
+      "name": "invalid.subject-ref-with-spaces",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-badsubj-0001",
+        "operation": "close",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "identity": {
+          "subjectRef": "subject ref with spaces",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.close"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.timestamp-not-utc-z",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-bad-time",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "type": "USAGE_REPORTED",
+        "occurredAt": "2026-10-08T08:00:00+08:00",
+        "payload": {
+          "inputTokens": 1,
+          "outputTokens": 1
+        }
+      }
+    },
+    {
+      "name": "invalid.turn-finished-without-end-reason",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-noreason",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "TURN_FINISHED",
+        "occurredAt": "2026-10-08T00:00:09Z",
+        "payload": {
+          "ok": true
+        }
+      }
+    },
+    {
+      "name": "invalid.turn-finished-unknown-end-reason",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-badreason",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "TURN_FINISHED",
+        "occurredAt": "2026-10-08T00:00:09Z",
+        "payload": {
+          "endReason": "TIMEOUT_OK",
+          "ok": true
+        }
+      }
+    },
+    {
+      "name": "invalid.event-missing-required-turn-id",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-noturn",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "type": "ASSISTANT_MESSAGE",
+        "occurredAt": "2026-10-08T00:00:09Z",
+        "payload": {
+          "content": "缺少 turnId"
+        }
+      }
+    },
+    {
+      "name": "invalid.event-type-payload-mismatch",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-mismatch",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "CALL_STARTED",
+        "occurredAt": "2026-10-08T00:00:09Z",
+        "payload": {
+          "status": "SUCCEEDED"
+        }
+      }
+    },
+    {
+      "name": "invalid.max-tokens-reported-as-success",
+      "rule": "INVARIANT_TERMINAL_OK",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-fake-ok",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "TURN_FINISHED",
+        "occurredAt": "2026-10-08T00:00:09Z",
+        "payload": {
+          "endReason": "MAX_TOKENS",
+          "ok": true
+        }
+      }
+    },
+    {
+      "name": "invalid.budget-exhausted-reported-as-success",
+      "rule": "INVARIANT_TERMINAL_OK",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-fake-ok-2",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "TURN_FINISHED",
+        "occurredAt": "2026-10-08T00:00:09Z",
+        "payload": {
+          "endReason": "BUDGET_EXHAUSTED",
+          "ok": true
+        }
+      }
+    },
+    {
+      "name": "invalid.completed-reported-as-failure",
+      "rule": "INVARIANT_TERMINAL_OK",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-fake-notok",
+        "sequence": 9,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "TURN_FINISHED",
+        "occurredAt": "2026-10-08T00:00:09Z",
+        "payload": {
+          "endReason": "COMPLETED",
+          "ok": false
+        }
+      }
+    },
+    {
+      "name": "invalid.rejected-response-without-error",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "response",
+        "requestId": "req-prompt-0001",
+        "status": "REJECTED"
+      }
+    },
+    {
+      "name": "invalid.accepted-response-carrying-error",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "response",
+        "requestId": "req-prompt-0001",
+        "status": "ACCEPTED",
+        "error": {
+          "code": "CONFLICT",
+          "message": "不应同时出现",
+          "retryable": false
+        }
+      }
+    },
+    {
+      "name": "invalid.identity-scopes-not-unique",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-dupscope-0001",
+        "operation": "close",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.session.close",
+            "agent.session.close"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.sequence-zero",
+      "rule": "INVARIANT_SEQUENCE_START",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-bad-seq-zero",
+        "sequence": 0,
+        "sessionId": "sess-000000000001",
+        "type": "SESSION_OPENED",
+        "occurredAt": "2026-10-08T00:00:00Z",
+        "payload": {
+          "configVersion": "cfg-000001"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-confirmation-with-text-only",
+      "rule": "INVARIANT_TYPED_RESPOND",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-respond-bad-0001",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000001",
+          "kind": "confirmation",
+          "actionId": "act-000000000001"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.interaction-question-without-text-or-prompt",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-intr-bad-0001",
+        "sequence": 1,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "INTERACTION_REQUIRED",
+        "occurredAt": "2026-10-08T00:00:01Z",
+        "payload": {
+          "interactionId": "intr-000000000001",
+          "kind": "question",
+          "question": {
+            "options": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "invalid.interaction-confirmation-without-action-id",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-intr-bad-0002",
+        "sequence": 1,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "INTERACTION_REQUIRED",
+        "occurredAt": "2026-10-08T00:00:01Z",
+        "payload": {
+          "interactionId": "intr-000000000001",
+          "kind": "confirmation",
+          "confirmation": {
+            "executionId": "exec-000000000001",
+            "toolName": "roadmap.enroll",
+            "summary": "确认",
+            "riskLevel": "HIGH",
+            "expiresAt": "2026-10-08T00:15:00Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "invalid.ui-action-with-arbitrary-url",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-ui-bad-0001",
+        "sequence": 1,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "UI_ACTION",
+        "occurredAt": "2026-10-08T00:00:01Z",
+        "payload": {
+          "actionId": "act-ui-00000001",
+          "actionType": "NAVIGATE",
+          "url": "https://evil.example.com"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-confirmation-decision-confirmed-conflict",
+      "rule": "INVARIANT_TYPED_RESPOND",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-conflict-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "actionId": "act-000000000001",
+          "expectedVersion": 1,
+          "decision": "CONFIRM",
+          "confirmed": false
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-untyped-without-kind",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-untyped-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000001",
+          "answer": "我确认"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-confirmation-missing-expected-version",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-nover-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "actionId": "act-000000000001",
+          "decision": "CONFIRM"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-question-missing-question-id",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-noqid-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000001",
+          "kind": "question",
+          "answer": "两天"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.confirmation-card-missing-expected-version",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-conf-nover-01",
+        "sequence": 1,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "INTERACTION_REQUIRED",
+        "occurredAt": "2026-10-08T00:00:01Z",
+        "payload": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "confirmation": {
+            "executionId": "exec-000000000001",
+            "actionId": "act-000000000001",
+            "toolName": "roadmap.enroll",
+            "summary": "确认",
+            "riskLevel": "HIGH",
+            "expiresAt": "2026-10-08T00:15:00Z"
+          }
+        }
+      }
+    },
+    {
+      "name": "invalid.question-card-missing-question-id",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-q-noqid-01",
+        "sequence": 1,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "INTERACTION_REQUIRED",
+        "occurredAt": "2026-10-08T00:00:01Z",
+        "payload": {
+          "interactionId": "intr-000000000001",
+          "kind": "question",
+          "question": {
+            "prompt": "选择路线？",
+            "options": [
+              "A",
+              "B"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-confirmation-reject-conflict",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-conflict-02",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "actionId": "act-000000000001",
+          "expectedVersion": 1,
+          "decision": "REJECT",
+          "confirmed": true
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    }
+  ],
+  "invalidScenarios": [
+    {
+      "name": "invalid.scenario.sequence-regression",
+      "rule": "INVARIANT_SEQUENCE_MONOTONIC",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-seq-a",
+          "sequence": 0,
+          "sessionId": "sess-000000000001",
+          "type": "SESSION_OPENED",
+          "occurredAt": "2026-10-08T00:00:00Z",
+          "payload": {
+            "configVersion": "cfg-000001"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-seq-b",
+          "sequence": 0,
+          "sessionId": "sess-000000000001",
+          "type": "USAGE_REPORTED",
+          "occurredAt": "2026-10-08T00:00:01Z",
+          "payload": {
+            "inputTokens": 1,
+            "outputTokens": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.turn-finished-twice",
+      "rule": "INVARIANT_TURN_TERMINAL_ONCE",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-fin-a",
+          "sequence": 0,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_FINISHED",
+          "occurredAt": "2026-10-08T00:00:00Z",
+          "payload": {
+            "endReason": "COMPLETED",
+            "ok": true
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-fin-b",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_FINISHED",
+          "occurredAt": "2026-10-08T00:00:01Z",
+          "payload": {
+            "endReason": "FAILED",
+            "ok": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.event-after-terminal",
+      "rule": "INVARIANT_EVENT_AFTER_TERMINAL",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-after-a",
+          "sequence": 0,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_FINISHED",
+          "occurredAt": "2026-10-08T00:00:00Z",
+          "payload": {
+            "endReason": "CANCELLED",
+            "ok": false
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-after-b",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "ASSISTANT_MESSAGE",
+          "occurredAt": "2026-10-08T00:00:01Z",
+          "payload": {
+            "content": "终态之后不应再有本轮事件"
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.config-version-changes-mid-session",
+      "rule": "INVARIANT_CONFIG_IMMUTABLE",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-cfg-a",
+          "sequence": 0,
+          "sessionId": "sess-000000000001",
+          "type": "SESSION_OPENED",
+          "occurredAt": "2026-10-08T00:00:00Z",
+          "payload": {
+            "configVersion": "cfg-000001"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-cfg-b",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "type": "SESSION_OPENED",
+          "occurredAt": "2026-10-08T00:00:01Z",
+          "payload": {
+            "configVersion": "cfg-000002"
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.mixed-session-ids",
+      "rule": "INVARIANT_SESSION_CONSISTENT",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-mix-a",
+          "sequence": 0,
+          "sessionId": "sess-000000000001",
+          "type": "SESSION_OPENED",
+          "occurredAt": "2026-10-08T00:00:00Z",
+          "payload": {
+            "configVersion": "cfg-000001"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-mix-b",
+          "sequence": 1,
+          "sessionId": "sess-000000000002",
+          "type": "USAGE_REPORTED",
+          "occurredAt": "2026-10-08T00:00:01Z",
+          "payload": {
+            "inputTokens": 1,
+            "outputTokens": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.call-before-turn-started",
+      "rule": "INVARIANT_CALL_WITHIN_TURN",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-call-a",
+          "sequence": 0,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "callId": "call-000000000001",
+          "type": "CALL_STARTED",
+          "occurredAt": "2026-10-08T00:00:00Z",
+          "payload": {
+            "toolName": "roadmap.current.get"
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.terminal-without-started",
+      "rule": "INVARIANT_TERMINAL_WITHOUT_START",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-term-nostart-01",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_FINISHED",
+          "occurredAt": "2026-10-08T00:00:01Z",
+          "payload": {
+            "endReason": "COMPLETED",
+            "ok": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.duplicate-turn-started",
+      "rule": "INVARIANT_DUPLICATE_TURN_START",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-start-dup-01",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_STARTED",
+          "occurredAt": "2026-10-08T00:00:01Z"
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-start-dup-02",
+          "sequence": 2,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_STARTED",
+          "occurredAt": "2026-10-08T00:00:02Z"
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.call-finished-without-started",
+      "rule": "INVARIANT_CALL_WITHOUT_START",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-call-orphan-01",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_STARTED",
+          "occurredAt": "2026-10-08T00:00:01Z"
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-call-orphan-02",
+          "sequence": 2,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "callId": "call-orphan-0001",
+          "type": "CALL_FINISHED",
+          "occurredAt": "2026-10-08T00:00:02Z",
+          "payload": {
+            "status": "SUCCEEDED"
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.duplicate-call-started",
+      "rule": "INVARIANT_DUPLICATE_CALL_START",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-calldup-01",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_STARTED",
+          "occurredAt": "2026-10-08T00:00:01Z"
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-calldup-02",
+          "sequence": 2,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "callId": "call-000000000001",
+          "type": "CALL_STARTED",
+          "occurredAt": "2026-10-08T00:00:02Z",
+          "payload": {
+            "toolName": "roadmap.current.get"
+          }
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-calldup-03",
+          "sequence": 3,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "callId": "call-000000000001",
+          "type": "CALL_STARTED",
+          "occurredAt": "2026-10-08T00:00:03Z",
+          "payload": {
+            "toolName": "roadmap.current.get"
+          }
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.event-after-session-closed",
+      "rule": "INVARIANT_EVENT_AFTER_SESSION_CLOSED",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-closed-01",
+          "sequence": 1,
+          "sessionId": "sess-000000000001",
+          "type": "SESSION_CLOSED",
+          "occurredAt": "2026-10-08T00:00:01Z"
+        },
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-closed-02",
+          "sequence": 2,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_STARTED",
+          "occurredAt": "2026-10-08T00:00:02Z"
+        }
+      ]
+    },
+    {
+      "name": "invalid.scenario.partial-replay-without-snapshot",
+      "rule": "INVARIANT_SNAPSHOT_REQUIRED",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-part-nosnap-01",
+          "sequence": 5,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_FINISHED",
+          "occurredAt": "2026-10-08T00:00:05Z",
+          "payload": {
+            "endReason": "COMPLETED",
+            "ok": true
+          }
+        }
+      ],
+      "options": {
+        "isPartialReplay": true
+      }
+    }
+  ]
+}

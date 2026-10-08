@@ -1,0 +1,2189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://studypilot.local/contracts/agent-runtime/runtime.schema.json",
+  "title": "StudyPilot Agent Runtime Contract (H01 draft)",
+  "description": "H01 草案，待 Codex 冻结。定义 Agent Service 与 Java/Vue 之间的 Runtime 请求、响应与事件形状。字段中不包含模型 Secret，也不接受客户端自报的 owner 授权；owner 由 Java 签发的身份凭据在服务端解析。null 一律用互斥分支表达，不使用 type:[T,\"null\"] 类型数组（Harness 不支持）。",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/request.open"
+    },
+    {
+      "$ref": "#/$defs/request.create"
+    },
+    {
+      "$ref": "#/$defs/request.resume"
+    },
+    {
+      "$ref": "#/$defs/request.prompt"
+    },
+    {
+      "$ref": "#/$defs/request.cancel"
+    },
+    {
+      "$ref": "#/$defs/request.steer"
+    },
+    {
+      "$ref": "#/$defs/request.respond"
+    },
+    {
+      "$ref": "#/$defs/request.subscribe"
+    },
+    {
+      "$ref": "#/$defs/request.close"
+    },
+    {
+      "$ref": "#/$defs/response.accepted"
+    },
+    {
+      "$ref": "#/$defs/response.noop"
+    },
+    {
+      "$ref": "#/$defs/response.rejected"
+    },
+    {
+      "$ref": "#/$defs/event.sessionOpened"
+    },
+    {
+      "$ref": "#/$defs/event.sessionClosed"
+    },
+    {
+      "$ref": "#/$defs/event.turnStarted"
+    },
+    {
+      "$ref": "#/$defs/event.turnFinished"
+    },
+    {
+      "$ref": "#/$defs/event.callStarted"
+    },
+    {
+      "$ref": "#/$defs/event.callFinished"
+    },
+    {
+      "$ref": "#/$defs/event.assistantDelta"
+    },
+    {
+      "$ref": "#/$defs/event.assistantMessage"
+    },
+    {
+      "$ref": "#/$defs/event.interactionRequired"
+    },
+    {
+      "$ref": "#/$defs/event.usageReported"
+    },
+    {
+      "$ref": "#/$defs/event.error"
+    },
+    {
+      "$ref": "#/$defs/event.progress"
+    },
+    {
+      "$ref": "#/$defs/event.uiAction"
+    }
+  ],
+  "$defs": {
+    "protocolVersion": {
+      "const": "1.0-draft"
+    },
+    "opaqueRef": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{7,127}$",
+      "description": "不透明标识；不得承载 Secret、路径或用户可读凭据。"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^sess-[A-Za-z0-9][A-Za-z0-9_.:-]{3,127}$"
+    },
+    "turnId": {
+      "type": "string",
+      "pattern": "^turn-[A-Za-z0-9][A-Za-z0-9_.:-]{3,127}$"
+    },
+    "callId": {
+      "type": "string",
+      "pattern": "^call-[A-Za-z0-9][A-Za-z0-9_.:-]{3,127}$"
+    },
+    "configVersion": {
+      "type": "string",
+      "pattern": "^cfg-[A-Za-z0-9][A-Za-z0-9_.:-]{2,63}$",
+      "description": "Agent 配置版本；同一会话内不可变（见 README 跨消息约束）。"
+    },
+    "utcInstant": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$",
+      "description": "规范 UTC 瞬时，必须以 Z 结尾。"
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.:-]{1,63}$"
+    },
+    "toolName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9_]+)*$",
+      "description": "沿用 Java 冻结的 wire 名称，包含点号形式（例如 roadmap.current.get）。"
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "identityAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subjectRef",
+        "issuer",
+        "audience",
+        "scopes",
+        "issuedAt",
+        "expiresAt"
+      ],
+      "description": "Java 签发的身份断言。不含 ownerId、不含 Secret；owner 由服务端据此解析，客户端不能自行声明。",
+      "properties": {
+        "subjectRef": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "issuer": {
+          "const": "studypilot-java"
+        },
+        "audience": {
+          "const": "studypilot-agent-service"
+        },
+        "scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/scope"
+          }
+        },
+        "issuedAt": {
+          "$ref": "#/$defs/utcInstant"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/utcInstant"
+        }
+      }
+    },
+    "sessionRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sessionId",
+        "configVersion"
+      ],
+      "properties": {
+        "sessionId": {
+          "$ref": "#/$defs/sessionId"
+        },
+        "configVersion": {
+          "$ref": "#/$defs/configVersion"
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputTokens",
+        "outputTokens"
+      ],
+      "properties": {
+        "inputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "costMicros": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "endReason": {
+      "enum": [
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED",
+        "BUDGET_EXHAUSTED",
+        "MAX_TOKENS",
+        "CAPABILITY_DENIED"
+      ],
+      "description": "统一结束原因。只有 COMPLETED 是成功；MAX_TOKENS/BUDGET_EXHAUSTED/CANCELLED/CAPABILITY_DENIED/FAILED 都不是完成。"
+    },
+    "errorCode": {
+      "enum": [
+        "INVALID_REQUEST",
+        "UNSUPPORTED_VERSION",
+        "UNAUTHENTICATED",
+        "FORBIDDEN_SCOPE",
+        "NOT_FOUND",
+        "CONFLICT",
+        "SEQUENCE_OUT_OF_RANGE",
+        "SEQUENCE_EXPIRED",
+        "ALREADY_SETTLED",
+        "CAPABILITY_DENIED",
+        "BUDGET_EXHAUSTED",
+        "UPSTREAM_FAILED",
+        "INTERNAL_ERROR"
+      ]
+    },
+    "runtimeError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/errorCode"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "operation": {
+      "enum": [
+        "open",
+        "create",
+        "resume",
+        "prompt",
+        "cancel",
+        "steer",
+        "respond",
+        "subscribe",
+        "close"
+      ]
+    },
+    "requestEnvelope": {
+      "type": "object",
+      "required": [
+        "protocolVersion",
+        "kind",
+        "requestId",
+        "operation",
+        "identity"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/protocolVersion"
+        },
+        "kind": {
+          "const": "request"
+        },
+        "requestId": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "operation": {
+          "$ref": "#/$defs/operation"
+        },
+        "identity": {
+          "$ref": "#/$defs/identityAssertion"
+        },
+        "sessionRef": {
+          "$ref": "#/$defs/sessionRef"
+        },
+        "openMode": {
+          "enum": [
+            "create",
+            "resume"
+          ]
+        },
+        "prompt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "messageId",
+            "content"
+          ],
+          "properties": {
+            "messageId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "content": {
+              "$ref": "#/$defs/content"
+            }
+          }
+        },
+        "subscribeFrom": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "respondTo": {
+          "$ref": "#/$defs/typedRespondTo"
+        },
+        "steer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "content"
+          ],
+          "properties": {
+            "content": {
+              "$ref": "#/$defs/content"
+            }
+          }
+        },
+        "cancelReason": {
+          "enum": [
+            "user",
+            "timeout",
+            "shutdown"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "request.open": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "open"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            },
+            "sessionRef": {
+              "$ref": "#/$defs/sessionRef"
+            },
+            "openMode": {
+              "enum": [
+                "create",
+                "resume"
+              ]
+            }
+          },
+          "required": [
+            "openMode"
+          ]
+        }
+      ]
+    },
+    "request.create": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "create"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            }
+          },
+          "not": {
+            "required": [
+              "sessionRef"
+            ]
+          }
+        }
+      ]
+    },
+    "request.resume": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "resume"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            },
+            "sessionRef": {
+              "$ref": "#/$defs/sessionRef"
+            }
+          },
+          "required": [
+            "sessionRef"
+          ]
+        }
+      ]
+    },
+    "request.prompt": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "prompt"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            },
+            "sessionRef": {
+              "$ref": "#/$defs/sessionRef"
+            },
+            "prompt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "messageId",
+                "content"
+              ],
+              "properties": {
+                "messageId": {
+                  "$ref": "#/$defs/opaqueRef"
+                },
+                "content": {
+                  "$ref": "#/$defs/content"
+                }
+              }
+            }
+          },
+          "required": [
+            "sessionRef",
+            "prompt"
+          ]
+        }
+      ]
+    },
+    "request.cancel": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "cancel"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            },
+            "sessionRef": {
+              "$ref": "#/$defs/sessionRef"
+            },
+            "cancelReason": {
+              "enum": [
+                "user",
+                "timeout",
+                "shutdown"
+              ]
+            }
+          },
+          "required": [
+            "sessionRef"
+          ]
+        }
+      ]
+    },
+    "request.steer": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "steer"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            },
+            "sessionRef": {
+              "$ref": "#/$defs/sessionRef"
+            },
+            "steer": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "content"
+              ],
+              "properties": {
+                "content": {
+                  "$ref": "#/$defs/content"
+                }
+              }
+            }
+          },
+          "required": [
+            "sessionRef",
+            "steer"
+          ]
+        }
+      ]
+    },
+    "request.respond": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "respond"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            },
+            "sessionRef": {
+              "$ref": "#/$defs/sessionRef"
+            },
+            "respondTo": {
+              "$ref": "#/$defs/typedRespondTo"
+            }
+          },
+          "required": [
+            "sessionRef",
+            "respondTo"
+          ],
+          "not": {
+            "required": [
+              "subscribeFrom"
+            ]
+          }
+        }
+      ]
+    },
+    "request.subscribe": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "subscribe"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            },
+            "sessionRef": {
+              "$ref": "#/$defs/sessionRef"
+            },
+            "subscribeFrom": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "sessionRef",
+            "subscribeFrom"
+          ]
+        }
+      ]
+    },
+    "request.close": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/requestEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "request"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "operation": {
+              "const": "close"
+            },
+            "identity": {
+              "$ref": "#/$defs/identityAssertion"
+            },
+            "sessionRef": {
+              "$ref": "#/$defs/sessionRef"
+            }
+          },
+          "required": [
+            "sessionRef"
+          ]
+        }
+      ]
+    },
+    "responseEnvelope": {
+      "type": "object",
+      "required": [
+        "protocolVersion",
+        "kind",
+        "requestId",
+        "status"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/protocolVersion"
+        },
+        "kind": {
+          "const": "response"
+        },
+        "requestId": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "status": {
+          "enum": [
+            "ACCEPTED",
+            "NO_OP",
+            "REJECTED"
+          ]
+        },
+        "session": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sessionId"
+          ],
+          "properties": {
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            }
+          }
+        },
+        "turn": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "turnId"
+          ],
+          "properties": {
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            }
+          }
+        },
+        "error": {
+          "$ref": "#/$defs/runtimeError"
+        }
+      },
+      "additionalProperties": false
+    },
+    "response.accepted": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/responseEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "status": {
+              "const": "ACCEPTED"
+            },
+            "session": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sessionId"
+              ],
+              "properties": {
+                "sessionId": {
+                  "$ref": "#/$defs/sessionId"
+                }
+              }
+            },
+            "turn": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "turnId"
+              ],
+              "properties": {
+                "turnId": {
+                  "$ref": "#/$defs/turnId"
+                }
+              }
+            }
+          },
+          "not": {
+            "required": [
+              "error"
+            ]
+          }
+        }
+      ]
+    },
+    "response.noop": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/responseEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "status": {
+              "const": "NO_OP"
+            },
+            "session": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sessionId"
+              ],
+              "properties": {
+                "sessionId": {
+                  "$ref": "#/$defs/sessionId"
+                }
+              }
+            }
+          },
+          "not": {
+            "required": [
+              "error"
+            ]
+          }
+        }
+      ]
+    },
+    "response.rejected": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/responseEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "response"
+            },
+            "requestId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "status": {
+              "const": "REJECTED"
+            },
+            "error": {
+              "$ref": "#/$defs/runtimeError"
+            },
+            "session": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sessionId"
+              ],
+              "properties": {
+                "sessionId": {
+                  "$ref": "#/$defs/sessionId"
+                }
+              }
+            }
+          },
+          "required": [
+            "error"
+          ]
+        }
+      ]
+    },
+    "eventEnvelope": {
+      "type": "object",
+      "required": [
+        "protocolVersion",
+        "kind",
+        "eventId",
+        "sequence",
+        "sessionId",
+        "type",
+        "occurredAt"
+      ],
+      "properties": {
+        "protocolVersion": {
+          "$ref": "#/$defs/protocolVersion"
+        },
+        "kind": {
+          "const": "event"
+        },
+        "eventId": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "会话内单调递增；重连从 subscribeFrom 续传（见 README）。"
+        },
+        "sessionId": {
+          "$ref": "#/$defs/sessionId"
+        },
+        "turnId": {
+          "$ref": "#/$defs/turnId"
+        },
+        "callId": {
+          "$ref": "#/$defs/callId"
+        },
+        "type": {
+          "type": "string"
+        },
+        "occurredAt": {
+          "$ref": "#/$defs/utcInstant"
+        },
+        "payload": {
+          "$ref": "#/$defs/eventPayloadUnion"
+        }
+      },
+      "additionalProperties": false
+    },
+    "event.sessionOpened": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "type": {
+              "const": "SESSION_OPENED"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "configVersion"
+              ],
+              "properties": {
+                "configVersion": {
+                  "$ref": "#/$defs/configVersion"
+                }
+              }
+            }
+          },
+          "required": [
+            "payload"
+          ]
+        }
+      ]
+    },
+    "event.sessionClosed": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "type": {
+              "const": "SESSION_CLOSED"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            }
+          }
+        }
+      ]
+    },
+    "event.turnStarted": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "TURN_STARTED"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            }
+          },
+          "required": [
+            "turnId"
+          ]
+        }
+      ]
+    },
+    "event.turnFinished": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "TURN_FINISHED"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "endReason",
+                "ok"
+              ],
+              "description": "ok 必须与 endReason 一致（只有 COMPLETED 为 true）；该一致性由离线 INVARIANT_TERMINAL_OK 检查。",
+              "properties": {
+                "endReason": {
+                  "$ref": "#/$defs/endReason"
+                },
+                "ok": {
+                  "type": "boolean"
+                },
+                "usage": {
+                  "$ref": "#/$defs/usage"
+                }
+              }
+            }
+          },
+          "required": [
+            "turnId",
+            "payload"
+          ]
+        }
+      ]
+    },
+    "event.callStarted": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "callId": {
+              "$ref": "#/$defs/callId"
+            },
+            "type": {
+              "const": "CALL_STARTED"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "toolName"
+              ],
+              "properties": {
+                "toolName": {
+                  "$ref": "#/$defs/toolName"
+                }
+              }
+            }
+          },
+          "required": [
+            "turnId",
+            "callId",
+            "payload"
+          ]
+        }
+      ]
+    },
+    "event.callFinished": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "callId": {
+              "$ref": "#/$defs/callId"
+            },
+            "type": {
+              "const": "CALL_FINISHED"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "SUCCEEDED",
+                    "FAILED",
+                    "PENDING",
+                    "DENIED"
+                  ],
+                  "description": "PENDING 表示业务确认未完成，不得投影为成功。"
+                },
+                "summary": {
+                  "type": "string",
+                  "maxLength": 1000
+                },
+                "truncated": {
+                  "type": "boolean"
+                },
+                "originalBytes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "error": {
+                  "$ref": "#/$defs/runtimeError"
+                },
+                "resultPreview": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "summary": {
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "recordCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "turnId",
+            "callId",
+            "payload"
+          ]
+        }
+      ]
+    },
+    "event.assistantDelta": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "ASSISTANT_DELTA"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "content"
+              ],
+              "properties": {
+                "content": {
+                  "$ref": "#/$defs/content"
+                }
+              }
+            }
+          },
+          "required": [
+            "turnId",
+            "payload"
+          ]
+        }
+      ]
+    },
+    "event.assistantMessage": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "ASSISTANT_MESSAGE"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "content"
+              ],
+              "properties": {
+                "content": {
+                  "$ref": "#/$defs/content"
+                }
+              }
+            }
+          },
+          "required": [
+            "turnId",
+            "payload"
+          ]
+        }
+      ]
+    },
+    "event.interactionRequired": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "INTERACTION_REQUIRED"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "interactionId",
+                "kind"
+              ],
+              "properties": {
+                "interactionId": {
+                  "$ref": "#/$defs/opaqueRef"
+                },
+                "kind": {
+                  "enum": [
+                    "question",
+                    "confirmation"
+                  ]
+                },
+                "question": {
+                  "$ref": "#/$defs/interactionQuestion"
+                },
+                "confirmation": {
+                  "$ref": "#/$defs/interactionConfirmation"
+                }
+              }
+            }
+          },
+          "required": [
+            "turnId",
+            "payload"
+          ]
+        },
+        {
+          "if": {
+            "properties": {
+              "payload": {
+                "properties": {
+                  "kind": {
+                    "const": "question"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "required": [
+                  "question"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "payload": {
+                "properties": {
+                  "kind": {
+                    "const": "confirmation"
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "required": [
+                  "confirmation"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "event.usageReported": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "USAGE_REPORTED"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "$ref": "#/$defs/usage"
+            }
+          },
+          "required": [
+            "payload"
+          ]
+        }
+      ]
+    },
+    "event.error": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "ERROR"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "$ref": "#/$defs/runtimeError"
+            }
+          },
+          "required": [
+            "payload"
+          ]
+        }
+      ]
+    },
+    "eventPayloadUnion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "configVersion": {
+          "$ref": "#/$defs/configVersion"
+        },
+        "endReason": {
+          "$ref": "#/$defs/endReason"
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "usage": {
+          "$ref": "#/$defs/usage"
+        },
+        "toolName": {
+          "$ref": "#/$defs/toolName"
+        },
+        "status": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "originalBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error": {
+          "$ref": "#/$defs/runtimeError"
+        },
+        "resultPreview": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "recordCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "content": {
+          "$ref": "#/$defs/content"
+        },
+        "interactionId": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "question": {
+          "$ref": "#/$defs/interactionQuestion"
+        },
+        "confirmation": {
+          "$ref": "#/$defs/interactionConfirmation"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "step": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalSteps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "details": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "summary": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "contextType": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "intent": {
+              "type": "string",
+              "maxLength": 100
+            }
+          }
+        },
+        "actionId": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "actionType": {
+          "type": "string"
+        },
+        "routeKey": {
+          "type": "string"
+        },
+        "params": {
+          "$ref": "#/$defs/uiActionParams"
+        },
+        "modalKey": {
+          "type": "string"
+        },
+        "resourceKey": {
+          "type": "string"
+        },
+        "elementKey": {
+          "type": "string"
+        },
+        "inputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "costMicros": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "interactionQuestion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "questionId": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value",
+                  "label"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 500
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "selectionMode": {
+          "enum": [
+            "single",
+            "multiple"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "prompt"
+          ]
+        },
+        {
+          "required": [
+            "text"
+          ]
+        }
+      ],
+      "required": [
+        "questionId"
+      ]
+    },
+    "interactionConfirmation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "executionId",
+        "actionId",
+        "toolName",
+        "summary",
+        "expectedVersion",
+        "riskLevel",
+        "expiresAt"
+      ],
+      "properties": {
+        "executionId": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "actionId": {
+          "$ref": "#/$defs/opaqueRef"
+        },
+        "toolName": {
+          "$ref": "#/$defs/toolName"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "expectedVersion": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "riskLevel": {
+          "enum": [
+            "LOW",
+            "HIGH"
+          ]
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/utcInstant"
+        }
+      }
+    },
+    "typedRespondTo": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "interactionId",
+            "kind",
+            "actionId",
+            "expectedVersion",
+            "decision"
+          ],
+          "properties": {
+            "interactionId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "kind": {
+              "const": "confirmation"
+            },
+            "actionId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "expectedVersion": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "decision": {
+              "enum": [
+                "CONFIRM",
+                "REJECT"
+              ]
+            },
+            "confirmed": {
+              "type": "boolean"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "confirmed"
+                ],
+                "properties": {
+                  "decision": {
+                    "const": "CONFIRM"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "confirmed": {
+                    "const": true
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "required": [
+                  "confirmed"
+                ],
+                "properties": {
+                  "decision": {
+                    "const": "REJECT"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "confirmed": {
+                    "const": false
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "interactionId",
+            "kind",
+            "questionId",
+            "answer"
+          ],
+          "properties": {
+            "interactionId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "kind": {
+              "const": "question"
+            },
+            "questionId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "answer": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/content"
+                },
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "event.progress": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "PROGRESS"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "stage",
+                "description"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "CONTEXT_LOADED",
+                    "PLAN_HINT",
+                    "STEP_PROGRESS",
+                    "MODEL_THINKING",
+                    "CUSTOM"
+                  ]
+                },
+                "stage": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "step": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "totalSteps": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "details": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "summary": {
+                      "type": "string",
+                      "maxLength": 1000
+                    },
+                    "contextType": {
+                      "type": "string",
+                      "maxLength": 100
+                    },
+                    "intent": {
+                      "type": "string",
+                      "maxLength": 100
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "payload"
+          ]
+        }
+      ]
+    },
+    "uiActionParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "nodeId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "moduleId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "stageId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "planId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "goalId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "taskId": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "workspaceId": {
+          "type": "string",
+          "maxLength": 100
+        }
+      }
+    },
+    "event.uiAction": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/eventEnvelope"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "protocolVersion": {
+              "$ref": "#/$defs/protocolVersion"
+            },
+            "kind": {
+              "const": "event"
+            },
+            "eventId": {
+              "$ref": "#/$defs/opaqueRef"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sessionId": {
+              "$ref": "#/$defs/sessionId"
+            },
+            "turnId": {
+              "$ref": "#/$defs/turnId"
+            },
+            "type": {
+              "const": "UI_ACTION"
+            },
+            "occurredAt": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "actionId",
+                "actionType"
+              ],
+              "properties": {
+                "actionId": {
+                  "$ref": "#/$defs/opaqueRef"
+                },
+                "actionType": {
+                  "enum": [
+                    "NAVIGATE",
+                    "OPEN_MODAL",
+                    "PREFILL_FORM",
+                    "REFRESH_RESOURCE",
+                    "FOCUS_ELEMENT"
+                  ]
+                },
+                "routeKey": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+                },
+                "params": {
+                  "$ref": "#/$defs/uiActionParams"
+                },
+                "modalKey": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+                },
+                "resourceKey": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+                },
+                "elementKey": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+                }
+              }
+            }
+          },
+          "required": [
+            "turnId",
+            "payload"
+          ]
+        }
+      ]
+    }
+  }
+}

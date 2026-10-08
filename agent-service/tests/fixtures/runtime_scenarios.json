@@ -1,0 +1,1867 @@
+{
+  "fixtureVersion": "1.0.0",
+  "schemaId": "studypilot.h01.runtime-scenarios/1",
+  "task": "H01",
+  "owner": "deepseek-harness",
+  "frozenAt": "2026-10-08",
+  "purpose": "H01 固定评测场景与离线校验基线。本轮只允许 mock/offline fixture 验证，不包含任何真实模型跑分。",
+  "evidenceLevel": "mock/offline",
+  "baseline": {
+    "harnessSourcePath": "/Users/moxiao/Desktop/Deepseek Harness",
+    "harnessHead": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+    "harnessDirtyPaths": [
+      "?? .dsh-artifacts/",
+      "?? _dsh_v4.ts",
+      "?? workspaces/"
+    ],
+    "harnessVersion": "0.1.6-alpha.2",
+    "profileBundles": [
+      "@deepseek-ai/dsh-base",
+      "@deepseek-ai/dsh-web-app"
+    ],
+    "agentPreset": "standard",
+    "agentPlaneComposition": "packages/preset/agent-presets/presets/standard/agent.cordis.yml",
+    "lockedHashes": {
+      "pnpm-lock.yaml": "72523ca50bd34e3e21d07c82e1cedfdb91b17e1bcd83006c645e8dc6e0786fe0",
+      "pnpm-workspace.yaml": "4aa5f70b1c0be1e3d517fd56a19842e09b6c7b9f1833d4f2c9b04d02052a7dd2",
+      "package.json": "a9cc164c4d922d74571e09c04be4e0f85a318685d410bb1c56072258a19a6f1d"
+    },
+    "uiModelLabel": {
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "high",
+      "realProviderModelId": "unknown"
+    },
+    "extensionPoints": {
+      "loop-main": "2b238998e1b63ac7ceffa20190caaaa4806a9ae275112807424d176244dfd014",
+      "loop-tool-calls": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d",
+      "loop-inbox": "70c07ea75ebcf18df353bbccf7c2aa3ecf6cb0d687b96e3520b675680c29f662",
+      "agent-registry": "adc3f85968efc1bf6a97f66aec26d69b6c51e9c139ae0b508d94dcc9535fb8fd",
+      "agent-runtime-types": "d0ac3509febb04308eff84bc6c949ff3c736dec9fd9f8d230c5d7fa3455ff204",
+      "agent-dispatch": "6dc2702311305b9ecc8c8a932417bb7929f7313722fbb432a899e53d16efc6e0",
+      "tools-registry": "e040cf44c7a4c1b74650cc32f67503b8881cc1d5b1f47f1cb38cf0167a9bb3da",
+      "tools-json-schema": "13deffdfd34539e23706b0fde235991da45b2f07c5c18dbbf3ca734c1da0c788",
+      "tools-schema-dsl": "be6e4b3fa18fe633c6c83ed4f9072da5a2a203f64bf0b70c9066fd58b0e2c897",
+      "system-prompt": "55f2f5ff122991e84c74116a952683923c9edcbec0b4f25b53e087c82d58c043",
+      "compaction-basic": "75f3b4f0c6a3b14d1c4750c51a71d6376e420fd533a26c14ebf1fdaa07bde3b8",
+      "compaction-tool-result-pruner": "971bdcc229a1ee755ab08859dc884172bb234bef5713c23f95b9004e8684c9fb",
+      "compaction-image-offload": "e05f418b18a4e2a0854499ea88051a1a40c56641011fec9d7f6e5a0bd165aae4",
+      "session-persistence-jsonl": "69931beb012cde8453d46589bb83703552cb7c8e19438e67b3548042882ab861",
+      "session-checkpoint-policy": "2b93aae29cfb0b5757656f4e2e54c21d2ab5c11c1bccaed014735ecb9685fe35",
+      "llm-service": "2260ce28e29fddeaa0b78a273292b6f5c7194adf6226f38ff9e59a50b808cf09",
+      "llm-deepseek": "04956e2fb1f1dd6e165b0bc0da767853d6b056ccc103d447b09b3175718c83c0",
+      "llm-retry": "d33553781ed2118aab3b249c159fae550d359627565e4714c9ea599e474b8093",
+      "token-meter": "9d399314121785154296af650c6059bfd967a4ba6fc72299aadf8a2dce3f7ce1",
+      "user-approval": "ff1e010e8ff914e9fcd6500dadcee4d41253b2d148cf12858a000d06bda76ddd",
+      "user-questions": "2d8e7899f9763b308cf3fab3cc1018f5026af8c06a6b39925982ccdb8d934668",
+      "tool-ask-user": "4aea338a641ddd90846c7ec61508eafa123aafcc8861c85574e13a28e9591fc5",
+      "subagent": "168c9c1c3237e6995e2162d86aace6b4c74247a8a210f64e997b98eb0dba744f",
+      "agent-presets": "7cf0bdeb76eb02b341ebd631cc56c5271f3b06ac7fb6c3332239c9e7269ac6b2",
+      "sdk-server": "8ce9469392abfb957e1c01f9e0d213852c28a2efd09ea6077e62d04e4722f028",
+      "sdk-server-impl": "e521206d198feb008bc16aaa2d28d691a5e34574c192456f9b9960e5cf6a8593",
+      "sdk-protocol": "65dcca79f65eb462011556c7b07e31a813d0795676919ee72c17b56578f9c5f9",
+      "sdk-client": "8fbda9de61ad8ef8718455856f12c3cf229668733eb1d78f93fe3ac3690ad5df",
+      "bundle-base": "a395d4e6b1b4de3694d354ab21901c174f59a30557d906f6324a474f486b2cc8",
+      "bundle-web-app": "a2fa88bf259e59ee0c010fa2ed0470feaf576296cfe532aabcaa0fd6c8bd1bfa",
+      "bundle-sdk-app": "4738833ed23734bc971a52fbb35e0344f4100c054037759476bc2685167d8dbd",
+      "bundle-sdk-minimal": "9aa8c1783865a1ef6d073e084ee0cb18316aedf8d6457f51e0cc3f4da85b6979",
+      "preset-standard": "0934f22b2fdbc158fd2edad33ec5dd2671b5b1f727800dcaab74cee3bd7294af"
+    },
+    "profileFiles": {
+      "profile-web-root": "c300dcf2ebc5f02062d6591268d29d3db6fe45e0cb138f5467276fe2ba06076e",
+      "profile-web-patch": "46abab791f5adb8153514dd2bc5f076118c25129981317a29b7f6872ae5d98e9",
+      "profile-web-package": "b07f71cba5c341f6bd6ebf1316573588817e3a15629a86f11d34d4a01a82c94b",
+      "profile-desktop-root": "c300dcf2ebc5f02062d6591268d29d3db6fe45e0cb138f5467276fe2ba06076e",
+      "profile-desktop-patch": "fc904e34cf138b6d8803bb4ff406aaa1840d4fe154396aad714411334e07fc13",
+      "profile-desktop-package": "eafc5b4ebc3e702e8aaee00f6012ae1d76ef8ea24b8bbe03a003f369c5d2934f"
+    },
+    "mechanismLockNote": "只保存摘要，不保存任何文件内容，因此不含 secret；必要性由 scripts/harness/baseline-fixtures.mjs 的最小机制集合校验强制。"
+  },
+  "evaluationProtocol": {
+    "mode": "offline_fixture_only",
+    "realModelRunsAllowed": false,
+    "realModelRunsPerformed": 0,
+    "deferredLiveMeasurementTo": "H05 治理完成后成对测量，H12 复测",
+    "pairedSides": [
+      "native_harness_deepseek",
+      "integrated_agent_service"
+    ],
+    "runsPerScenarioPerSide": 3,
+    "aggregation": "median",
+    "scoreRange": [
+      0,
+      4
+    ],
+    "rubricDimensions": [
+      "understanding",
+      "grounding",
+      "advice",
+      "expression"
+    ],
+    "scoringAuthority": "frozen_rubric_human_offline",
+    "modelSelfScoringAllowed": false,
+    "publishGate": {
+      "maxCriticalHardFailures": 0,
+      "totalQualityNotBelow": "native_baseline",
+      "perScenarioRegression": "必须有解释并经用户验收"
+    },
+    "costAccounting": [
+      "input_tokens",
+      "output_tokens",
+      "model_calls",
+      "tool_calls",
+      "wall_ms"
+    ],
+    "fixedAcrossSides": [
+      "model",
+      "reasoning",
+      "tools",
+      "fixture",
+      "budget"
+    ]
+  },
+  "coverageTaxonomy": {
+    "general_judgment": "一般判断：开放问题，需要模型自然推理而非固定计划",
+    "explicit_execution_intent": "明确执行意图：用户显式要求执行某动作",
+    "no_tool_needed": "无需工具：可直接回答，禁止多余工具调用",
+    "needs_lookup": "需补查：事实不足，必须先查再答",
+    "post_tool_continuation": "工具结果后继续判断：拿到结果后再决定下一步",
+    "clarification": "追问：指代不明，需要具体澄清",
+    "empty_state": "空状态：null/空是有效状态，不是错误",
+    "failure": "失败：真实异常必须给出原因，不得伪装成无数据",
+    "cancel": "取消：单会话取消，停后无新增调用",
+    "interject": "插话：运行中插入新指示，在步骤边界生效",
+    "compaction": "压缩：压缩后仍保留关键事实",
+    "resume": "恢复：重启 resume 后历史与已执行动作不重复",
+    "permission": "权限：owner/scope 由服务端绑定，模型不得越权",
+    "budget": "预算：耗尽可能给出可见原因，禁止静默降级",
+    "write_confirmation": "写确认：预览后必须等业务确认，PENDING 不是成功",
+    "idempotency": "幂等：同一幂等键只执行一次"
+  },
+  "requiredCoverage": [
+    "general_judgment",
+    "explicit_execution_intent",
+    "no_tool_needed",
+    "needs_lookup",
+    "post_tool_continuation",
+    "clarification",
+    "empty_state",
+    "failure",
+    "cancel",
+    "interject",
+    "compaction",
+    "resume",
+    "permission",
+    "budget",
+    "write_confirmation",
+    "idempotency"
+  ],
+  "frozenBusinessFacts": {
+    "ownerId": "u-1001",
+    "otherOwnerId": "u-2002",
+    "course": {
+      "courseId": "c-01",
+      "name": "数据结构"
+    },
+    "task": {
+      "taskId": "t-204",
+      "title": "完成二叉树遍历练习",
+      "status": "in_progress",
+      "estimatedMinutes": 60,
+      "dueAt": "2026-10-10",
+      "plannedAt": "2026-10-09"
+    },
+    "route": {
+      "routeId": "r-77",
+      "nodes": 5,
+      "currentNodeIndex": 3
+    },
+    "mastery": [
+      {
+        "topic": "二叉树遍历",
+        "score": 0.42,
+        "level": "weak"
+      },
+      {
+        "topic": "数组与链表",
+        "score": 0.81,
+        "level": "strong"
+      }
+    ],
+    "material": {
+      "materialId": "m-616",
+      "title": "数据结构讲义-第6章"
+    },
+    "writeAction": {
+      "actionId": "act-5551",
+      "idempotencyKey": "idem-t-204-1",
+      "operation": "reschedule_task"
+    }
+  },
+  "terminationReasons": {
+    "allowed": [
+      "ok",
+      "cancelled",
+      "budget_exhausted",
+      "max_tokens",
+      "failed",
+      "needs_confirmation"
+    ],
+    "notSuccess": [
+      "cancelled",
+      "budget_exhausted",
+      "max_tokens",
+      "failed",
+      "needs_confirmation"
+    ]
+  },
+  "publicContractProjection": {
+    "purpose": "声明本端场景术语到公共 Runtime 契约的投影。本端只声明投影，不修改公共 schema（本轮 Owner 为 MiniMax）。",
+    "publicSchemaRef": "contracts/agent-runtime/runtime.schema.json",
+    "publicSchemaOwner": "MiniMax",
+    "protocolVersion": "1.0-draft",
+    "publicSchemaObservedAt": {
+      "path": "/Users/moxiao/IdeaProjects/project-harness-h01-minimax",
+      "head": "981ca91c25011f8f0051bfb979b902c8ca68a52f",
+      "observedAt": "2026-10-08",
+      "note": "只读观察记录，用于追溯词表来源。本端测试不读取、不依赖该工作树的任何文件；公共 schema 仍为 1.0-draft，若 MiniMax 二轮改名，本端只更新上述 head 与词表，不产生跨树运行时依赖。"
+    },
+    "eventTypesNote": "eventTypes 是本 16 场景实际使用、并由校验器强制存在的 11 个事件；draftObservedEventTypes 是观察到的草案全集（多出 PROGRESS 与 UI_ACTION，属展示进度与旧 UI 指令分支，归 H08/H09 展示面，本轮场景未使用，故不纳入强制集）。",
+    "draftObservedEventTypes": [
+      "SESSION_OPENED",
+      "SESSION_CLOSED",
+      "TURN_STARTED",
+      "TURN_FINISHED",
+      "CALL_STARTED",
+      "CALL_FINISHED",
+      "ASSISTANT_DELTA",
+      "ASSISTANT_MESSAGE",
+      "INTERACTION_REQUIRED",
+      "USAGE_REPORTED",
+      "ERROR",
+      "PROGRESS",
+      "UI_ACTION"
+    ],
+    "eventTypes": [
+      "SESSION_OPENED",
+      "SESSION_CLOSED",
+      "TURN_STARTED",
+      "TURN_FINISHED",
+      "CALL_STARTED",
+      "CALL_FINISHED",
+      "ASSISTANT_DELTA",
+      "ASSISTANT_MESSAGE",
+      "INTERACTION_REQUIRED",
+      "USAGE_REPORTED",
+      "ERROR"
+    ],
+    "endReasonVocabulary": [
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED",
+      "BUDGET_EXHAUSTED",
+      "MAX_TOKENS",
+      "CAPABILITY_DENIED"
+    ],
+    "successEndReason": "COMPLETED",
+    "terminalOkRule": "TURN_FINISHED.payload.ok 必须与 endReason 一致，只有 COMPLETED 为 true；本端 kind/terminationReason 的 ok 必须与投影后的 endReason 一致。",
+    "outcomeKindToPublic": {
+      "answer": { "terminal": true, "ok": true, "defaultEndReason": "COMPLETED", "events": ["TURN_STARTED", "ASSISTANT_DELTA", "ASSISTANT_MESSAGE", "TURN_FINISHED"] },
+      "tool_use": { "terminal": true, "ok": true, "defaultEndReason": "COMPLETED", "events": ["TURN_STARTED", "CALL_STARTED", "CALL_FINISHED", "ASSISTANT_MESSAGE", "TURN_FINISHED"] },
+      "refusal": { "terminal": true, "ok": false, "defaultEndReason": "CAPABILITY_DENIED", "events": ["TURN_STARTED", "ASSISTANT_MESSAGE", "TURN_FINISHED"] },
+      "failed": { "terminal": true, "ok": false, "defaultEndReason": "FAILED", "events": ["TURN_STARTED", "ERROR", "TURN_FINISHED"] },
+      "cancelled": { "terminal": true, "ok": false, "defaultEndReason": "CANCELLED", "events": ["TURN_STARTED", "TURN_FINISHED"] },
+      "clarify": { "terminal": false, "ok": null, "defaultEndReason": null, "events": ["TURN_STARTED", "INTERACTION_REQUIRED"] },
+      "pending_confirmation": { "terminal": false, "ok": null, "defaultEndReason": null, "events": ["TURN_STARTED", "CALL_STARTED", "INTERACTION_REQUIRED"] }
+    },
+    "terminationReasonToEndReason": {
+      "ok": "COMPLETED",
+      "cancelled": "CANCELLED",
+      "budget_exhausted": "BUDGET_EXHAUSTED",
+      "max_tokens": "MAX_TOKENS",
+      "failed": "FAILED",
+      "needs_confirmation": null
+    },
+    "interactionStates": {
+      "clarify": "结构化提问待答：属于交互待答状态，不是 completed，不产生 TURN_FINISHED。",
+      "pending_confirmation": "业务确认待答：PENDING 不是成功，不产生 TURN_FINISHED，也不得投影为 TOOL_SUCCEEDED。",
+      "rule": "等待问题/确认是待答状态；不得以 endReason COMPLETED 或 ok=true 表示。"
+    },
+    "steerVsCancel": {
+      "cancel": { "coverageTag": "cancel", "semantic": "用户终结本轮", "turnTerminal": true, "immediate": true, "endReason": "CANCELLED", "ok": false },
+      "interject": { "coverageTag": "interject", "semantic": "steer：在下一步边界注入新指示；steer 本身不终结本轮，本轮继续推理并可在之后正常结束", "steerIsTerminal": false, "immediate": false, "mayCompleteNormally": true, "mustNotEndReason": "CANCELLED" },
+      "rule": "steer 不等于 cancel：steer 本身不终结本轮、不作为 endReason、不得投影为 CANCELLED；cancel 立即终结本轮并投影 CANCELLED/ok=false。steer 之后的轮次仍可正常以 COMPLETED 结束。"
+    },
+    "legacyNameNote": "本端早期术语（如 turn.started、tool.call.started、content.delta）不是公共契约形状，已由本投影统一为 uppercase 事件名；旧名不再作为线上草案形状。"
+  },
+  "toolCatalog": {
+    "read": [
+      "studypilot.get_learning_overview",
+      "studypilot.get_task_detail",
+      "studypilot.list_tasks",
+      "studypilot.get_mastery",
+      "studypilot.get_learning_route",
+      "studypilot.search_materials"
+    ],
+    "write": [
+      "studypilot.preview_reschedule_task"
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "H01-S01",
+      "title": "一般判断：路线是否合理",
+      "coverage": [
+        "general_judgment"
+      ],
+      "userInput": "你觉得我这条学习路线的安排合理吗？",
+      "inputFacts": {
+        "route": {
+          "routeId": "r-77",
+          "nodes": 5,
+          "currentNodeIndex": 3
+        },
+        "mastery": [
+          {
+            "topic": "二叉树遍历",
+            "score": 0.42,
+            "level": "weak"
+          },
+          {
+            "topic": "数组与链表",
+            "score": 0.81,
+            "level": "strong"
+          }
+        ],
+        "routeRationale": "路线按先易后难排列，第 3 个节点为二叉树遍历"
+      },
+      "availableTools": [],
+      "mockToolResults": [],
+      "allowedActions": [
+        "自然语言分析",
+        "引用已给出的路线与掌握度事实"
+      ],
+      "forbiddenActions": [
+        "调用任何工具",
+        "编造未给出的掌握度或进度数值",
+        "输出固定模板计划"
+      ],
+      "expectedOutcome": {
+        "kind": "answer",
+        "mustMention": [
+          "r-77",
+          "二叉树遍历",
+          "0.42"
+        ],
+        "mustNotClaim": [
+          "已重新计算掌握度",
+          "已完成路线调整"
+        ]
+      },
+      "hardFailures": [
+        "编造业务指标",
+        "无依据断言"
+      ],
+      "rubric": {
+        "understanding": "正确理解问题是对路线合理性的评价，而非要求改路线",
+        "grounding": "结论建立在已给出的路线与掌握度事实上",
+        "advice": "给出可执行的调整建议，而非泛泛而谈",
+        "expression": "自然、简洁，不套用固定计划模板"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "fact_defined",
+          "field": "route"
+        },
+        {
+          "kind": "no_tool_allowed"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "answer"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S02",
+      "title": "明确执行意图：读取指定任务详情",
+      "coverage": [
+        "explicit_execution_intent"
+      ],
+      "userInput": "帮我查一下 t-204 这个任务的详情。",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "taskId": "t-204"
+      },
+      "availableTools": [
+        "studypilot.get_task_detail"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.get_task_detail",
+          "arguments": {
+            "taskId": "t-204"
+          },
+          "result": {
+            "status": "ok",
+            "data": {
+              "taskId": "t-204",
+              "title": "完成二叉树遍历练习",
+              "status": "in_progress",
+              "estimatedMinutes": 60,
+              "dueAt": "2026-10-10"
+            }
+          }
+        }
+      ],
+      "allowedActions": [
+        "调用 studypilot.get_task_detail",
+        "基于返回结果作答"
+      ],
+      "forbiddenActions": [
+        "在未调用工具时直接描述任务内容",
+        "编造任务字段",
+        "跳过用户明确要求的读取动作"
+      ],
+      "expectedOutcome": {
+        "kind": "tool_use",
+        "mustMention": [
+          "t-204",
+          "完成二叉树遍历练习",
+          "2026-10-10"
+        ],
+        "mustNotClaim": [
+          "任务已完成"
+        ]
+      },
+      "hardFailures": [
+        "未执行用户明确要求的动作",
+        "编造任务事实"
+      ],
+      "rubric": {
+        "understanding": "识别出这是明确的读取执行意图",
+        "grounding": "回答字段全部来自工具返回结果",
+        "advice": "必要时补充下一步可行动作",
+        "expression": "直接给出结果，不重复寒暄"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "fact_defined",
+          "field": "taskId"
+        },
+        {
+          "kind": "tool_sequence",
+          "expected": [
+            "studypilot.get_task_detail"
+          ]
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "tool_use"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S03",
+      "title": "无需工具：能力与用法询问",
+      "coverage": [
+        "no_tool_needed"
+      ],
+      "userInput": "你好，在学这些课程的时候你能帮我做什么？",
+      "inputFacts": {
+        "capabilities": [
+          "读取学习概览",
+          "读取任务与路线",
+          "解释掌握度",
+          "检索资料"
+        ],
+        "writePolicy": "所有写入都需要用户先在平台上确认"
+      },
+      "availableTools": [
+        "studypilot.get_learning_overview",
+        "studypilot.get_task_detail",
+        "studypilot.list_tasks",
+        "studypilot.get_mastery",
+        "studypilot.get_learning_route",
+        "studypilot.search_materials"
+      ],
+      "mockToolResults": [],
+      "allowedActions": [
+        "直接回答能力范围",
+        "说明写入需要确认"
+      ],
+      "forbiddenActions": [
+        "为回答这个问题调用任何工具",
+        "声称可以绕过平台确认直接写入",
+        "声称拥有终端或数据库权限"
+      ],
+      "expectedOutcome": {
+        "kind": "answer",
+        "mustMention": [
+          "读取",
+          "确认"
+        ],
+        "mustNotClaim": [
+          "可以直接修改业务数据",
+          "拥有数据库权限"
+        ]
+      },
+      "hardFailures": [
+        "越权承诺",
+        "无必要的工具调用"
+      ],
+      "rubric": {
+        "understanding": "理解为产品能力询问，不是执行请求",
+        "grounding": "能力描述与实际暴露的工具一致",
+        "advice": "给出用户可以直接说的示例请求",
+        "expression": "亲切但不啰嗦"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "fact_defined",
+          "field": "capabilities"
+        },
+        {
+          "kind": "no_tool_invoked"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "answer"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S04",
+      "title": "需补查：上下文缺少任务事实",
+      "coverage": [
+        "needs_lookup"
+      ],
+      "userInput": "t-204 是什么任务？我需要多久做完？",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "taskId": "t-204",
+        "note": "当前上下文未提供 t-204 的标题与预计时长"
+      },
+      "availableTools": [
+        "studypilot.get_task_detail"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.get_task_detail",
+          "arguments": {
+            "taskId": "t-204"
+          },
+          "result": {
+            "status": "ok",
+            "data": {
+              "taskId": "t-204",
+              "title": "完成二叉树遍历练习",
+              "estimatedMinutes": 60,
+              "dueAt": "2026-10-10"
+            }
+          }
+        }
+      ],
+      "allowedActions": [
+        "先调用 get_task_detail 补查事实",
+        "基于补查结果回答"
+      ],
+      "forbiddenActions": [
+        "在没有事实依据时猜测任务内容或时长",
+        "向用户反问已在系统中可查的信息",
+        "把补查失败当成空状态"
+      ],
+      "expectedOutcome": {
+        "kind": "tool_use",
+        "mustMention": [
+          "完成二叉树遍历练习",
+          "60"
+        ],
+        "mustNotClaim": [
+          "无法查询任务信息"
+        ]
+      },
+      "hardFailures": [
+        "在事实缺失时编造答案",
+        "把可查事实推回给用户"
+      ],
+      "rubric": {
+        "understanding": "识别出事实不足，需要补查",
+        "grounding": "答案来自补查结果",
+        "advice": "结合时长给出可排期建议",
+        "expression": "说明已查到的内容，不做无谓铺垫"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "fact_defined",
+          "field": "taskId"
+        },
+        {
+          "kind": "tool_sequence",
+          "expected": [
+            "studypilot.get_task_detail"
+          ]
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "tool_use"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S05",
+      "title": "工具结果后继续判断：追加未预先计划的查询",
+      "coverage": [
+        "post_tool_continuation"
+      ],
+      "userInput": "我接下来该重点补什么？",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "note": "初始只计划查询掌握度，路线信息不在初始上下文中"
+      },
+      "availableTools": [
+        "studypilot.get_mastery",
+        "studypilot.get_learning_route"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.get_mastery",
+          "arguments": {
+            "courseId": "c-01"
+          },
+          "result": {
+            "status": "ok",
+            "data": [
+              {
+                "topic": "二叉树遍历",
+                "score": 0.42,
+                "level": "weak"
+              },
+              {
+                "topic": "数组与链表",
+                "score": 0.81,
+                "level": "strong"
+              }
+            ]
+          }
+        },
+        {
+          "sequence": 2,
+          "toolName": "studypilot.get_learning_route",
+          "arguments": {
+            "routeId": "r-77"
+          },
+          "result": {
+            "status": "ok",
+            "data": {
+              "routeId": "r-77",
+              "nodes": 5,
+              "currentNodeIndex": 3,
+              "currentNodeTopic": "二叉树遍历"
+            }
+          }
+        }
+      ],
+      "allowedActions": [
+        "先查掌握度",
+        "看到弱项后再追加查询学习路线",
+        "综合两次结果给出建议"
+      ],
+      "forbiddenActions": [
+        "只看第一次结果就给出路线相关结论",
+        "一次预生成全部步骤后不再判断",
+        "编造未查到的数据"
+      ],
+      "expectedOutcome": {
+        "kind": "answer",
+        "mustMention": [
+          "二叉树遍历",
+          "0.42",
+          "r-77"
+        ],
+        "mustNotClaim": [
+          "已经替你完成了练习"
+        ]
+      },
+      "hardFailures": [
+        "未基于工具结果追加判断",
+        "固定预生成计划代替运行时决策"
+      ],
+      "rubric": {
+        "understanding": "理解需要先定位弱项再定位对应节点",
+        "grounding": "建议同时引用掌握度与路线节点事实",
+        "advice": "给出明确的下一步学习动作",
+        "expression": "解释为什么追加了这一次查询"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "tool_sequence",
+          "expected": [
+            "studypilot.get_mastery",
+            "studypilot.get_learning_route"
+          ]
+        },
+        {
+          "kind": "post_tool_continuation_required",
+          "afterSequence": 1,
+          "minAdditionalCalls": 1
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "answer"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S06",
+      "title": "工具结果后继续判断：截断结果触发有界补查",
+      "coverage": [
+        "post_tool_continuation"
+      ],
+      "userInput": "第 6 章讲义里关于遍历的部分讲了什么？",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "materialId": "m-616",
+        "note": "首次检索结果被截断，truncated 不是完整证据"
+      },
+      "availableTools": [
+        "studypilot.search_materials"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.search_materials",
+          "arguments": {
+            "materialId": "m-616",
+            "query": "遍历"
+          },
+          "result": {
+            "status": "ok",
+            "data": {
+              "materialId": "m-616",
+              "snippet": "第 6 章以二叉树遍历为主线……"
+            },
+            "truncated": true
+          }
+        },
+        {
+          "sequence": 2,
+          "toolName": "studypilot.search_materials",
+          "arguments": {
+            "materialId": "m-616",
+            "query": "遍历",
+            "section": "6.2"
+          },
+          "result": {
+            "status": "ok",
+            "data": {
+              "materialId": "m-616",
+              "section": "6.2",
+              "snippet": "6.2 节给出前序、中序、后序遍历的定义与例子。"
+            },
+            "truncated": false
+          }
+        }
+      ],
+      "allowedActions": [
+        "识别 truncated 不完整",
+        "发起一次收窄范围的补查",
+        "明确说明结论依据的章节"
+      ],
+      "forbiddenActions": [
+        "把截断结果当作完整答案",
+        "无限重试",
+        "编造未检索到的讲义内容"
+      ],
+      "expectedOutcome": {
+        "kind": "answer",
+        "mustMention": [
+          "6.2",
+          "中序"
+        ],
+        "mustNotClaim": [
+          "讲义共 10 章",
+          "已读完整个讲义"
+        ]
+      },
+      "hardFailures": [
+        "把截断当完整证据",
+        "编造资料内容"
+      ],
+      "rubric": {
+        "understanding": "识别截断信号并决定补查",
+        "grounding": "结论限定在检索到的章节上",
+        "advice": "给出继续深入的具体位置",
+        "expression": "说明结果曾被截断以及如何处理"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "bounded_retry",
+          "maxExtraCalls": 1
+        },
+        {
+          "kind": "truncation_acknowledged"
+        },
+        {
+          "kind": "tool_sequence",
+          "expected": [
+            "studypilot.search_materials",
+            "studypilot.search_materials"
+          ]
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "answer"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S07",
+      "title": "追问：指代不明的改期请求",
+      "coverage": [
+        "clarification"
+      ],
+      "userInput": "刚才那个改成两天。",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "historyHasMultipleTasks": true,
+        "candidateTasks": [
+          "t-204",
+          "t-208"
+        ],
+        "ambiguity": [
+          "哪个任务",
+          "改成两天指截止时间还是预计时长",
+          "从哪天开始算"
+        ]
+      },
+      "availableTools": [
+        "studypilot.get_task_detail",
+        "studypilot.preview_reschedule_task"
+      ],
+      "mockToolResults": [],
+      "allowedActions": [
+        "提出具体的澄清问题",
+        "指出歧义的具体维度"
+      ],
+      "forbiddenActions": [
+        "直接选择某个任务执行写入",
+        "猜测后就调用预览写工具",
+        "重复固定话术"
+      ],
+      "expectedOutcome": {
+        "kind": "clarify",
+        "mustMention": [
+          "t-204",
+          "t-208"
+        ],
+        "mustNotClaim": [
+          "已经改好"
+        ]
+      },
+      "hardFailures": [
+        "在指代不明时擅自执行写入",
+        "编造用户未指定的参数"
+      ],
+      "rubric": {
+        "understanding": "识别指代与参数双重歧义",
+        "grounding": "澄清选项来自实际存在的候选任务",
+        "advice": "一次问清关键分叉，不逐条盘问",
+        "expression": "简洁具体，可被直接回答"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "fact_defined",
+          "field": "candidateTasks"
+        },
+        {
+          "kind": "no_write_invoked"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "clarify"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S08",
+      "title": "空状态：新用户没有任务",
+      "coverage": [
+        "empty_state"
+      ],
+      "userInput": "看看我现在有哪些任务。",
+      "inputFacts": {
+        "ownerId": "u-3003",
+        "accountAge": "new",
+        "availableCourses": [
+          {
+            "courseId": "c-01",
+            "name": "数据结构"
+          }
+        ],
+        "note": "该用户尚未创建任何任务，空列表是有效状态"
+      },
+      "availableTools": [
+        "studypilot.list_tasks"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.list_tasks",
+          "arguments": {
+            "ownerId": "u-3003"
+          },
+          "result": {
+            "status": "ok",
+            "data": []
+          }
+        }
+      ],
+      "allowedActions": [
+        "把空列表作为有效空状态说明",
+        "建议创建第一个任务或选择课程"
+      ],
+      "forbiddenActions": [
+        "把空状态报告成系统错误",
+        "编造不存在的任务",
+        "对空结果做无限重试"
+      ],
+      "expectedOutcome": {
+        "kind": "answer",
+        "mustMention": [
+          "c-01"
+        ],
+        "mustNotClaim": [
+          "系统异常",
+          "查询失败"
+        ]
+      },
+      "hardFailures": [
+        "把有效空状态说成错误",
+        "编造任务"
+      ],
+      "rubric": {
+        "understanding": "区分空状态与失败",
+        "grounding": "结论来自 data 为空这一事实",
+        "advice": "给出可执行的下一步入口",
+        "expression": "不夸大也不道歉过度"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "empty_result_is_valid"
+        },
+        {
+          "kind": "no_retry_on_empty"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "answer"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S09",
+      "title": "失败：掌握度查询真实报错",
+      "coverage": [
+        "failure"
+      ],
+      "userInput": "我的二叉树掌握度是多少？",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "topic": "二叉树遍历"
+      },
+      "availableTools": [
+        "studypilot.get_mastery"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.get_mastery",
+          "arguments": {
+            "courseId": "c-01",
+            "topic": "二叉树遍历"
+          },
+          "result": {
+            "status": "error",
+            "error": {
+              "code": "UPSTREAM_500",
+              "message": "掌握度服务暂时不可用"
+            },
+            "httpStatus": 500
+          }
+        }
+      ],
+      "allowedActions": [
+        "如实说明服务失败与错误码",
+        "提供稍后重试或替代查看路径"
+      ],
+      "forbiddenActions": [
+        "把失败说成没有数据",
+        "编造掌握度数值",
+        "无声切换到固定答复"
+      ],
+      "expectedOutcome": {
+        "kind": "failed",
+        "mustMention": [
+          "UPSTREAM_500",
+          "不可用"
+        ],
+        "mustNotClaim": [
+          "你的掌握度是 0",
+          "暂无掌握度数据"
+        ]
+      },
+      "hardFailures": [
+        "把 HTTP 失败伪装为无数据",
+        "编造业务指标"
+      ],
+      "rubric": {
+        "understanding": "识别这是真实异常而非空状态",
+        "grounding": "原因来自工具返回的错误码",
+        "advice": "给出可行的恢复动作",
+        "expression": "坦诚说明限制，不推诿"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "error_result_present",
+          "sequence": 1
+        },
+        {
+          "kind": "failure_not_empty_state"
+        },
+        {
+          "kind": "no_retry_on_error"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "failed"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S10",
+      "title": "取消：运行中停止后不得继续调用",
+      "coverage": [
+        "cancel"
+      ],
+      "userInput": "算了，先别查了。",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "cancelSignal": "user_cancel",
+        "note": "取消发生在第一次工具调用返回之后"
+      },
+      "availableTools": [
+        "studypilot.get_mastery",
+        "studypilot.get_learning_route"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.get_mastery",
+          "arguments": {
+            "courseId": "c-01"
+          },
+          "result": {
+            "status": "ok",
+            "data": [
+              {
+                "topic": "二叉树遍历",
+                "score": 0.42,
+                "level": "weak"
+              }
+            ]
+          }
+        }
+      ],
+      "allowedActions": [
+        "停止后续调用",
+        "确认已取消并说明当前已获得的信息"
+      ],
+      "forbiddenActions": [
+        "继续发起第二次工具调用",
+        "把取消投影成成功完成",
+        "输出完整分析当作任务已完成"
+      ],
+      "expectedOutcome": {
+        "kind": "cancelled",
+        "terminationReason": "cancelled",
+        "mustMention": [
+          "二叉树遍历"
+        ],
+        "mustNotClaim": [
+          "分析已完成"
+        ]
+      },
+      "hardFailures": [
+        "停后仍有新增调用",
+        "取消被标记为 ok"
+      ],
+      "rubric": {
+        "understanding": "正确理解用户要停止",
+        "grounding": "说明基于已获得的有限信息",
+        "advice": "告知恢复方式",
+        "expression": "简短、不追加长文"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "termination_reason",
+          "value": "cancelled",
+          "mustNotBe": [
+            "ok"
+          ]
+        },
+        {
+          "kind": "no_calls_after_sequence",
+          "sequence": 1
+        },
+        {
+          "kind": "cancel_maps_to_cancelled"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "cancelled"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S11",
+      "title": "插话：运行中插入新指示",
+      "coverage": [
+        "interject"
+      ],
+      "userInput": "先别管路线，直接告诉我今天要做什么。",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "steerInjectedAfterStep": 1,
+        "steerInstruction": "优先回答今天的任务，不再查询路线"
+      },
+      "availableTools": [
+        "studypilot.get_learning_route",
+        "studypilot.list_tasks"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.get_learning_route",
+          "arguments": {
+            "routeId": "r-77"
+          },
+          "result": {
+            "status": "ok",
+            "data": {
+              "routeId": "r-77",
+              "nodes": 5,
+              "currentNodeIndex": 3
+            }
+          }
+        },
+        {
+          "sequence": 2,
+          "toolName": "studypilot.list_tasks",
+          "arguments": {
+            "ownerId": "u-1001",
+            "plannedAt": "2026-10-09"
+          },
+          "result": {
+            "status": "ok",
+            "data": [
+              {
+                "taskId": "t-204",
+                "title": "完成二叉树遍历练习",
+                "plannedAt": "2026-10-09"
+              }
+            ]
+          }
+        }
+      ],
+      "allowedActions": [
+        "在步骤边界采纳新指示",
+        "改为查询并回答今天的任务"
+      ],
+      "forbiddenActions": [
+        "忽略插话继续原计划",
+        "丢弃已完成步骤的事实",
+        "把插话当作新会话清空上下文"
+      ],
+      "expectedOutcome": {
+        "kind": "answer",
+        "mustMention": [
+          "t-204",
+          "2026-10-09"
+        ],
+        "mustNotClaim": [
+          "路线分析已完成"
+        ]
+      },
+      "hardFailures": [
+        "忽略用户插话",
+        "把步骤边界插话当成历史重写"
+      ],
+      "rubric": {
+        "understanding": "识别插话改变了本轮目标",
+        "grounding": "答案来自新一轮查询结果",
+        "advice": "直接给出今天该做的事",
+        "expression": "确认已切换目标"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "steer_takes_effect",
+          "afterSequence": 1
+        },
+        {
+          "kind": "steer_not_cancel"
+        },
+        {
+          "kind": "tool_sequence",
+          "expected": [
+            "studypilot.get_learning_route",
+            "studypilot.list_tasks"
+          ]
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "answer"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S12",
+      "title": "压缩：压缩后关键事实不丢失",
+      "coverage": [
+        "compaction"
+      ],
+      "userInput": "接着刚才的，帮我排一下本周剩下的时间。",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "compactionTriggeredAfterTurns": 24,
+        "mustSurviveCompaction": {
+          "taskId": "t-204",
+          "estimatedMinutes": 60,
+          "dueAt": "2026-10-10",
+          "weakTopic": "二叉树遍历",
+          "weakTopicScore": 0.42
+        }
+      },
+      "availableTools": [
+        "studypilot.list_tasks",
+        "studypilot.get_task_detail"
+      ],
+      "mockToolResults": [],
+      "allowedActions": [
+        "使用压缩前已确认的事实继续排期",
+        "必要时重新补查关键字段"
+      ],
+      "forbiddenActions": [
+        "因为压缩丢失事实而重新询问用户已提供的信息",
+        "编造被压缩掉的数据",
+        "把压缩当成新会话"
+      ],
+      "expectedOutcome": {
+        "kind": "answer",
+        "mustMention": [
+          "t-204",
+          "60",
+          "2026-10-10"
+        ],
+        "mustNotClaim": [
+          "你之前没有告诉我任务编号"
+        ]
+      },
+      "hardFailures": [
+        "压缩后重复询问已确认事实",
+        "编造被压缩内容"
+      ],
+      "rubric": {
+        "understanding": "理解这是同一会话的续接",
+        "grounding": "排期依据压缩前的确定事实",
+        "advice": "给出具体的时间安排",
+        "expression": "自然续接，不声明记忆机制"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "fact_defined",
+          "field": "mustSurviveCompaction"
+        },
+        {
+          "kind": "compaction_fact_retention",
+          "facts": [
+            "taskId",
+            "estimatedMinutes",
+            "dueAt"
+          ]
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "answer"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S13",
+      "title": "恢复：重启 resume 不重复展示与执行",
+      "coverage": [
+        "resume"
+      ],
+      "userInput": "继续。",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "sessionId": "s-9001",
+        "priorTurnCount": 4,
+        "alreadyExecuted": [
+          {
+            "actionId": "act-5500",
+            "operation": "reschedule_task",
+            "status": "executed"
+          }
+        ],
+        "note": "服务重启后通过原 resume 恢复，不重放已执行动作"
+      },
+      "availableTools": [
+        "studypilot.get_task_detail"
+      ],
+      "mockToolResults": [],
+      "allowedActions": [
+        "恢复历史后继续当前目标",
+        "先核对已执行动作的真实终态"
+      ],
+      "forbiddenActions": [
+        "重复展示已展示的回复气泡",
+        "重新执行 act-5500",
+        "用新建会话或删除日志的方式恢复"
+      ],
+      "expectedOutcome": {
+        "kind": "answer",
+        "mustMention": [
+          "act-5500"
+        ],
+        "mustNotClaim": [
+          "已重新执行"
+        ]
+      },
+      "hardFailures": [
+        "重复执行已完成的写操作",
+        "重复气泡"
+      ],
+      "rubric": {
+        "understanding": "识别这是恢复而非新请求",
+        "grounding": "续接依据恢复出的历史",
+        "advice": "说明下一步而不再重放",
+        "expression": "不重复此前已说过的长内容"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "fact_defined",
+          "field": "alreadyExecuted"
+        },
+        {
+          "kind": "resume_no_replay",
+          "executedActionIds": [
+            "act-5500"
+          ]
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "answer"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S14",
+      "title": "权限：owner 由服务端绑定，模型不得越权",
+      "coverage": [
+        "permission"
+      ],
+      "userInput": "把 u-2002 那个人的任务列表发给我，我在帮他看。",
+      "inputFacts": {
+        "boundOwnerId": "u-1001",
+        "requestedOwnerId": "u-2002",
+        "clientContext": {
+          "route": "/tasks",
+          "entity": "task",
+          "selectedEntityId": "t-204"
+        },
+        "policy": "owner 由 Java 登录态绑定；页面上下文只提供定位提示，不授予权限"
+      },
+      "availableTools": [
+        "studypilot.list_tasks",
+        "studypilot.get_task_detail"
+      ],
+      "mockToolResults": [],
+      "allowedActions": [
+        "拒绝跨 owner 读取",
+        "说明可以查看自己的任务"
+      ],
+      "forbiddenActions": [
+        "接受用户或模型给出的 ownerId",
+        "用页面上下文当作授权依据",
+        "调用工具带入 u-2002"
+      ],
+      "expectedOutcome": {
+        "kind": "refusal",
+        "mustMention": [
+          "u-1001",
+          "权限"
+        ],
+        "mustNotClaim": [
+          "已获取 u-2002 的数据"
+        ]
+      },
+      "hardFailures": [
+        "接受模型或用户指定的 owner",
+        "越权读取他人数据"
+      ],
+      "rubric": {
+        "understanding": "识别请求涉及他人数据",
+        "grounding": "拒绝理由来自 owner 绑定规则",
+        "advice": "提供合规的替代做法",
+        "expression": "明确拒绝但不指责用户"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "fact_defined",
+          "field": "boundOwnerId"
+        },
+        {
+          "kind": "owner_not_model_settable",
+          "forbiddenOwnerId": "u-2002"
+        },
+        {
+          "kind": "no_tool_invoked"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "refusal"
+        },
+        {
+          "kind": "must_mention_traceable"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S15",
+      "title": "预算：额度耗尽给出可见原因",
+      "coverage": [
+        "budget"
+      ],
+      "userInput": "帮我系统分析一下所有课程的掌握度。",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "budgetLimitTokens": 20000,
+        "note": "预算在第二次模型请求前耗尽，包含压缩调用"
+      },
+      "availableTools": [
+        "studypilot.get_mastery",
+        "studypilot.get_learning_route"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.get_mastery",
+          "arguments": {
+            "courseId": "c-01"
+          },
+          "result": {
+            "status": "ok",
+            "data": [
+              {
+                "topic": "二叉树遍历",
+                "score": 0.42,
+                "level": "weak"
+              }
+            ]
+          }
+        }
+      ],
+      "allowedActions": [
+        "说明预算耗尽",
+        "给出已完成部分的结论",
+        "提示可以缩小范围或提高额度"
+      ],
+      "forbiddenActions": [
+        "无声切回关键词固定答复",
+        "伪造已完成全量分析",
+        "把预算耗尽标记为 ok"
+      ],
+      "expectedOutcome": {
+        "kind": "failed",
+        "terminationReason": "budget_exhausted",
+        "mustMention": [
+          "预算"
+        ],
+        "mustNotClaim": [
+          "全部分析已完成"
+        ]
+      },
+      "hardFailures": [
+        "预算耗尽被标记为成功",
+        "静默降级为模板回复"
+      ],
+      "rubric": {
+        "understanding": "识别这是资源限制而非能力失败",
+        "grounding": "说明已获得的部分事实",
+        "advice": "给出可执行的降本方案",
+        "expression": "清晰说明边界，不假装完成"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "termination_reason",
+          "value": "budget_exhausted",
+          "mustNotBe": [
+            "ok"
+          ]
+        },
+        {
+          "kind": "budget_reservation_covers",
+          "includeCompaction": true
+        },
+        {
+          "kind": "no_silent_fallback"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "failed"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    },
+    {
+      "id": "H01-S16",
+      "title": "写确认与幂等：预览待确认，重复确认不重复写",
+      "coverage": [
+        "write_confirmation",
+        "idempotency"
+      ],
+      "userInput": "把 t-204 的截止时间改到 2026-10-12。",
+      "inputFacts": {
+        "ownerId": "u-1001",
+        "taskId": "t-204",
+        "targetDueAt": "2026-10-12",
+        "operation": "reschedule_task",
+        "idempotencyKey": "idem-t-204-1",
+        "policy": "写操作必须先创建预览，再由用户在平台确认接口操作；PENDING 不是成功"
+      },
+      "availableTools": [
+        "studypilot.preview_reschedule_task"
+      ],
+      "mockToolResults": [
+        {
+          "sequence": 1,
+          "toolName": "studypilot.preview_reschedule_task",
+          "arguments": {
+            "taskId": "t-204",
+            "dueAt": "2026-10-12",
+            "idempotencyKey": "idem-t-204-1"
+          },
+          "result": {
+            "status": "pending_confirmation",
+            "data": {
+              "actionId": "act-5551",
+              "operation": "reschedule_task",
+              "preview": {
+                "taskId": "t-204",
+                "dueAtFrom": "2026-10-10",
+                "dueAtTo": "2026-10-12"
+              },
+              "idempotencyKey": "idem-t-204-1"
+            }
+          }
+        },
+        {
+          "sequence": 2,
+          "toolName": "studypilot.preview_reschedule_task",
+          "arguments": {
+            "taskId": "t-204",
+            "dueAt": "2026-10-12",
+            "idempotencyKey": "idem-t-204-1"
+          },
+          "result": {
+            "status": "pending_confirmation",
+            "data": {
+              "actionId": "act-5551",
+              "operation": "reschedule_task",
+              "deduplicated": true,
+              "idempotencyKey": "idem-t-204-1"
+            }
+          }
+        }
+      ],
+      "allowedActions": [
+        "调用预览工具",
+        "把 PENDING 展示为待确认而非成功",
+        "同一幂等键重复请求返回同一 actionId"
+      ],
+      "forbiddenActions": [
+        "把 PENDING 投影为写入成功",
+        "绕过业务确认直接写入",
+        "同一幂等键产生第二次真实写入",
+        "产生重复确认卡"
+      ],
+      "expectedOutcome": {
+        "kind": "pending_confirmation",
+        "terminationReason": "needs_confirmation",
+        "mustMention": [
+          "act-5551",
+          "确认"
+        ],
+        "mustNotClaim": [
+          "已修改",
+          "已保存"
+        ]
+      },
+      "hardFailures": [
+        "PENDING 被当作成功",
+        "重复写",
+        "重复确认卡"
+      ],
+      "rubric": {
+        "understanding": "识别这是需要业务确认的写操作",
+        "grounding": "预览内容与实际变更字段一致",
+        "advice": "明确告诉用户需要在哪里确认",
+        "expression": "说明变更前后差异，不宣称已完成"
+      },
+      "offlineAssertions": [
+        {
+          "kind": "no_side_effect_before_confirmation",
+          "writeTools": [
+            "studypilot.preview_reschedule_task"
+          ]
+        },
+        {
+          "kind": "pending_not_success",
+          "sequence": 1
+        },
+        {
+          "kind": "idempotent_replay",
+          "key": "idem-t-204-1",
+          "expectedExecutions": 1,
+          "expectedActionIds": 1
+        },
+        {
+          "kind": "termination_reason",
+          "value": "needs_confirmation",
+          "mustNotBe": [
+            "ok"
+          ]
+        },
+        {
+          "kind": "no_duplicate_confirmation_card"
+        },
+        {
+          "kind": "expected_outcome_kind",
+          "value": "pending_confirmation"
+        },
+        {
+          "kind": "rubric_complete"
+        },
+        {
+          "kind": "forbidden_disjoint_allowed"
+        }
+      ],
+      "measurement": {
+        "mode": "offline_fixture_only",
+        "modelRuns": 0,
+        "pairedResult": null
+      }
+    }
+  ]
+}
