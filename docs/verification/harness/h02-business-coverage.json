@@ -7,7 +7,7 @@
   "cross_contract_provenance": {
     "minimax": {
       "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-minimax",
-      "head_commit": "ebb6f2b95563d71f6a43ac65b1c56bf3f59b31d5",
+      "head_commit": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
       "schema_path": "contracts/agent-capabilities/manifest.schema.json",
       "schema_sha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
       "manifest_path": "contracts/agent-capabilities/generated/manifest.json",
@@ -17,9 +17,9 @@
       "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-deepseek",
       "head_commit": "e92fc157c85f340f6464bc13b0e1c5c7e2207f03",
       "metadata_path": "contracts/agent-capabilities/metadata.yaml",
-      "metadata_sha256": "8d4460c681833ffccf8485ce901d71029ec72460cd6ea35ad4ebaa37cd62eaf6",
+      "metadata_sha256": "0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a",
       "semantics_path": "agent-service/tests/fixtures/capability-semantics.json",
-      "semantics_sha256": "7be70154260f45a7a810d1df3cbf7738d74dad293564fd98ebc06334f5baad11"
+      "semantics_sha256": "7ecfe214eee06342c9ccb17301a9777ebef0a0e5734099cf1bc2a2a78a542020"
     }
   },
   "coverage_summary": {
@@ -152,7 +152,8 @@
       "requiresAuth": true,
       "mappedBackendControllers": [
         "RoadmapController",
-        "RoadmapUpgradeController"
+        "RoadmapUpgradeController",
+        "RoadmapDiagnosticController"
       ],
       "associatedRegisteredTools": [
         "roadmap.current.get",
@@ -168,8 +169,11 @@
       ],
       "pendingTools": [],
       "userExclusiveActions": [],
-      "unregisteredCapabilities": [],
-      "notes": "路线图总览。enroll 与 upgrade 为 HIGH 风险写操作，H02 阶段严格禁用。"
+      "unregisteredCapabilities": [
+        "POST /api/roadmaps/current/diagnostic",
+        "GET /api/roadmaps/current/diagnostic"
+      ],
+      "notes": "路线图总览，涵盖路线报名与升级，以及学习路线初始诊断测试（RoadmapDiagnosticController，未注册为 Agent 工具，用户交互评估）。enroll 与 upgrade 为 HIGH 风险写操作，H02 阶段严格禁用。"
     },
     {
       "routeName": "roadmap-stage",
@@ -178,7 +182,8 @@
       "category": "LEARNING_CORE",
       "requiresAuth": true,
       "mappedBackendControllers": [
-        "RoadmapController"
+        "RoadmapController",
+        "RoadmapStageGraduationController"
       ],
       "associatedRegisteredTools": [
         "roadmap.stage.get"
@@ -189,8 +194,11 @@
       "disabledTools": [],
       "pendingTools": [],
       "userExclusiveActions": [],
-      "unregisteredCapabilities": [],
-      "notes": "路线阶段详情页，支持只读阶段查询。"
+      "unregisteredCapabilities": [
+        "POST /api/roadmaps/current/stages/{stageId}/graduation",
+        "GET /api/roadmaps/current/stages/{stageId}/graduation"
+      ],
+      "notes": "路线阶段详情页，支持只读阶段查询，以及阶段结业考核申请与查询（RoadmapStageGraduationController，未注册为 Agent 工具，用户专属结业评估）。"
     },
     {
       "routeName": "roadmap-module",
@@ -354,7 +362,8 @@
       "category": "MATERIALS",
       "requiresAuth": true,
       "mappedBackendControllers": [
-        "MaterialController"
+        "MaterialController",
+        "WebSearchResultController"
       ],
       "associatedRegisteredTools": [
         "materials.list",
@@ -371,7 +380,7 @@
       "pendingTools": [],
       "userExclusiveActions": [],
       "unregisteredCapabilities": [],
-      "notes": "资料库列表。外部文本与网页导入为写工具，当前禁用。"
+      "notes": "资料库列表。支持文本导入与外部网页搜索结果导入（WebSearchResultController -> materials.web.import，写工具禁用）。"
     },
     {
       "routeName": "material-detail",
@@ -566,31 +575,42 @@
       "routeName": "agent-plan",
       "path": "/agent/plan",
       "component": "PlanChatView.vue",
-      "category": "MOCK",
+      "category": "AGENT_FACADE",
       "requiresAuth": true,
-      "mappedBackendControllers": [],
+      "mappedBackendControllers": [
+        "AgentFacadeController"
+      ],
       "associatedRegisteredTools": [],
       "allowedTools": [],
       "disabledTools": [],
       "pendingTools": [],
       "userExclusiveActions": [],
-      "unregisteredCapabilities": [],
-      "notes": "前端 Mock 对话计划生成页，无对应注册 Agent 工具。"
+      "unregisteredCapabilities": [
+        "POST /api/agent/plan-conversations",
+        "POST /api/agent/plan-conversations/{id}/messages",
+        "GET /api/agent/plan-conversations/{id}",
+        "POST /api/agent/plan-conversations/{id}/confirm"
+      ],
+      "notes": "对话生成计划页面，对接 AgentFacadeController REST 门面网关与 Python 服务端交互，未注册独立 AgentToolDescriptor 目录工具。"
     },
     {
       "routeName": "agent-tasks",
       "path": "/agent/tasks",
       "component": "TaskAgentView.vue",
-      "category": "MOCK",
+      "category": "AGENT_FACADE",
       "requiresAuth": true,
-      "mappedBackendControllers": [],
+      "mappedBackendControllers": [
+        "AgentFacadeController"
+      ],
       "associatedRegisteredTools": [],
       "allowedTools": [],
       "disabledTools": [],
       "pendingTools": [],
       "userExclusiveActions": [],
-      "unregisteredCapabilities": [],
-      "notes": "前端 Mock 任务 Agent 页面，无对应注册 Agent 工具。"
+      "unregisteredCapabilities": [
+        "POST /api/agent/task-conversations"
+      ],
+      "notes": "任务 Agent 原型界面，对接 AgentFacadeController 任务会话网关，未注册独立 AgentToolDescriptor 目录工具。"
     },
     {
       "routeName": "activity",
@@ -2426,6 +2446,62 @@
         "POST /api/auth/logout"
       ],
       "reason": "学习者账号与凭据管理；严格用户专属操作，禁止 Agent 代理。"
+    }
+  ],
+  "backend_controller_audit": [
+    {
+      "controllerName": "WebSearchResultController",
+      "package": "com.moxiao.studypilot.material.api",
+      "primaryRoute": "materials",
+      "endpoints": [
+        "POST /api/web-search-results/{resultId}/import"
+      ],
+      "mappedAgentTool": "materials.web.import",
+      "classification": "REGISTERED_TOOL_WRITE",
+      "status": "disabled",
+      "reason": "对应写工具 materials.web.import；受 Task H11 规则约束处于 disabled 状态。"
+    },
+    {
+      "controllerName": "RoadmapStageGraduationController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "roadmap-stage",
+      "endpoints": [
+        "POST /api/roadmaps/current/stages/{stageId}/graduation",
+        "GET /api/roadmaps/current/stages/{stageId}/graduation"
+      ],
+      "mappedAgentTool": null,
+      "classification": "UNREGISTERED_BUSINESS_OPERATION",
+      "status": "unregistered_in_catalog",
+      "reason": "阶段结业属于里程碑式综合考核，为用户交互式操作，未在 Java AgentToolRegistry 中注册独立 Agent 工具。"
+    },
+    {
+      "controllerName": "RoadmapDiagnosticController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "roadmap",
+      "endpoints": [
+        "POST /api/roadmaps/current/diagnostic",
+        "GET /api/roadmaps/current/diagnostic"
+      ],
+      "mappedAgentTool": null,
+      "classification": "UNREGISTERED_BUSINESS_OPERATION",
+      "status": "unregistered_in_catalog",
+      "reason": "初始路线诊断测试评估，由学习者在路线首页主动发起，未在 Java AgentToolRegistry 中注册独立 Agent 工具。"
+    },
+    {
+      "controllerName": "AgentFacadeController",
+      "package": "com.moxiao.studypilot.agent.api",
+      "primaryRoute": "agent-plan",
+      "endpoints": [
+        "POST /api/agent/plan-conversations",
+        "POST /api/agent/plan-conversations/{id}/messages",
+        "GET /api/agent/plan-conversations/{id}",
+        "POST /api/agent/plan-conversations/{id}/confirm",
+        "POST /api/agent/task-conversations"
+      ],
+      "mappedAgentTool": null,
+      "classification": "CLIENT_FACADE_GATEWAY",
+      "status": "unregistered_in_catalog",
+      "reason": "面向前端的会话网关 Controller，负责鉴权并将对话委托给 Python agent-service，自身非供 Agent 调用的工具描述符。"
     }
   ]
 }

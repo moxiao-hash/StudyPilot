@@ -89,7 +89,10 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
             category: 'GENERAL',
             description: `Tool ${name}`,
             side_effect: { effect: isWrite ? 'WRITE' : 'READ', risk_level: 'LOW' },
-            exposure: { state: isDisabled ? 'disabled' : 'allowed', reason: 'baseline' }
+            exposure: { state: isDisabled ? 'disabled' : 'allowed', reason: 'baseline' },
+            source_provenance: {
+              handler: 'MockService.handle'
+            }
           };
         })
       };
@@ -131,7 +134,11 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
             state: WRITE_TOOLS.has(name) || name.startsWith('developer.') || name.startsWith('runner.') ? 'disabled' : 'allowed',
             reason: 'mock reason'
           },
+          source_provenance: {
+            handler: 'MockService.handle'
+          },
           authoritative_facts: name === 'roadmap.current.get' ? [{ fact: 'overall_progress', meaning: 'pct' }] : [],
+          output_schema: name === 'roadmap.current.get' ? { type: 'object', properties: { overall_progress: { type: 'number' } } } : { type: 'object', properties: {} },
           examples: [
             {
               name: 'default_example',
@@ -226,6 +233,77 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
         { fact: 'fabricated_ai_score', meaning: 'invented score' }
       ];
       expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_UNVERIFIED_AUTHORITATIVE_FACT');
+    });
+
+    it('NEG-10: 工具缺少描述时严格报错拒绝 (ERR_MISSING_DESCRIPTION)', () => {
+      const manifest = buildBaseMockManifest();
+      // @ts-expect-error testing missing description
+      delete manifest.tools[0].description;
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_MISSING_DESCRIPTION');
+    });
+
+    it('NEG-11: 工具包含未知/未声明属性时严格报错拒绝 (ERR_UNKNOWN_TOOL_FIELD)', () => {
+      const manifest = buildBaseMockManifest();
+      manifest.tools[0].unrecognized = 42;
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_UNKNOWN_TOOL_FIELD');
+    });
+
+    it('NEG-12: 示例输出实例类型不匹配时严格报错拒绝 (ERR_INVALID_OUTPUT_INSTANCE)', () => {
+      const manifest = buildBaseMockManifest();
+      manifest.tools[0].output_schema = { type: 'object', properties: {} };
+      manifest.tools[0].examples = [
+        {
+          name: 'invalid_output',
+          input: {},
+          expect: 'should fail',
+          outcome: 'ok',
+          output: 42
+        }
+      ];
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_INVALID_OUTPUT_INSTANCE');
+    });
+
+    it('NEG-13: 示例输出中存在深层嵌套 ownerId 时严格报错拒绝 (ERR_ILLEGAL_EXAMPLE_OWNER)', () => {
+      const manifest = buildBaseMockManifest();
+      manifest.tools[0].examples = [
+        {
+          name: 'nested_owner_output',
+          input: {},
+          expect: 'should fail',
+          outcome: 'ok',
+          output: { nested: { ownerId: 'injected' } }
+        }
+      ];
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_ILLEGAL_EXAMPLE_OWNER');
+    });
+
+    it('NEG-14: 任意未声明事实 (made_up_metric_893) 均被严格拦截 (ERR_UNVERIFIED_AUTHORITATIVE_FACT)', () => {
+      const manifest = buildBaseMockManifest();
+      manifest.tools[0].authoritative_facts = [
+        { fact: 'made_up_metric_893', meaning: 'system truth' }
+      ];
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_UNVERIFIED_AUTHORITATIVE_FACT');
+    });
+
+    it('NEG-15: 虚构处理类 (UnregisteredClass.noSuchMethod) 被严格拦截 (ERR_FICTIONAL_HANDLER)', () => {
+      const manifest = buildBaseMockManifest();
+      manifest.tools[0].source_provenance = {
+        handler: 'UnregisteredClass.noSuchMethod'
+      };
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_FICTIONAL_HANDLER');
+    });
+  });
+
+  describe('5. 后端公开 Controller 与未注册业务操作审计 (Controller Auditing)', () => {
+    it('覆盖表完整审计 RoadmapStageGraduationController、RoadmapDiagnosticController、AgentFacadeController 与 WebSearchResultController', async () => {
+      const coverageModule = await import('../../../docs/verification/harness/h02-business-coverage.json');
+      const coverage = coverageModule.default || coverageModule;
+      const auditedControllers = (coverage.backend_controller_audit || []).map((c: { controllerName: string }) => c.controllerName);
+
+      expect(auditedControllers).toContain('RoadmapStageGraduationController');
+      expect(auditedControllers).toContain('RoadmapDiagnosticController');
+      expect(auditedControllers).toContain('AgentFacadeController');
+      expect(auditedControllers).toContain('WebSearchResultController');
     });
   });
 });
