@@ -40,6 +40,13 @@ public final class AgentToolOutputValidator {
                 throw violation(path, "枚举值不在契约内");
             }
         }
+        if (value != null && value.isNull() && schema.path("type").isArray()) {
+            for (JsonNode type : schema.path("type")) {
+                if ("null".equals(type.asText())) {
+                    return;
+                }
+            }
+        }
         String expected = expectedType(schema);
         if (expected == null) {
             // 没有声明类型：只做 enum 校验，其余不限制。

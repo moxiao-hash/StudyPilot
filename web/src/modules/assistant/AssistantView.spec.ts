@@ -335,7 +335,7 @@ describe('AssistantView', () => {
 
     // 半成品文字被明确替换，不再伪装成已完成回答
     expect(wrapper.text()).not.toContain('半截临时文字')
-    expect(wrapper.text()).toContain('回答生成失败，请重试')
+    expect(wrapper.text()).toContain('本轮查询或操作未完成，请重试')
     expect(wrapper.find('.assistant-message.status-failed').exists()).toBe(true)
     wrapper.unmount()
   })
@@ -759,7 +759,7 @@ describe('AssistantView', () => {
       payload: { turnId: capturedTurnId, errorType: 'TimeoutException' },
     })
     await flushPromises()
-    expect(wrapper.text()).toContain('回答生成失败，请重试')
+    expect(wrapper.text()).toContain('本轮查询或操作未完成，请重试')
 
     // 迟到的 ASSISTANT_DELTA 到达
     emitStreamEvent({
@@ -772,7 +772,7 @@ describe('AssistantView', () => {
 
     // 绝不能复活或包含该迟到增量
     expect(wrapper.text()).not.toContain('迟到的恶意/僵尸增量')
-    expect(wrapper.text()).toContain('回答生成失败，请重试')
+    expect(wrapper.text()).toContain('本轮查询或操作未完成，请重试')
     wrapper.unmount()
   })
 

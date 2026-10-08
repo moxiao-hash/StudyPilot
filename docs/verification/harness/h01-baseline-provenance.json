@@ -1,0 +1,30 @@
+{
+  "purpose": "local isolated H01 source snapshot; not acceptance or merge",
+  "sources": [
+    {
+      "path": "/Users/moxiao/IdeaProjects/project-zcode-task-33",
+      "head": "0fe122d2169ed4a9ec6e3a1e65ce514883b0fb40",
+      "scope": [
+        "web",
+        "ai-service"
+      ],
+      "dirty_status": "M ai-service/tests/unified_agent/test_supervisor_read_only_reply.py\n M web/src/modules/assistant/AssistantView.spec.ts\n M web/src/modules/assistant/AssistantView.vue"
+    },
+    {
+      "path": "/Users/moxiao/IdeaProjects/project-minimax-task-33",
+      "head": "9c8af123c68e556ab53b50549178344e96426c40",
+      "scope": [
+        "backend"
+      ],
+      "dirty_status": ""
+    },
+    {
+      "path": "/Users/moxiao/Desktop/Deepseek Harness",
+      "head": "ddefc45fbc7f8e46dd73185e68295696d1297887",
+      "scope": [
+        "read-only original harness"
+      ],
+      "dirty_status": "?? .dsh-artifacts/\n?? _dsh_v4.ts\n?? workspaces/"
+    }
+  ]
+}

@@ -32,3 +32,6 @@ http-client.private.env.json
 *.log
 .DS_Store
 .superpowers/
+
+# Local StudyPilot process state and logs
+.studypilot-runtime/

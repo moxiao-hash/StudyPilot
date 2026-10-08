@@ -569,7 +569,7 @@ function handleTurnFailure(turnId?: string, errorType?: string) {
     if (assistantMsg) {
       // 严禁将失败的半成品增量视为已完成回答，替换为明确失败提示
       assistantMsg.status = 'failed'
-      assistantMsg.content = '（回答生成失败，请重试）'
+      assistantMsg.content = '（本轮查询或操作未完成，请重试）'
     }
   }
   if (activeTurnId.value === turnId) {

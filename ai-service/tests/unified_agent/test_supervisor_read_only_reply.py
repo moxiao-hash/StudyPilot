@@ -860,3 +860,72 @@ def test_read_only_plan_missing_or_non_numeric_node_counts_does_not_compose_zero
         )
 
     asyncio.run(run())
+
+
+def test_empty_route_still_summarizes_other_learning_facts():
+    async def run():
+        java = FakeJavaBackend(
+            data_overrides={
+                "learning.context.get": {"roadmap": None, "learning": {}},
+                "roadmap.current.get": None,
+            }
+        )
+        plan = AssistantPlan(
+            intent=PlanIntent.LEARNING_QUERY,
+            confidence=0.95,
+            summary="查询学习路线进度和学习任务",
+            steps=[
+                AssistantPlanStep(step_id="s1", tool_name="roadmap.current.get"),
+                AssistantPlanStep(step_id="s2", tool_name="learning.tasks.list"),
+            ],
+        )
+        service = UnifiedAgentSupervisor(
+            java,
+            model_name="test",
+            planner=FakePlanner(PlannerOutcome(status=PlannerStatus.PLAN, plan=plan)),
+        )
+        convo = await service.create_conversation("user-1")
+        result = await service.send_message(
+            convo.conversation_id, "当前学习进度", "empty-route", "user-1", {}
+        )
+        assert result.status == AssistantConversationStatus.COMPLETED
+        assert "尚未加入" in result.reply
+        assert "2 项任务" in result.reply
+
+    asyncio.run(run())
+
+
+def test_real_roadmap_service_error_is_not_an_empty_success():
+    import pytest
+
+    from app.clients.java_backend import JavaBackendError
+
+    class BrokenBackend(FakeJavaBackend):
+        async def invoke_agent_tool(self, name, owner_id, arguments, idempotency_key=None):
+            if name == "roadmap.current.get":
+                raise JavaBackendError(
+                    "backend failed",
+                    path="/internal/agent-tools/roadmap.current.get/invoke",
+                    status_code=500,
+                )
+            return await super().invoke_agent_tool(name, owner_id, arguments, idempotency_key)
+
+    async def run():
+        plan = AssistantPlan(
+            intent=PlanIntent.LEARNING_QUERY,
+            confidence=0.95,
+            summary="查询学习路线进度",
+            steps=[AssistantPlanStep(step_id="s1", tool_name="roadmap.current.get")],
+        )
+        service = UnifiedAgentSupervisor(
+            BrokenBackend(),
+            model_name="test",
+            planner=FakePlanner(PlannerOutcome(status=PlannerStatus.PLAN, plan=plan)),
+        )
+        convo = await service.create_conversation("user-1")
+        with pytest.raises(JavaBackendError):
+            await service.send_message(
+                convo.conversation_id, "当前学习进度", "broken-route", "user-1", {}
+            )
+
+    asyncio.run(run())

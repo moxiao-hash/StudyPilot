@@ -95,3 +95,37 @@ npm run build
 
 浏览器只调用 Java `/api/**`。`/internal/**` 只用于 Java 与 Python 服务间通信，不能
 暴露内部令牌给前端。
+
+## 日常启动与关闭（本机）
+
+在项目根目录执行：
+
+```bash
+./start-project.sh
+./stop-project.sh
+```
+
+启动脚本明确运行 `../project-minimax-task-33/backend` 的后端和
+`../project-zcode-task-33` 的 AI 服务、前端，启动时打印各组件路径与 Git 版本。
+根目录 `ai-service/.venv` 为共享运行环境（两版本依赖声明相同），
+稳定配置与加密会话数据库继续使用根目录 `ai-service` 的已有文件。默认端口分别为
+8080、8000、5173。首次启动或后端源码更新时会构建后端；随后逐项等待健康检查，
+全部成功后输出网页地址。重复启动只复用同目录、同 Git 版本且源码摘要一致的受管理实例；切换版本须先关闭再启动；启动失败会关闭本次
+新启动的服务。进程状态与日志在 `.studypilot-runtime/`，不提交 Git。
+
+运行前需安装 JDK 17、Node.js 和前端依赖，并准备 `ai-service/.venv`、已有
+`ai-service/.env` 稳定密钥及后端数据库配置。MySQL 必须已运行。脚本不会自动
+安装依赖、生成或替换密钥，也不会关闭共享 MySQL。
+
+按用户设置，启动时会自动关闭占用目标端口的其他服务及其子进程，先正常退出、
+超时后强制结束，再启动 StudyPilot。仅关闭监听进程及其后代，不关闭 IDEA 等父应用。
+重复启动会复用已由脚本管理的 StudyPilot 服务。需要不同端口时仍可临时指定，
+后端、AI 服务与前端之间的地址会同步调整，例如：
+
+```bash
+STUDYPILOT_BACKEND_PORT=8081 ./start-project.sh
+```
+
+另可设置 `STUDYPILOT_AI_PORT`、`STUDYPILOT_WEB_PORT`。关闭时无需再传端口；
+关闭脚本按记录的进程身份关闭三个服务和子进程，先正常退出，超时后强制结束，
+并检查进程及端口。重复关闭可安全执行。业务数据和配置会保留。

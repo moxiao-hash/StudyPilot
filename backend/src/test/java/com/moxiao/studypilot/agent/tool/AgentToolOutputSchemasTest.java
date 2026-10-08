@@ -20,6 +20,14 @@ class AgentToolOutputSchemasTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    @Test
+    void onlyDeclaredNullableResultAcceptsNull() {
+        AgentToolOutputValidator.validate("roadmap.current.get",
+                AgentToolOutputSchemas.schemaFor("roadmap.current.get", mapper), mapper.nullNode());
+        expectReject("roadmap.stage.get", "null", "路线阶段不允许空成功结果");
+        expectReject("roadmap.current.get", "{}", "非空路线仍要求完整紧凑字段");
+    }
+
     private void expectReject(String tool, String json, String reason) {
         IllegalStateException exception = assertThrows(IllegalStateException.class,
                 () -> AgentToolOutputValidator.validate(
@@ -102,7 +110,7 @@ class AgentToolOutputSchemasTest {
 
     @Test
     void everyRegisteredSchemaIsStrictlyClosedWithRequiredKeysAndTypedItems() {
-        assertTrue(AgentToolOutputSchemas.registeredTools().size() == 64,
+        assertTrue(AgentToolOutputSchemas.registeredTools().size() == 65,
                 "登记输出契约的工具数必须与冻结目录一致");
         for (String tool : AgentToolOutputSchemas.registeredTools()) {
             assertStrictObject(tool, AgentToolOutputSchemas.schemaFor(tool, mapper), true);

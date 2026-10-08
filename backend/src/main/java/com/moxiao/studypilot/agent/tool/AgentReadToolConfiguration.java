@@ -90,7 +90,8 @@ public class AgentReadToolConfiguration {
     @Bean
     AgentToolHandler roadmapCurrentTool(ObjectMapper mapper, RoadmapQueryService service) {
         return read(mapper, "roadmap.current.get", "ROADMAP", Map.of(), Set.of(),
-                (context, arguments) -> service.currentMap(context.ownerId()));
+                (context, arguments) -> service.currentMapIfPresent(context.ownerId())
+                        .map(AgentRoadmapMapResponse::from).orElse(null));
     }
 
     @Bean
@@ -453,12 +454,12 @@ public class AgentReadToolConfiguration {
     ) {
         return read(mapper, "developer.interface_fallback.preview", "DEVELOPER",
                 Map.of("businessApiAvailable", "boolean", "channel", "string",
-                        "actionKey", "string", "arbitraryTarget", "string"),
-                Set.of("businessApiAvailable", "channel", "actionKey"),
+                        "actionKey", "string", "targetKey", "string"),
+                Set.of("businessApiAvailable", "channel", "actionKey", "targetKey"),
                 (context, arguments) -> policy.preview(
                         arguments.path("businessApiAvailable").asBoolean(),
                         text(arguments, "channel"), text(arguments, "actionKey"),
-                        optionalText(arguments, "arbitraryTarget")));
+                        text(arguments, "targetKey")));
     }
 
     private static AgentToolHandler read(
