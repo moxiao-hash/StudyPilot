@@ -1,4 +1,4 @@
-# H01 证据：MiniMax Code —— Runtime 契约草案与离线验证（Round 2 增补整改）
+# H01 证据：MiniMax Code —— Runtime 契约草案与离线验证（Round 2 最终整改）
 
 状态：**READY_FOR_CODEX ROUND2**（本文件不代表验收通过）。仅 H01，不进入 H02～H12。
 
@@ -57,6 +57,13 @@ Codex 自动复验指出的 4 项具体遗漏已全部整改：
 
 ---
 
+### 1.5 Codex 10:45 追加整改（可选 confirmed 与 questionId 必填）
+Codex 独立复验审查实现 `f272aa50` 时发现 2 个新缺陷：
+1. **省略可选 `confirmed` 时被误拒**：`typedRespondTo.confirmation` 原声明 `confirmed` 可选，但此前 `allOf` 采用 `not: { properties: { confirmed: { const: false } } }`，在 `confirmed` 缺失时由于无属性报错被 `not` 判定为命中禁止分支并报错。现修正为显式条件判断：`if: { required: ["confirmed"], ... }`，仅在显式提供 `confirmed` 时才约束其与 `decision` 一致；省略 `confirmed` 时仅凭 `decision: "CONFIRM" | "REJECT"` 合法生效，矛盾双字段（如 CONFIRM+false、REJECT+true）坚决拒绝。
+2. **强制 `interactionQuestion.questionId` 必填**：此前 `interactionQuestion` 的 `questionId` 未设为必填，导致前端缺少关联锚点。现将其设为必填（REQUIRED），并补充缺失 `questionId` 的负例与专项测试，确保问答往返闭环。
+
+---
+
 ## 2. RED 证据（先于生产改动）
 
 在整改实现前，4 个专项 probe 表现为 ACCEPTED（即漏项）：
@@ -71,9 +78,21 @@ Probe 4 (untyped natural language response): accepted: true -> 应当拒绝
 
 ---
 
+
+### 2.3 10:45 追加整改的 RED 证据
+在修复前验证两项缺陷：
+```
+1. 省略 confirmed 的合法确认答复:
+   SCHEMA: $/respondTo 命中禁止分支 (not) -> 真实缺陷：合法正例被误拒！
+2. 缺失 questionId 的 question 卡:
+   validateMessage 返回 true [] -> 真实缺陷：未包含必须锚点却被放行！
+```
+
+---
+
 ## 3. GREEN 证据（整改后）
 
-### 3.1 本地测试套件全绿（85/85 项通过）
+### 3.1 本地测试套件全绿（91/91 项通过）
 ```bash
 $ cd /Users/moxiao/IdeaProjects/project-harness-h01-minimax
 $ node --test scripts/harness/runtime-contract.test.mjs
@@ -102,9 +121,9 @@ $ node --test scripts/harness/runtime-contract.test.mjs
 ✔ R1: PROGRESS event accepts structured progress and rejects unknown fields (0.76ms)
 ✔ R1: UI_ACTION event accepts closed whitelisted action and rejects arbitrary URL/selector (0.47ms)
 ✔ R3: scenario partial replay succeeds when backed by snapshot state (0.58ms)
-ℹ tests 85
+ℹ tests 91
 ℹ suites 0
-ℹ pass 85
+ℹ pass 91
 ℹ fail 0
 ℹ skipped 0
 ℹ duration_ms 83.37ms
@@ -132,8 +151,8 @@ $ node --test scripts/harness/runtime-contract.test.mjs
 | `contracts/agent-runtime/runtime.schema.json` | 强制 `interactionConfirmation.expectedVersion`；强制 `typedRespondTo` 仅双分支（删除未标型文本分支）；约束 `decision` 与 `confirmed` 强一致 |
 | `contracts/agent-runtime/README.md` | 补充快照约束（`isPartialReplay` 必要前提）、强版本确认答复、决策冲突拦截及 Schema 域隔离声明 |
 | `scripts/harness/runtime-contract.mjs` | 状态机实现严格快照上下文比对（未提供有效快照直接拒绝）；双重拦截 `decision` 与 `confirmed` 矛盾决策 |
-| `scripts/harness/runtime-contract.fixtures.json` | 增加决策冲突、无类型回复、缺失 expectedVersion、缺失 questionId、无快照部分回放等负例实例 |
-| `scripts/harness/runtime-contract.test.mjs` | 测试套件扩充至 85 项，全量覆盖 R1/R2/R3 增补要求 |
+| `scripts/harness/runtime-contract.fixtures.json` | 增加决策冲突、省略 confirmed 正例、无类型回复、缺失 expectedVersion、缺失 questionId、无快照部分回放等实例（67 例） |
+| `scripts/harness/runtime-contract.test.mjs` | 测试套件扩充至 91 项，包含省略 confirmed 正例、矛盾决策反例、缺失 questionId 反例等 |
 | `docs/verification/harness/h01-minimax.md` | 本交付证据文档 |
 
 ---
@@ -150,8 +169,8 @@ $ node --test scripts/harness/runtime-contract.test.mjs
 
 ## 6. 本地提交记录
 
-- 实现提交 Hash：`f272aa50ebb15a7f4393d81c5ff52f78b8366414`
-- 证据更新 Hash：`<本提交>`
+- 实现提交 Hash：`d3a491db26811461ba692a1fc85a92b4522a4daf`
+- 证据提交 Hash：`<本提交>`
 - 分支：`codex/harness-h01-minimax-contract`
 - 基线：`f7311079a83b84c5e7f3a9076ce4efccb3044c86`
 - 状态：已本地提交，未 push，停止等待 Codex 独立复验。
