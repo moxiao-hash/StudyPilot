@@ -478,7 +478,7 @@ $ node --test scripts/harness/baseline-inventory.test.mjs
 
 ### 7.5 场景术语到公共 Runtime 契约的投影（steer ≠ cancel）
 
-16 个场景**保留不变**（id、事实、允许/禁止、硬失败、rubric 均未改；`scenarios` 数组与一轮逐字段相等，已用结构化比对确认）。二轮新增 `publicContractProjection` 块，把本端术语显式投影到公共 schema（`contracts/agent-runtime/runtime.schema.json`，本轮 Owner 为 MiniMax；**本端只声明投影，未修改公共 schema**）：
+16 个场景**实质保留不变**：与一轮相比，逐字段结构化比对结果显示**仅 2 处新增断言**——H01-S10 增加 `cancel_maps_to_cancelled`，H01-S11 增加 `steer_not_cancel`；其余所有字段（id、`userInput`、`inputFacts`、`availableTools`、`mockToolResults`、`allowedActions`、`forbiddenActions`、`expectedOutcome`、`hardFailures`、`rubric`、`measurement`）与一轮**逐字节相等**。二轮新增 `publicContractProjection` 块，把本端术语显式投影到公共 schema（`contracts/agent-runtime/runtime.schema.json`，本轮 Owner 为 MiniMax；**本端只声明投影，未修改公共 schema**）：
 
 | 本端 `expectedOutcome.kind` | 公共事件形状 | `endReason` | `ok` |
 | --- | --- | --- | --- |
@@ -641,7 +641,7 @@ node --test scripts/harness/baseline-inventory.test.mjs
 | 分支 | `codex/harness-h01-deepseek-baseline`（原分支，未切换） |
 | 基线（快照 commit） | `f7311079a83b84c5e7f3a9076ce4efccb3044c86` |
 | 一轮交付提交 | `b63184b56336804de588571f43fd20722724457c`（一轮 Codex HEAD 记为 `61e097f5…`） |
-| 二轮交付提交 | 见本节末「二轮提交」行 |
+| 二轮交付提交 | `ad039d35ea6bb2d7ac682bb4d9216ab3599a8440`（含下列 6 个文件，本地提交，无 push/merge/deploy）；本文档该行 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
 | 测试 | fixtures **61/61**；inventory **34/34**；`--check` 无漂移；R4 独立反例 **10/10** 符合预期（含一轮被误接受的 2 例现被拒） |
 | 证据层级 | mock/offline（无真实模型、无服务、无 DB、未运行桌面 Harness 测试或构建） |
 | 未覆盖项 | 见第 11 节（含 UNVERIFIED 清单） |
@@ -657,7 +657,7 @@ node --test scripts/harness/baseline-inventory.test.mjs
 | 不要只把 dirty 列表全等当机制保护 | 只有**锁定核心路径**被修改才算漂移；无关未跟踪工件（`.dsh-artifacts/`、`_dsh_v4.ts`、`workspaces/`）不算 | `dirtyPath` 过滤 + 「无关未跟踪工件不算漂移」正例测试 |
 | 新增核心变化/preset 变化/profile 变化与不可读的负测试及现状正例 | inventory 侧新增 18 项（含 6 项真实只读正例）；fixtures 侧新增 20 项 | 第 7.4 节 |
 | 补充证据措辞（v4） | 已改：磁盘 v4 产物**只证明存在 v4 产物**，不能证明当前 binary 来自新源码；本轮源码目标 `ddefc45…` 由用户指定；GUI 等价性 UNVERIFIED；无需改安装或让用户选版本 | 第 11 节限制 3 与未覆盖表 |
-| 保留 16 场景并声明术语到公共 uppercase/endReason 的投影；steer 不等于 cancel | `scenarios` 数组与一轮逐字段相等（结构化比对通过）；新增 `publicContractProjection` 与逐场景强制规则 | 第 7.5 节 |
+| 保留 16 场景并声明术语到公共 uppercase/endReason 的投影；steer 不等于 cancel | 场景实质未改（仅 S10/S11 各新增 1 条投影断言，其余字段逐字节相等）；新增 `publicContractProjection` 与逐场景强制规则 | 第 7.5 节 |
 
 ### 12.2 二轮变更文件（仍限于 6 个 Owner 文件）
 
@@ -692,4 +692,4 @@ node scripts/harness/baseline-inventory.mjs --lock          # 复核冻结摘要
 
 未触碰：原 Harness（桌面）源码、原 Task33 工作树、其他 H01 工作树、公共 schema `contracts/agent-runtime/runtime.schema.json`、共享计划/交接/Obsidian、模型配置与密钥。未 push / merge / deploy / 重启服务 / 真实模型评测。
 
-**二轮提交**：交付提交 `ROUND2_COMMIT_PLACEHOLDER`（含上述 6 个文件）；该行 hash 回填的 md-only 提交为最终 HEAD，见回执。
+**二轮提交**：交付提交 `ad039d35ea6bb2d7ac682bb4d9216ab3599a8440`（含上述 6 个文件）；该行 hash 回填的 md-only 提交为最终 HEAD，见回执。
