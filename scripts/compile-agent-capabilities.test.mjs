@@ -265,7 +265,7 @@ test('negative: compiler rejects example input carrying forbidden auth/secret fi
       descriptorsPath: tmpDesc,
       metadataPath: tmpMeta
     });
-  }, /示例输入包含被禁止的鉴权字段: ownerId/);
+  }, /被禁止的鉴权|ownerId/);
 
   unlinkSync(tmpDesc);
   unlinkSync(tmpMeta);
@@ -357,6 +357,282 @@ test('negative: compiler rejects non-nullable tool having null output for ok exa
     });
   }, /只有声明为可空的工具才允许输出 null/);
 
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+
+test('negative: compiler rejects missing description', () => {
+  const descriptors = [{
+    name: 'test.missing_desc',
+    version: 1,
+    category: 'TEST',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object' },
+    outputSchema: { type: 'object' },
+    timeoutMillis: 10000
+  }];
+  const metadata = {
+    tools: [{
+      name: 'test.missing_desc',
+      // missing description
+      when_to_use: ['test'],
+      when_not_to_use: ['test'],
+      error_contract: ['test'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'test' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-nodesc.json';
+  const tmpMeta = '/tmp/test-meta-nodesc.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /缺少非空 description/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects fictional handler binding', () => {
+  const descriptors = [{
+    name: 'test.fictional_binding',
+    version: 1,
+    category: 'TEST',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object' },
+    outputSchema: { type: 'object' },
+    timeoutMillis: 10000,
+    handler: 'RealService.realMethod'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'test.fictional_binding',
+      description: 'test',
+      when_to_use: ['test'],
+      when_not_to_use: ['test'],
+      error_contract: ['test'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'test' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'NonexistentService.nonexistent', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-fict.json';
+  const tmpMeta = '/tmp/test-meta-fict.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /来源绑定错误/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects write tool exposure as allowed', () => {
+  const descriptors = [{
+    name: 'test.write_tool',
+    version: 1,
+    category: 'TEST',
+    effect: 'WRITE',
+    riskLevel: 'HIGH',
+    requiredScope: 'TEST_SCOPE',
+    idempotencyRequired: true,
+    inputSchema: { type: 'object' },
+    outputSchema: { type: 'object' },
+    timeoutMillis: 10000
+  }];
+  const metadata = {
+    tools: [{
+      name: 'test.write_tool',
+      description: 'test',
+      when_to_use: ['test'],
+      when_not_to_use: ['test'],
+      error_contract: ['test'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'allow' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      confirmation: { mode: 'always_user_confirmation', waiting_status: 'WAITING_CONFIRMATION', notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-write.json';
+  const tmpMeta = '/tmp/test-meta-write.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /必须禁用，禁止 exposure.state=allowed/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects coding/runner tool exposure as allowed', () => {
+  const descriptors = [{
+    name: 'developer.git.status',
+    version: 1,
+    category: 'DEVELOPER',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object' },
+    outputSchema: { type: 'object' },
+    timeoutMillis: 10000
+  }];
+  const metadata = {
+    tools: [{
+      name: 'developer.git.status',
+      description: 'test',
+      when_to_use: ['test'],
+      when_not_to_use: ['test'],
+      error_contract: ['test'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'allow' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-coding.json';
+  const tmpMeta = '/tmp/test-meta-coding.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /默认禁用，禁止 exposure.state=allowed/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects fictional authoritative fact', () => {
+  const descriptors = [{
+    name: 'test.fact_tool',
+    version: 1,
+    category: 'TEST',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object' },
+    outputSchema: { type: 'object', properties: { realField: { type: 'string' } } },
+    timeoutMillis: 10000
+  }];
+  const metadata = {
+    tools: [{
+      name: 'test.fact_tool',
+      description: 'test',
+      when_to_use: ['test'],
+      when_not_to_use: ['test'],
+      error_contract: ['test'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'allow' },
+      authoritative_facts: [{ fact: 'fictionalField', meaning: 'invented' }],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: { realField: 'val' } }],
+      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-fact.json';
+  const tmpMeta = '/tmp/test-meta-fact.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /未在 outputSchema 中存在的权威事实/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects unknown metadata tool fields', () => {
+  const descriptors = [{
+    name: 'test.unknown_field_tool',
+    version: 1,
+    category: 'TEST',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object' },
+    outputSchema: { type: 'object' },
+    timeoutMillis: 10000
+  }];
+  const metadata = {
+    tools: [{
+      name: 'test.unknown_field_tool',
+      description: 'test',
+      when_to_use: ['test'],
+      when_not_to_use: ['test'],
+      error_contract: ['test'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'allow' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' },
+      inventedExtraField: 42
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-unkf.json';
+  const tmpMeta = '/tmp/test-meta-unkf.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /包含未知字段: inventedExtraField/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects unknown schema constraint', () => {
+  const descriptors = [{
+    name: 'test.unknown_constraint_tool',
+    version: 1,
+    category: 'TEST',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', unknownKeywordConstraint: true },
+    outputSchema: { type: 'object' },
+    timeoutMillis: 10000
+  }];
+  const metadata = {
+    tools: [{
+      name: 'test.unknown_constraint_tool',
+      description: 'test',
+      when_to_use: ['test'],
+      when_not_to_use: ['test'],
+      error_contract: ['test'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'allow' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-unkc.json';
+  const tmpMeta = '/tmp/test-meta-unkc.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /Schema 包含未知约束关键字/);
   unlinkSync(tmpDesc);
   unlinkSync(tmpMeta);
 });

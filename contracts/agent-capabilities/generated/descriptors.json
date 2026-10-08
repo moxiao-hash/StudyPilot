@@ -127,7 +127,8 @@
     },
     "required" : [ "id", "workspaceId", "relativePath", "canonicalPath", "description", "testEvidence", "evaluationMode", "status", "submissionVersion", "reviewHistory", "createdAt" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapArtifactService.evaluate"
 }, {
   "name" : "artifacts.get",
   "version" : 1,
@@ -257,7 +258,8 @@
     },
     "required" : [ "id", "workspaceId", "relativePath", "canonicalPath", "description", "testEvidence", "evaluationMode", "status", "submissionVersion", "reviewHistory", "createdAt" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapArtifactService.artifact"
 }, {
   "name" : "artifacts.list",
   "version" : 1,
@@ -386,7 +388,8 @@
       "required" : [ "id", "workspaceId", "relativePath", "canonicalPath", "description", "testEvidence", "evaluationMode", "status", "submissionVersion", "reviewHistory", "createdAt" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapArtifactService.artifacts"
 }, {
   "name" : "artifacts.submit",
   "version" : 1,
@@ -399,23 +402,23 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "testEvidence" : {
+      "workspaceId" : {
         "type" : "string"
       },
       "roadmapNodeId" : {
         "type" : "string"
       },
-      "workspaceId" : {
-        "type" : "string"
-      },
-      "relativePath" : {
+      "testEvidence" : {
         "type" : "string"
       },
       "description" : {
         "type" : "string"
+      },
+      "relativePath" : {
+        "type" : "string"
       }
     },
-    "required" : [ "testEvidence", "roadmapNodeId", "workspaceId", "relativePath", "description" ]
+    "required" : [ "workspaceId", "roadmapNodeId", "testEvidence", "description", "relativePath" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -528,7 +531,8 @@
     },
     "required" : [ "id", "workspaceId", "relativePath", "canonicalPath", "description", "testEvidence", "evaluationMode", "status", "submissionVersion", "reviewHistory", "createdAt" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RoadmapArtifactService.submit"
 }, {
   "name" : "assessment.attempt.get",
   "version" : 1,
@@ -644,7 +648,8 @@
     },
     "required" : [ "id", "quizId", "score", "status", "results", "reviewProgress" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "QuizService.getAttempt"
 }, {
   "name" : "assessment.mastery.list",
   "version" : 1,
@@ -693,7 +698,8 @@
       "required" : [ "knowledgePoint", "score", "evidenceCount", "attemptCount", "updatedAt" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "QuizService.listMastery"
 }, {
   "name" : "assessment.node_quiz.generate",
   "version" : 1,
@@ -765,7 +771,8 @@
     },
     "required" : [ "nodeId", "status" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RoadmapLearningLoopService.retryQuiz"
 }, {
   "name" : "assessment.node_quiz.retry",
   "version" : 1,
@@ -837,7 +844,8 @@
     },
     "required" : [ "nodeId", "status" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RoadmapLearningLoopService.retryQuiz"
 }, {
   "name" : "assessment.node_quiz_status.get",
   "version" : 1,
@@ -909,7 +917,8 @@
     },
     "required" : [ "nodeId", "status" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapLearningLoopService.quiz"
 }, {
   "name" : "assessment.quiz.get",
   "version" : 1,
@@ -1024,7 +1033,8 @@
     },
     "required" : [ "id", "kind", "title", "questions" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "QuizService.get"
 }, {
   "name" : "assessment.wrong_question_review.create",
   "version" : 1,
@@ -1065,7 +1075,8 @@
     },
     "required" : [ "id", "quizId", "status", "questionCount", "remainingCount" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "WrongQuestionReviewService.create"
 }, {
   "name" : "assessment.wrong_questions.list",
   "version" : 1,
@@ -1078,14 +1089,14 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "size" : {
-        "type" : "integer"
+      "chapterKey" : {
+        "type" : "string"
       },
       "status" : {
         "type" : "string"
       },
-      "chapterKey" : {
-        "type" : "string"
+      "size" : {
+        "type" : "integer"
       },
       "page" : {
         "type" : "integer"
@@ -1203,7 +1214,8 @@
       "required" : [ "id", "status", "chapterKey", "chapterTitle", "type", "difficulty", "questionText", "latestSelectedAnswers", "correctAnswers", "sources", "wrongCount", "redoCount", "firstWrongAt", "lastWrongAt" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WrongQuestionService.list"
 }, {
   "name" : "assessment.wrong_questions.summary",
   "version" : 1,
@@ -1275,7 +1287,8 @@
     },
     "required" : [ "activeCount", "masteredCount", "chapters" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WrongQuestionService.summary"
 }, {
   "name" : "automation.rules.list",
   "version" : 1,
@@ -1327,7 +1340,8 @@
       "required" : [ "id", "type", "status", "timezone", "localTime", "riskLevel", "requiredScope", "createdAt", "updatedAt" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "AssistantAutomationService.list"
 }, {
   "name" : "automation.settings.get",
   "version" : 1,
@@ -1355,7 +1369,8 @@
     },
     "required" : [ "paused", "updatedAt" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "AssistantAutomationService.settings"
 }, {
   "name" : "developer.code.search",
   "version" : 1,
@@ -1375,7 +1390,7 @@
         "type" : "string"
       }
     },
-    "required" : [ "q", "workspaceId" ]
+    "required" : [ "workspaceId", "q" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -1409,7 +1424,8 @@
     },
     "required" : [ "workspaceId", "query", "matches" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.searchCode"
 }, {
   "name" : "developer.file.read",
   "version" : 1,
@@ -1429,7 +1445,7 @@
         "type" : "string"
       }
     },
-    "required" : [ "path", "workspaceId" ]
+    "required" : [ "workspaceId", "path" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -1453,7 +1469,8 @@
     },
     "required" : [ "workspaceId", "relativePath", "content", "sizeBytes", "truncated" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.readFile"
 }, {
   "name" : "developer.file_tree.get",
   "version" : 1,
@@ -1507,7 +1524,8 @@
     },
     "required" : [ "workspaceId", "rootPath", "entries" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.getFileTree"
 }, {
   "name" : "developer.git.commit",
   "version" : 1,
@@ -1520,23 +1538,23 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "message" : {
-        "type" : "string"
-      },
       "workspaceId" : {
         "type" : "string"
       },
-      "paths" : {
-        "type" : "array"
-      },
-      "changeFingerprint" : {
+      "message" : {
         "type" : "string"
       },
       "expectedHead" : {
         "type" : "string"
+      },
+      "changeFingerprint" : {
+        "type" : "string"
+      },
+      "paths" : {
+        "type" : "array"
       }
     },
-    "required" : [ "message", "workspaceId", "paths", "changeFingerprint", "expectedHead" ]
+    "required" : [ "workspaceId", "message", "expectedHead", "changeFingerprint", "paths" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -1563,7 +1581,8 @@
     },
     "required" : [ "workspaceId", "commitId", "message", "paths", "committedAt" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "WorkspaceDeveloperService.commitConfirmed"
 }, {
   "name" : "developer.git.commit.preview",
   "version" : 1,
@@ -1579,14 +1598,14 @@
       "message" : {
         "type" : "string"
       },
-      "paths" : {
-        "type" : "array"
-      },
       "workspaceId" : {
         "type" : "string"
+      },
+      "paths" : {
+        "type" : "array"
       }
     },
-    "required" : [ "message", "paths", "workspaceId" ]
+    "required" : [ "message", "workspaceId", "paths" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -1616,7 +1635,8 @@
     },
     "required" : [ "workspaceId", "branch", "expectedHead", "changeFingerprint", "paths", "message" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.previewGitCommit"
 }, {
   "name" : "developer.git.diff",
   "version" : 1,
@@ -1651,7 +1671,8 @@
     },
     "required" : [ "workspaceId", "content", "truncated" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.getGitDiff"
 }, {
   "name" : "developer.git.log",
   "version" : 1,
@@ -1664,11 +1685,11 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "limit" : {
-        "type" : "integer"
-      },
       "workspaceId" : {
         "type" : "string"
+      },
+      "limit" : {
+        "type" : "integer"
       }
     },
     "required" : [ "workspaceId" ]
@@ -1689,7 +1710,8 @@
     },
     "required" : [ "workspaceId", "content", "truncated" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.getGitLog"
 }, {
   "name" : "developer.git.push",
   "version" : 1,
@@ -1702,32 +1724,32 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "remoteName" : {
+      "expectedRemoteRef" : {
         "type" : "string"
       },
       "branch" : {
         "type" : "string"
       },
-      "expectedRemoteRef" : {
+      "remoteName" : {
         "type" : "string"
       },
-      "expectedHead" : {
-        "type" : "string"
-      },
-      "expectedRemoteRefCommit" : {
-        "type" : "string"
-      },
-      "remoteUrlDigest" : {
+      "workspaceId" : {
         "type" : "string"
       },
       "timeoutSeconds" : {
         "type" : "integer"
       },
-      "workspaceId" : {
+      "remoteUrlDigest" : {
+        "type" : "string"
+      },
+      "expectedRemoteRefCommit" : {
+        "type" : "string"
+      },
+      "expectedHead" : {
         "type" : "string"
       }
     },
-    "required" : [ "remoteName", "branch", "expectedRemoteRef", "expectedHead", "expectedRemoteRefCommit", "remoteUrlDigest", "timeoutSeconds", "workspaceId" ]
+    "required" : [ "expectedRemoteRef", "branch", "remoteName", "workspaceId", "timeoutSeconds", "remoteUrlDigest", "expectedRemoteRefCommit", "expectedHead" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -1751,7 +1773,8 @@
     },
     "required" : [ "workspaceId", "remoteName", "branch", "pushedCommit", "pushedAt" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "WorkspaceDeveloperService.pushConfirmed"
 }, {
   "name" : "developer.git.push.preview",
   "version" : 1,
@@ -1804,7 +1827,8 @@
     },
     "required" : [ "workspaceId", "remoteName", "remoteUrlDigest", "branch", "expectedHead", "expectedRemoteRef", "expectedRemoteRefCommit", "aheadCount", "timeoutSeconds" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.previewGitPush"
 }, {
   "name" : "developer.git.status",
   "version" : 1,
@@ -1857,7 +1881,8 @@
     },
     "required" : [ "workspaceId", "gitRepository", "clean", "modifiedFiles", "untrackedFiles" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.getGitStatus"
 }, {
   "name" : "developer.interface_fallback.execute",
   "version" : 1,
@@ -1870,20 +1895,20 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "actionKey" : {
-        "type" : "string"
-      },
       "channel" : {
         "type" : "string"
       },
-      "targetKey" : {
+      "actionKey" : {
         "type" : "string"
       },
       "businessApiAvailable" : {
         "type" : "boolean"
+      },
+      "targetKey" : {
+        "type" : "string"
       }
     },
-    "required" : [ "actionKey", "channel", "targetKey", "businessApiAvailable" ]
+    "required" : [ "channel", "actionKey", "businessApiAvailable", "targetKey" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -1922,7 +1947,8 @@
     },
     "required" : [ "channel", "actionKey", "targetKey", "localAdapterInvoked", "message" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "LocalInterfaceFallbackService.execute"
 }, {
   "name" : "developer.interface_fallback.preview",
   "version" : 1,
@@ -1935,20 +1961,20 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "actionKey" : {
-        "type" : "string"
-      },
       "channel" : {
         "type" : "string"
       },
-      "targetKey" : {
+      "actionKey" : {
         "type" : "string"
       },
       "businessApiAvailable" : {
         "type" : "boolean"
+      },
+      "targetKey" : {
+        "type" : "string"
       }
     },
-    "required" : [ "actionKey", "channel", "targetKey", "businessApiAvailable" ]
+    "required" : [ "channel", "actionKey", "businessApiAvailable", "targetKey" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -1972,7 +1998,8 @@
     },
     "required" : [ "channel", "actionKey", "targetKey", "fallbackRequired", "reason" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "InterfaceFallbackPolicy.preview"
 }, {
   "name" : "developer.patch.apply",
   "version" : 1,
@@ -1985,23 +2012,23 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "targetFile" : {
+      "workspaceId" : {
         "type" : "string"
       },
       "explanation" : {
         "type" : "string"
       },
-      "workspaceId" : {
-        "type" : "string"
-      },
-      "expectedSha256" : {
+      "targetFile" : {
         "type" : "string"
       },
       "unifiedDiff" : {
         "type" : "string"
+      },
+      "expectedSha256" : {
+        "type" : "string"
       }
     },
-    "required" : [ "expectedSha256", "targetFile", "unifiedDiff", "workspaceId" ]
+    "required" : [ "expectedSha256", "workspaceId", "unifiedDiff", "targetFile" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -2040,7 +2067,8 @@
     },
     "required" : [ "workspaceId", "targetFile", "unifiedDiff", "expectedSha256", "conflict", "affectedLines", "safeToApply" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "WorkspaceDeveloperService.applyConfirmedPatch"
 }, {
   "name" : "developer.patch.preview",
   "version" : 1,
@@ -2056,14 +2084,14 @@
       "diff" : {
         "type" : "string"
       },
-      "targetFile" : {
+      "workspaceId" : {
         "type" : "string"
       },
-      "workspaceId" : {
+      "targetFile" : {
         "type" : "string"
       }
     },
-    "required" : [ "diff", "targetFile", "workspaceId" ]
+    "required" : [ "diff", "workspaceId", "targetFile" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -2102,7 +2130,8 @@
     },
     "required" : [ "workspaceId", "targetFile", "unifiedDiff", "expectedSha256", "conflict", "affectedLines", "safeToApply" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.previewPatch"
 }, {
   "name" : "developer.tests.recommend",
   "version" : 1,
@@ -2115,14 +2144,14 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "changedFiles" : {
-        "type" : "array"
-      },
       "workspaceId" : {
         "type" : "string"
+      },
+      "changedFiles" : {
+        "type" : "array"
       }
     },
-    "required" : [ "changedFiles", "workspaceId" ]
+    "required" : [ "workspaceId", "changedFiles" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -2165,7 +2194,8 @@
     },
     "required" : [ "workspaceId", "templates", "executions", "requiresDependencyPreparation", "reasons" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "WorkspaceDeveloperService.recommendTests"
 }, {
   "name" : "governance.audit.list",
   "version" : 1,
@@ -2208,7 +2238,8 @@
       "required" : [ "id", "action", "targetType", "createdAt" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "AgentGovernanceService.listAuditLogs"
 }, {
   "name" : "governance.executions.list",
   "version" : 1,
@@ -2281,7 +2312,8 @@
       "required" : [ "id", "executionType", "triggerType", "riskLevel", "requiredScope", "status", "summary", "createdAt" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "AgentGovernanceService.listExecutions"
 }, {
   "name" : "governance.health.get",
   "version" : 1,
@@ -2339,7 +2371,8 @@
     },
     "required" : [ "totalExecutions", "successfulExecutions", "failedExecutions", "successRate", "promptTokens", "completionTokens", "estimatedCost", "averageLatencyMs", "pendingConfirmations", "costSamples", "tokenSamples", "latencySamples" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "AssistantHealthService.summarize"
 }, {
   "name" : "learning.context.get",
   "version" : 1,
@@ -2746,7 +2779,8 @@
     },
     "required" : [ "generatedAt", "learning", "wrongQuestions", "unreadNotificationCount", "pendingConfirmationCount", "workspaces", "warnings" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "AgentLearningContextService.get"
 }, {
   "name" : "learning.goal.create",
   "version" : 1,
@@ -2759,17 +2793,17 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "targetDate" : {
-        "type" : "string"
-      },
       "weeklyStudyHours" : {
         "type" : "integer"
+      },
+      "targetDate" : {
+        "type" : "string"
       },
       "title" : {
         "type" : "string"
       }
     },
-    "required" : [ "targetDate", "weeklyStudyHours", "title" ]
+    "required" : [ "weeklyStudyHours", "targetDate", "title" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -2793,7 +2827,8 @@
     },
     "required" : [ "id", "title", "targetDate", "weeklyStudyHours", "status" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "CreateLearningGoalService.create"
 }, {
   "name" : "learning.goals.list",
   "version" : 1,
@@ -2833,7 +2868,8 @@
       "required" : [ "id", "title", "targetDate", "weeklyStudyHours", "status" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "CreateLearningGoalService.list"
 }, {
   "name" : "learning.plan.create",
   "version" : 1,
@@ -2846,20 +2882,20 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "startDate" : {
-        "type" : "string"
-      },
       "endDate" : {
         "type" : "string"
       },
-      "goalId" : {
+      "startDate" : {
         "type" : "string"
       },
       "title" : {
         "type" : "string"
+      },
+      "goalId" : {
+        "type" : "string"
       }
     },
-    "required" : [ "startDate", "endDate", "goalId", "title" ]
+    "required" : [ "endDate", "startDate", "title", "goalId" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -2889,7 +2925,8 @@
     },
     "required" : [ "id", "goalId", "title", "startDate", "endDate", "status", "version" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "LearningPlanService.create"
 }, {
   "name" : "learning.plan.get",
   "version" : 1,
@@ -2936,7 +2973,8 @@
     },
     "required" : [ "id", "goalId", "title", "startDate", "endDate", "status", "version" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "LearningPlanService.requireOwnedPlan"
 }, {
   "name" : "learning.plans.list",
   "version" : 1,
@@ -2982,7 +3020,8 @@
       "required" : [ "id", "goalId", "title", "startDate", "endDate", "status", "version" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "LearningPlanService.list"
 }, {
   "name" : "learning.task.update",
   "version" : 1,
@@ -2995,26 +3034,26 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "taskId" : {
-        "type" : "string"
-      },
       "actualMinutes" : {
         "type" : "integer"
       },
-      "status" : {
+      "taskId" : {
         "type" : "string"
       },
-      "scheduledDate" : {
+      "reason" : {
         "type" : "string"
       },
       "expectedVersion" : {
         "type" : "integer"
       },
-      "reason" : {
+      "scheduledDate" : {
+        "type" : "string"
+      },
+      "status" : {
         "type" : "string"
       }
     },
-    "required" : [ "expectedVersion", "taskId", "status" ]
+    "required" : [ "expectedVersion", "status", "taskId" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -3059,7 +3098,8 @@
     },
     "required" : [ "id", "title", "scheduledDate", "estimatedMinutes", "status", "version" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "LearningTaskService.changeStatusIdempotently"
 }, {
   "name" : "learning.tasks.list",
   "version" : 1,
@@ -3124,7 +3164,8 @@
       "required" : [ "id", "title", "scheduledDate", "estimatedMinutes", "status", "version" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "LearningTaskService.list"
 }, {
   "name" : "materials.get",
   "version" : 1,
@@ -3207,7 +3248,8 @@
     },
     "required" : [ "id", "title", "materialType", "category", "privacyLevel", "processingStatus", "tags", "knowledgePoints", "processingWarnings" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "MaterialService.get"
 }, {
   "name" : "materials.list",
   "version" : 1,
@@ -3289,7 +3331,8 @@
       "required" : [ "id", "title", "materialType", "category", "privacyLevel", "processingStatus", "tags", "knowledgePoints", "processingWarnings" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "MaterialService.list"
 }, {
   "name" : "materials.text.import",
   "version" : 1,
@@ -3305,17 +3348,17 @@
       "content" : {
         "type" : "string"
       },
-      "privacyLevel" : {
+      "title" : {
         "type" : "string"
       },
       "category" : {
         "type" : "string"
       },
-      "title" : {
+      "privacyLevel" : {
         "type" : "string"
       }
     },
-    "required" : [ "content", "privacyLevel", "category", "title" ]
+    "required" : [ "content", "title", "category", "privacyLevel" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -3381,7 +3424,8 @@
     },
     "required" : [ "id", "title", "materialType", "category", "privacyLevel", "processingStatus", "tags", "knowledgePoints", "processingWarnings" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "MaterialService.createText"
 }, {
   "name" : "materials.web.import",
   "version" : 1,
@@ -3394,20 +3438,20 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "sourceUrl" : {
-        "type" : "string"
-      },
-      "privacyLevel" : {
+      "title" : {
         "type" : "string"
       },
       "category" : {
         "type" : "string"
       },
-      "title" : {
+      "privacyLevel" : {
+        "type" : "string"
+      },
+      "sourceUrl" : {
         "type" : "string"
       }
     },
-    "required" : [ "sourceUrl", "privacyLevel", "category", "title" ]
+    "required" : [ "title", "category", "privacyLevel", "sourceUrl" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -3473,7 +3517,8 @@
     },
     "required" : [ "id", "title", "materialType", "category", "privacyLevel", "processingStatus", "tags", "knowledgePoints", "processingWarnings" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "MaterialService.createWeb"
 }, {
   "name" : "navigation.resolve",
   "version" : 1,
@@ -3511,7 +3556,8 @@
     },
     "required" : [ "routeKey", "params" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "NavigationToolHandler.resolve"
 }, {
   "name" : "notifications.list",
   "version" : 1,
@@ -3557,7 +3603,8 @@
       "required" : [ "id", "type", "title", "content", "read", "createdAt" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "NotificationService.list"
 }, {
   "name" : "notifications.mark_read",
   "version" : 1,
@@ -3604,7 +3651,8 @@
     },
     "required" : [ "id", "type", "title", "content", "read", "createdAt" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "NotificationService.markRead"
 }, {
   "name" : "roadmap.current.get",
   "version" : 1,
@@ -3694,7 +3742,8 @@
     },
     "required" : [ "enrollmentId", "roadmapCode", "templateVersion", "title", "completedRequiredNodes", "totalRequiredNodes", "stages" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapQueryService.currentMapIfPresent"
 }, {
   "name" : "roadmap.enroll",
   "version" : 1,
@@ -3714,7 +3763,7 @@
         "type" : "integer"
       }
     },
-    "required" : [ "templateVersion", "roadmapCode" ]
+    "required" : [ "roadmapCode", "templateVersion" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -3741,7 +3790,8 @@
     },
     "required" : [ "id", "roadmapCode", "templateVersion", "title", "status", "enrolledAt" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RoadmapEnrollmentService.enroll"
 }, {
   "name" : "roadmap.module.get",
   "version" : 1,
@@ -3973,7 +4023,8 @@
     },
     "required" : [ "id", "stageId", "code", "order", "title", "completedRequiredNodes", "totalRequiredNodes", "displayStatus", "nodes" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapQueryService.currentModule"
 }, {
   "name" : "roadmap.node.get",
   "version" : 1,
@@ -4080,7 +4131,8 @@
     },
     "required" : [ "id", "code", "order", "title", "objectives", "highFrequency", "commonMistakes", "searchKeywords", "estimatedMinutes", "practiceMinutes", "difficulty", "required", "prerequisiteCodes", "availabilityStatus", "learningStatus", "checkInStatus", "quizStatus", "artifactStatus", "completionStatus", "diagnosticMastered", "displayStatus", "version" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapQueryService.currentNode"
 }, {
   "name" : "roadmap.stage.get",
   "version" : 1,
@@ -4261,7 +4313,8 @@
     },
     "required" : [ "id", "code", "order", "title", "completedRequiredNodes", "totalRequiredNodes", "modules", "nodes" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapQueryService.currentStage"
 }, {
   "name" : "roadmap.upgrade",
   "version" : 1,
@@ -4332,7 +4385,8 @@
     },
     "required" : [ "id", "sourceVersion", "targetVersion", "status", "unchangedNodeCodes", "addedNodeCodes", "removedNodeCodes", "manualReviewNodeCodes", "addedModuleCount", "removedModuleCount", "changedModuleCount" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RoadmapUpgradeService.confirm"
 }, {
   "name" : "runner.check.run",
   "version" : 1,
@@ -4345,20 +4399,20 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "templateType" : {
-        "type" : "string"
-      },
-      "workingDirectory" : {
+      "workspaceId" : {
         "type" : "string"
       },
       "idempotencyKey" : {
         "type" : "string"
       },
-      "workspaceId" : {
+      "workingDirectory" : {
+        "type" : "string"
+      },
+      "templateType" : {
         "type" : "string"
       }
     },
-    "required" : [ "templateType", "workspaceId" ]
+    "required" : [ "workspaceId", "templateType" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -4406,7 +4460,8 @@
     },
     "required" : [ "executionId", "governanceExecutionId", "workspaceId", "templateType", "status", "exitCode", "commandTokens", "success", "durationMillis", "executedAt" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RunnerGovernanceService.submitExecution"
 }, {
   "name" : "runner.dependencies.prepare",
   "version" : 1,
@@ -4419,20 +4474,20 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "templateType" : {
-        "type" : "string"
-      },
-      "workingDirectory" : {
+      "workspaceId" : {
         "type" : "string"
       },
       "idempotencyKey" : {
         "type" : "string"
       },
-      "workspaceId" : {
+      "workingDirectory" : {
+        "type" : "string"
+      },
+      "templateType" : {
         "type" : "string"
       }
     },
-    "required" : [ "templateType", "workspaceId" ]
+    "required" : [ "workspaceId", "templateType" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -4480,7 +4535,8 @@
     },
     "required" : [ "executionId", "governanceExecutionId", "workspaceId", "templateType", "status", "exitCode", "commandTokens", "success", "durationMillis", "executedAt" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RunnerGovernanceService.submitExecution"
 }, {
   "name" : "runner.execution.preview",
   "version" : 1,
@@ -4493,20 +4549,20 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "templateType" : {
-        "type" : "string"
-      },
-      "workingDirectory" : {
+      "workspaceId" : {
         "type" : "string"
       },
       "idempotencyKey" : {
         "type" : "string"
       },
-      "workspaceId" : {
+      "workingDirectory" : {
+        "type" : "string"
+      },
+      "templateType" : {
         "type" : "string"
       }
     },
-    "required" : [ "idempotencyKey", "templateType", "workspaceId" ]
+    "required" : [ "idempotencyKey", "workspaceId", "templateType" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -4554,7 +4610,8 @@
     },
     "required" : [ "workspaceId", "workspaceName", "workspacePath", "templateType", "templateDescription", "riskLevel", "commandTokens", "renderedCommand", "timeoutSeconds", "confirmationRequired", "workingDirectory" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RunnerGovernanceService.preview"
 }, {
   "name" : "schedule.refresh",
   "version" : 1,
@@ -4567,14 +4624,14 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "from" : {
+      "to" : {
         "type" : "string"
       },
-      "to" : {
+      "from" : {
         "type" : "string"
       }
     },
-    "required" : [ "to", "from" ]
+    "required" : [ "from", "to" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -4639,7 +4696,8 @@
     },
     "required" : [ "scheduleId", "timeZone", "dailyCapacityMinutes", "weekendsEnabled", "days" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RoadmapScheduleService.refresh"
 }, {
   "name" : "schedule.today.get",
   "version" : 1,
@@ -4721,7 +4779,8 @@
     },
     "required" : [ "scheduleId", "timeZone", "dailyCapacityMinutes", "weekendsEnabled", "days" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapScheduleService.getOrCreate"
 }, {
   "name" : "schedule.unfinished.get",
   "version" : 1,
@@ -4734,14 +4793,14 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "from" : {
+      "to" : {
         "type" : "string"
       },
-      "to" : {
+      "from" : {
         "type" : "string"
       }
     },
-    "required" : [ "to", "from" ]
+    "required" : [ "from", "to" ]
   },
   "outputSchema" : {
     "type" : "array",
@@ -4765,7 +4824,8 @@
       "required" : [ "date", "nodeId", "title", "status" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapScheduleService.getOrCreate"
 }, {
   "name" : "settings.ai_status.get",
   "version" : 1,
@@ -4846,7 +4906,8 @@
     },
     "required" : [ "modelProvider", "modelName", "deepseek", "tavily", "deepseekConfigured", "tavilyConfigured" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "AiCredentialService.settings"
 }, {
   "name" : "settings.learning.get",
   "version" : 1,
@@ -4899,7 +4960,8 @@
     },
     "required" : [ "timeZone", "dailyStudyLimitMinutes", "weekendPreference", "defaultPrivacyLevel", "weeklyAvailability" ]
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "UserSettingsService.get"
 }, {
   "name" : "settings.learning.update",
   "version" : 1,
@@ -4956,7 +5018,8 @@
     },
     "required" : [ "timeZone", "dailyStudyLimitMinutes", "weekendPreference", "defaultPrivacyLevel", "weeklyAvailability" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "UserSettingsService.save"
 }, {
   "name" : "workspaces.list",
   "version" : 1,
@@ -4996,7 +5059,8 @@
       "required" : [ "id", "name", "rootPath", "status", "createdAt" ]
     }
   },
-  "timeoutMillis" : 15000
+  "timeoutMillis" : 15000,
+  "handler" : "RoadmapArtifactService.workspaces"
 }, {
   "name" : "workspaces.register",
   "version" : 1,
@@ -5009,14 +5073,14 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
-      "name" : {
+      "rootPath" : {
         "type" : "string"
       },
-      "rootPath" : {
+      "name" : {
         "type" : "string"
       }
     },
-    "required" : [ "rootPath", "name" ]
+    "required" : [ "name", "rootPath" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -5040,5 +5104,6 @@
     },
     "required" : [ "id", "name", "rootPath", "status", "createdAt" ]
   },
-  "timeoutMillis" : 120000
+  "timeoutMillis" : 120000,
+  "handler" : "RoadmapArtifactService.createWorkspace"
 } ]

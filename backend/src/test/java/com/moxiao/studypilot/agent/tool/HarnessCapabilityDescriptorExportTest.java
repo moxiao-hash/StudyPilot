@@ -3,6 +3,7 @@ package com.moxiao.studypilot.agent.tool;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -30,6 +31,11 @@ class HarnessCapabilityDescriptorExportTest {
         List<AgentToolDescriptor> catalog = registry.catalog();
         assertEquals(65, catalog.size(), "Java 真实注册工具必须恰好为 65 个");
 
+        Path targetDir = Paths.get("../contracts/agent-capabilities/generated").toAbsolutePath().normalize();
+        Files.createDirectories(targetDir);
+        Path bindingsFile = targetDir.resolve("tool-bindings.json");
+        JsonNode bindingsNode = Files.exists(bindingsFile) ? objectMapper.readTree(Files.readString(bindingsFile)) : null;
+
         ArrayNode array = objectMapper.createArrayNode();
         // 按照工具名称排序以保证确定性输出
         List<AgentToolDescriptor> sorted = catalog.stream()
@@ -48,14 +54,13 @@ class HarnessCapabilityDescriptorExportTest {
             node.set("inputSchema", d.inputSchema());
             node.set("outputSchema", d.outputSchema());
             node.put("timeoutMillis", d.timeoutMillis());
+            if (bindingsNode != null && bindingsNode.has(d.name())) {
+                node.put("handler", bindingsNode.get(d.name()).asText());
+            }
             array.add(node);
         }
 
-        // 导出到工作树目标路径
-        Path targetDir = Paths.get("../contracts/agent-capabilities/generated").toAbsolutePath().normalize();
-        Files.createDirectories(targetDir);
         Path targetFile = targetDir.resolve("descriptors.json");
-
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(array);
         Files.writeString(targetFile, json + "\n");
 
