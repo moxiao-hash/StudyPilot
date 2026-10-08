@@ -572,7 +572,7 @@ node --test scripts/harness/baseline-inventory.test.mjs
 | cwd | `/Users/moxiao/IdeaProjects/project-harness-h01-deepseek` |
 | 分支 | `codex/harness-h01-deepseek-baseline` |
 | 基线 | `f7311079a83b84c5e7f3a9076ce4efccb3044c86` |
-| 提交 | `3a234664a37616c4b73fb38d2a64584c06766568`（本地提交，无 push/merge/deploy） |
+| 提交 | 交付提交 `b63184b56336804de588571f43fd20722724457c`（含下列 6 个文件，本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
 | 测试 | fixtures 41/41 通过；inventory 16/16 通过；`--check` 无漂移；RED 变异体 2/2 被拒 |
 | 证据层级 | mock/offline（无真实模型、无服务、无 DB） |
 | 未覆盖项 | 见第 11 节（含 UNVERIFIED 清单） |
