@@ -300,11 +300,23 @@ PyYAML tools: 65 | equal to source: True
 | cwd | `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek` |
 | 分支 | `codex/harness-h02-deepseek` |
 | 基线 | `16b37d34c882a17e7bc45c69c84411f28f52bff8` |
-| 交付提交 | 见本节末「提交」行 |
+| 交付提交 | `c94cbc9046455291ba4f600a9aa54163f73ab0fd`（含下列 6 个 Owner 文件；本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
 | 测试 | fixtures/元数据：65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 29/29 以预期错误码被拒；`--check` 无漂移；`node --test` 30/30；PyYAML 严格解析与源事实逐字段相等 |
 | 元数据统计 | 65 条 = 43 READ + 21 WRITE + 1 NAVIGATE；`always_user_confirmation` 11、`conditional_scope_grant` 10、`none` 44；`authoritative_facts` 274 条；`examples` 72 条；`cost_hint.local:false` 5 条 |
 | 证据层级 | mock/offline（无模型、无服务、无数据库） |
 | 未覆盖项 | 见第 8 节 |
 | 下一步 | 停在 H02，等 Codex 独立验收；**不进入 H03** |
 
-**提交**：仅本端 Owner 文件；`backend/mvnw.cmd` 未修改/未暂存/未提交。
+**提交内容**：仅本端 Owner 文件（6 个）。
+
+```
+A  contracts/agent-capabilities/metadata.yaml
+A  agent-service/tests/fixtures/capability-semantics.json
+A  scripts/harness/capability-semantics-extract.mjs
+A  scripts/harness/capability-semantics.mjs
+A  scripts/harness/capability-semantics.test.mjs
+A  docs/verification/harness/h02-deepseek.md
+```
+
+**未提交也未改动**：`backend/mvnw.cmd`（已知 CRLF 快照工件，按要求不修改/不暂存/不提交）。
+**未触碰**：H01 三棵工作树、桌面 Harness 源码、MiniMax 与 ZCode 的 H02 工作树、`contracts/agent-runtime/**`（H01 冻结契约）、共享计划/交接/Obsidian、模型配置与密钥。未 push/merge/deploy、未重启服务、未访问数据库、未做付费评测。
