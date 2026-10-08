@@ -4,8 +4,13 @@
  * 职责：
  *   1. 校验契约自身：不得出现 `type: [T, "null"]` 类型数组；所有 object 必须封闭。
  *   2. 用 JSON Schema 子集校验单条消息（request/response/event）。
- *   3. 校验 JSON Schema 表达不了的约束：按名字的禁字段策略、跨字段相等（ok/endReason），
- *      以及跨消息约束（序号单调、终态唯一、终态后无事件、配置不可变、会话一致、调用须在轮次内）。
+ *   3. 校验 JSON Schema 表达不了的约束：按名字的禁字段策略、跨字段相等（ok/endReason）、
+ *      类型化问答/确认答复（自然语言不能代确认权限）。
+ *   4. 全量轨迹状态机（validateScenario）：
+ *      - 轮次生命周期：未启动终态拒绝、重复启动拒绝、终态后事件拒绝、终态时未完成调用拒绝。
+ *      - 调用生命周期：孤立 CALL_FINISHED 拒绝、重复 CALL_STARTED 拒绝、跨轮次调用拒绝。
+ *      - 会话生命周期：会话关闭后活动拒绝、序号严格单调递增（>=1）、configVersion 不可变。
+ *      - 支持显式快照回放模式（options.isPartialReplay），避免误拒合法重连续传。
  *
  * 依赖：仅 Node 内置模块。不联网、不启动服务、不调用模型、不需要第三方包。
  * 说明：这是 H01 草案的离线校验器，不是产品运行时校验器；生产实现见 H03/H05。
@@ -51,6 +56,8 @@ const EVENT_TYPE_WITH_TURN = new Set([
   'ASSISTANT_DELTA',
   'ASSISTANT_MESSAGE',
   'INTERACTION_REQUIRED',
+  'PROGRESS',
+  'UI_ACTION',
 ]);
 const CALL_EVENT_TYPES = new Set(['CALL_STARTED', 'CALL_FINISHED']);
 
@@ -108,8 +115,10 @@ export function findOpenObjects(node, path = '$', found = []) {
   return found;
 }
 
+/* ------------------------------------------------------------------ *
+ * 判别字段助手
+ * ------------------------------------------------------------------ */
 
-/** 消息的判别字段：request→operation、response→status、event→type。 */
 function discriminatorField(value) {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return null;
@@ -330,13 +339,41 @@ function checkForbiddenFieldNames(value, path, errors) {
 function validateMessageLevel(message, errors) {
   checkForbiddenFieldNames(message, '$', errors);
 
-  if (message?.kind === 'event' && message.type === TURN_TERMINAL_TYPE) {
-    const payload = message.payload ?? {};
-    const expectedOk = payload.endReason === 'COMPLETED';
-    if (payload.ok !== expectedOk) {
-      errors.push(
-        `INVARIANT_TERMINAL_OK: $/payload ok=${payload.ok} 与 endReason=${payload.endReason} 不一致（只有 COMPLETED 为成功）`,
-      );
+  if (message?.kind === 'event') {
+    // 检查持久事件序号从 1 开始
+    if (Number.isInteger(message.sequence) && message.sequence < 1) {
+      errors.push(`INVARIANT_SEQUENCE_START: $/sequence 持久事件序号必须从 1 开始，实际 ${message.sequence}`);
+    }
+
+    if (message.type === TURN_TERMINAL_TYPE) {
+      const payload = message.payload ?? {};
+      const expectedOk = payload.endReason === 'COMPLETED';
+      if (payload.ok !== expectedOk) {
+        errors.push(
+          `INVARIANT_TERMINAL_OK: $/payload ok=${payload.ok} 与 endReason=${payload.endReason} 不一致（只有 COMPLETED 为成功）`,
+        );
+      }
+    }
+
+    if (message.type === 'INTERACTION_REQUIRED') {
+      const payload = message.payload ?? {};
+      if (payload.kind === 'question' && !payload.question) {
+        errors.push('INVARIANT_INTERACTION_SHAPE: $/payload kind=question 时必须提供可渲染 question 对象');
+      }
+      if (payload.kind === 'confirmation' && !payload.confirmation) {
+        errors.push('INVARIANT_INTERACTION_SHAPE: $/payload kind=confirmation 时必须提供可渲染 confirmation 对象');
+      }
+    }
+  }
+
+  if (message?.kind === 'request' && message.operation === 'respond') {
+    const respondTo = message.respondTo;
+    if (respondTo?.kind === 'confirmation') {
+      if (!respondTo.decision || !['CONFIRM', 'REJECT'].includes(respondTo.decision)) {
+        errors.push(
+          'INVARIANT_TYPED_RESPOND: $/respondTo 确认答复必须提供明确 decision (CONFIRM 或 REJECT)，不能使用自然语言文本代业务授权',
+        );
+      }
     }
   }
 }
@@ -356,7 +393,7 @@ export function validateMessage(contract, message) {
   return { ok: errors.length === 0, errors };
 }
 
-export function validateScenario(contract, messages) {
+export function validateScenario(contract, messages, options = {}) {
   const errors = [];
   if (!Array.isArray(messages)) {
     return { ok: false, errors: ['SCHEMA: 场景必须是消息数组'] };
@@ -366,11 +403,21 @@ export function validateScenario(contract, messages) {
     result.errors.forEach((error) => errors.push(`${error} (场景第 ${index} 条)`));
   });
 
+  const isPartialReplay = options.isPartialReplay === true;
+  const snapshot = options.snapshot ?? {};
+
   const lastSequenceBySession = new Map();
-  const finishedTurns = new Set();
-  const startedTurns = new Set();
-  const configVersions = new Set();
-  const sessionIds = new Set();
+  const finishedTurns = new Set(snapshot.finishedTurnIds ?? []);
+  const startedTurns = new Set(snapshot.activeTurnId ? [snapshot.activeTurnId] : []);
+  const activeCalls = new Map(); // callId -> turnId
+  if (snapshot.activeCalls) {
+    for (const [cId, tId] of Object.entries(snapshot.activeCalls)) {
+      activeCalls.set(cId, tId);
+    }
+  }
+  let sessionClosed = snapshot.sessionClosed === true;
+  const configVersions = new Set(snapshot.configVersion ? [snapshot.configVersion] : []);
+  const sessionIds = new Set(snapshot.sessionId ? [snapshot.sessionId] : []);
 
   messages.forEach((message, index) => {
     const position = `场景第 ${index} 条`;
@@ -379,11 +426,24 @@ export function validateScenario(contract, messages) {
     }
     const sessionId = message.sessionId;
     const turnId = message.turnId;
+    const callId = message.callId;
     sessionIds.add(sessionId);
 
+    // 0. 会话关闭后活动检查
+    if (sessionClosed) {
+      errors.push(
+        `INVARIANT_EVENT_AFTER_SESSION_CLOSED: ${position} 会话 ${sessionId} 已关闭，仍出现事件 ${message.type}`,
+      );
+    }
+
+    if (message.type === 'SESSION_CLOSED') {
+      sessionClosed = true;
+    }
+
+    // 1. 序号单调递增检查
     if (Number.isInteger(message.sequence)) {
-      const previous = lastSequenceBySession.get(sessionId);
-      if (previous !== undefined && message.sequence <= previous) {
+      const previous = lastSequenceBySession.get(sessionId) ?? (snapshot.lastSequence ?? 0);
+      if (message.sequence <= previous) {
         errors.push(
           `INVARIANT_SEQUENCE_MONOTONIC: ${position} 会话 ${sessionId} 序号 ${message.sequence} 未大于前一条 ${previous}`,
         );
@@ -391,35 +451,79 @@ export function validateScenario(contract, messages) {
       lastSequenceBySession.set(sessionId, message.sequence);
     }
 
+    // 2. 配置版本一致性
     if (message.payload && typeof message.payload.configVersion === 'string') {
       configVersions.add(message.payload.configVersion);
     }
 
+    // 3. 轮次生命周期检查
+    if (message.type === 'TURN_STARTED' && typeof turnId === 'string') {
+      if (startedTurns.has(turnId)) {
+        errors.push(`INVARIANT_DUPLICATE_TURN_START: ${position} 轮次 ${turnId} 重复启动 (TURN_STARTED)`);
+      }
+      startedTurns.add(turnId);
+    }
+
     if (message.type === TURN_TERMINAL_TYPE && typeof turnId === 'string') {
+      if (!startedTurns.has(turnId) && !isPartialReplay) {
+        errors.push(
+          `INVARIANT_TERMINAL_WITHOUT_START: ${position} 轮次 ${turnId} 未调用 TURN_STARTED 即出现终态事件`,
+        );
+      }
       if (finishedTurns.has(turnId)) {
         errors.push(`INVARIANT_TURN_TERMINAL_ONCE: ${position} 轮次 ${turnId} 出现多个终态事件`);
       }
       finishedTurns.add(turnId);
-      return;
+
+      // 检查当前轮次是否有未关闭的调用
+      for (const [cId, tId] of activeCalls.entries()) {
+        if (tId === turnId) {
+          errors.push(
+            `INVARIANT_PENDING_CALL_AT_TURN_END: ${position} 轮次 ${turnId} 终结时调用 ${cId} 仍未完成`,
+          );
+        }
+      }
     }
 
-    if (EVENT_TYPE_WITH_TURN.has(message.type) && typeof turnId === 'string') {
+    // 终态后事件检查
+    if (EVENT_TYPE_WITH_TURN.has(message.type) && typeof turnId === 'string' && message.type !== TURN_TERMINAL_TYPE) {
       if (finishedTurns.has(turnId)) {
         errors.push(
           `INVARIANT_EVENT_AFTER_TERMINAL: ${position} 轮次 ${turnId} 已终结，仍出现 ${message.type}`,
         );
       }
-    }
-
-    if (message.type === 'TURN_STARTED' && typeof turnId === 'string') {
-      startedTurns.add(turnId);
-    }
-
-    if (CALL_EVENT_TYPES.has(message.type) && typeof turnId === 'string') {
-      if (!startedTurns.has(turnId)) {
+      if (!startedTurns.has(turnId) && !isPartialReplay && message.type !== 'TURN_STARTED') {
         errors.push(
           `INVARIANT_CALL_WITHIN_TURN: ${position} 轮次 ${turnId} 的 ${message.type} 没有先前的 TURN_STARTED`,
         );
+      }
+    }
+
+    // 4. 调用生命周期检查
+    if (message.type === 'CALL_STARTED') {
+      if (typeof callId === 'string') {
+        if (activeCalls.has(callId)) {
+          errors.push(`INVARIANT_DUPLICATE_CALL_START: ${position} 调用 ${callId} 重复启动 (CALL_STARTED)`);
+        }
+        activeCalls.set(callId, turnId);
+      }
+    }
+
+    if (message.type === 'CALL_FINISHED') {
+      if (typeof callId === 'string') {
+        if (!activeCalls.has(callId) && !isPartialReplay) {
+          errors.push(
+            `INVARIANT_CALL_WITHOUT_START: ${position} 调用 ${callId} 未启动 (CALL_STARTED) 即出现 CALL_FINISHED`,
+          );
+        } else if (activeCalls.has(callId)) {
+          const startedTurnId = activeCalls.get(callId);
+          if (startedTurnId !== turnId) {
+            errors.push(
+              `INVARIANT_CALL_CROSS_TURN: ${position} 调用 ${callId} 跨轮次 (启动于 ${startedTurnId}，结束于 ${turnId})`,
+            );
+          }
+          activeCalls.delete(callId);
+        }
       }
     }
   });

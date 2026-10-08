@@ -1,165 +1,179 @@
-# H01 证据：MiniMax Code —— Runtime 契约草案与离线验证
+# H01 证据：MiniMax Code —— Runtime 契约草案与离线验证（Round 2 整改交付）
 
-状态：**READY_FOR_CODEX**（本文件不代表验收通过）。仅 H01，不进入 H02～H12。
+状态：**READY_FOR_CODEX ROUND2**（本文件不代表验收通过）。仅 H01，不进入 H02～H12。
 
-## 0. ACKNOWLEDGED（开工前实际核对）
+---
+
+## 0. ACKNOWLEDGED（环境与核验基准）
 
 | 项目 | 实际值 |
 | --- | --- |
-| workspace / cwd | `/Users/moxiao/IdeaProjects/project-harness-h01-minimax`（命令显式 `cd`；应用 workspace 标签仍显示旧 Task33，未在旧目录代替执行） |
+| workspace / cwd | `/Users/moxiao/IdeaProjects/project-harness-h01-minimax`（命令显式 `cd`；宿主应用标签仍显示旧 Task33，未在旧目录顶替执行） |
 | 分支 | `codex/harness-h01-minimax-contract` |
-| 共同基线 | `f7311079a83b84c5e7f3a9076ce4efccb3044c86`（与任务书一致，`git rev-parse HEAD` 核对通过） |
-| 可访问性 | 可访问：工作树、`docs/dispatch/h01-minimax.md`、`docs/协同开发交接说明.md`、设计与 H01～H12 计划、`docs/verification/harness/h01-baseline-provenance.json` 全部读到 |
-| 当前 UI 模型标签 | `deepseek-flash`（本会话环境声明的模型标签） |
+| 共同基线 | `f7311079a83b84c5e7f3a9076ce4efccb3044c86`（核对一致） |
+| 验收对象 (Round 1) | `6371c8439ae81fba6270a0136d3c3028df74e73d`（交付实现 `7930399`） |
+| Codex 审阅意见 | `CHANGES_REQUESTED`，按 `docs/verification/harness/h01-codex-round1.md` 落实 R1/R2/R3 整改 |
+| 当前 UI 模型标签 | `deepseek-flash` |
 | 真实 provider model ID | **未知**（未通过额外调用探测，符合任务书要求） |
 
-只读确认：原 Task33 工作树未改动；未 push / merge / deploy；未改模型或密钥；未重启服务；
-未做真实模型评测；未操作业务数据库；未改 `ai-service/**`、`web/**`、根脚本、共享计划与交接文档、Obsidian。
+边界守则执行情况：
+- 原 Task33 工作树未触碰、未改动；
+- 未 push / merge / deploy；
+- 未改动生产模型配置或 API 密钥；
+- 未重启服务、未做真实模型评测、未操作业务数据库；
+- 未触碰 `ai-service/**`、`web/**`、根脚本、共享交接或 Obsidian 档案；
+- `backend/mvnw.cmd` 属已知基线 CRLF 快照工件，未提交亦未恢复。
 
-## 1. 交付物（仅本轮所有权文件）
+---
 
-| 文件 | 说明 |
-| --- | --- |
-| `contracts/agent-runtime/runtime.schema.json` | Runtime 契约草案（JSON Schema 2020-12，23 个顶层 `oneOf` 变体、44 个 `$defs`） |
-| `contracts/agent-runtime/README.md` | 约定、操作/事件/结束原因表、约束强制层级、待冻结决定 |
-| `scripts/harness/runtime-contract.mjs` | 离线校验器（JSON Schema 子集 + 跨字段/跨消息不变量；仅 Node 内置模块） |
-| `scripts/harness/runtime-contract.fixtures.json` | 52 个离线实例（22 有效消息 + 2 有效场景 + 22 无效消息 + 6 无效场景） |
-| `scripts/harness/runtime-contract.test.mjs` | 离线回归测试（55 项） |
-| `docs/verification/harness/h01-minimax.md` | 本证据文件 |
+## 1. Round 1 审查缺口与 R1/R2/R3 整改清单
 
-未创建 `agent-service/**`、`agent-plugins/**`、`contracts/agent-capabilities/**`
-（后者属 H02，任务书明确不得提前实现 Manifest）。
+Codex 独立验收在 `docs/verification/harness/h01-codex-round1.md` 中指出了第一轮交付的 3 个主要缺陷，并在 `docs/verification/harness/h01-round1-probes.json` 中给出了失败反例：
 
-## 2. RED（先于实现）
+1. **R1 [P1] 三端协议未对齐**：
+   - 前端草案小写事件名与公共 Schema 不一致。
+   - 裁决：以公共 Schema 全大写（UPPERCASE）事件名、`protocolVersion: "1.0-draft"` 为唯一标准。
+   - 补充 `PROGRESS` 事件（结构化承载阶段描述、步数、`CONTEXT_LOADED`、`PLAN_HINT`，不限制模型原推理循环）。
+   - 补充 `UI_ACTION` 事件（严格封闭的白名单客户端指令：`NAVIGATE`、`OPEN_MODAL`、`PREFILL_FORM`、`REFRESH_RESOURCE`、`FOCUS_ELEMENT`，封闭 `routeKey` 与受限参数，严禁任意 URL 或选择器）。
+   - 补充 `CALL_FINISHED` 丰富元数据：`status` (`SUCCEEDED`/`FAILED`/`PENDING`/`DENIED`)、`truncated`、`originalBytes`、`error`、`resultPreview`，事实被忠实表达而不被吞噬。
+   - 规范事件 `sequence >= 1`，`subscribeFrom: 0` 表示从首条事件订阅。
+2. **R2 [P1] 交互提问与业务确认不可渲染，答复退化为文本**：
+   - `INTERACTION_REQUIRED` 扩充可渲染载荷：
+     - `kind: "question"` 包含结构化 `question` 对象（`questionId`、`prompt`/`text`、可选 `options` 选项列表、`selectionMode`）。
+     - `kind: "confirmation"` 包含结构化 `confirmation` 对象（`executionId`、`actionId`、`toolName`、`summary`、`expectedVersion`、`riskLevel`、`expiresAt`）。
+   - `request.respond` 支持类型化答复（`respondTo`）：
+     - 区分问答答复（`questionId` + `answer`）与业务确认决策（`actionId` + `decision: "CONFIRM"|"REJECT"` + `confirmed`）。
+     - **红线**：严禁仅以自由文本代替业务确认授权！
+   - **传输 Schema 与 Harness 工具 Schema 隔离声明**：本契约属于传输层 Draft 2020-12 规范，不等于 Harness 内部工具解析器支持的子集，不得声称直接进入 Harness 工具定义。
+3. **R3 [P1] 全量轨迹校验接受不可能的生命周期**：
+   - 状态机完善：覆盖未启动终态拒绝、重复启动拒绝、孤立/跨轮次调用拒绝、会话关闭后活动拒绝、轮次结束时未闭合调用拒绝。
+   - 支持显式部分回放模式（`options.isPartialReplay` 与 `options.snapshot`），合法支持中途断线重连。
 
-新增离线可执行逻辑先写失败测试。校验器与契约尚不存在时：
+---
 
+## 2. RED 证据（先于生产改动）
+
+在修改实现前，通过独立反例脚本与单元测试证实缺陷存在：
+
+### 2.1 Codex 独立探针（`h01-round1-probes.mjs`）Round 1 失败结果
+```json
+[
+  { "name": "terminal before TURN_STARTED", "expectedReject": true, "actualAccepted": true },
+  { "name": "CALL_FINISHED without matching CALL_STARTED", "expectedReject": true, "actualAccepted": true },
+  { "name": "duplicate TURN_STARTED", "expectedReject": true, "actualAccepted": true },
+  { "name": "question event with renderable question data", "expectedReject": false, "actualAccepted": false }
+]
 ```
+
+### 2.2 专项测试失败记录
+在 `scripts/harness/runtime-contract.test.mjs` 中添加针对 R1/R2/R3 的断言后直接运行：
+```
+✖ R3: scenario rejects terminal before TURN_STARTED
+  AssertionError: 未启动轮次出现终态必须被拒绝 (expected false, actual true)
+✖ R3: scenario rejects CALL_FINISHED without matching CALL_STARTED
+  AssertionError: 孤立 CALL_FINISHED 必须被拒绝 (expected false, actual true)
+✖ R3: scenario rejects duplicate TURN_STARTED for same turnId
+  AssertionError: 同一轮次重复 TURN_STARTED 必须被拒绝 (expected false, actual true)
+✖ R2: question event with renderable question data accepted
+  AssertionError: 可渲染 question 必须被接受，实际错误: SCHEMA: $/payload 存在未允许的额外字段 "question"
+```
+
+---
+
+## 3. GREEN 证据（整改后）
+
+### 3.1 本地测试套件全绿（79/79 项通过）
+```bash
+$ cd /Users/moxiao/IdeaProjects/project-harness-h01-minimax
 $ node --test scripts/harness/runtime-contract.test.mjs
-Error [ERR_MODULE_NOT_FOUND]: Cannot find module
-  '.../scripts/harness/runtime-contract.mjs'
-ℹ tests 1
-ℹ pass 0
-ℹ fail 1
-```
-
-## 3. GREEN（实现后）
-
-```
-$ node --test scripts/harness/runtime-contract.test.mjs
-ℹ tests 55
+✔ contract declares a draft protocol version and is structurally closed (1.44ms)
+✔ valid message accepted: request.open.create (0.92ms)
+...
+✔ valid message accepted: event.progress (0.31ms)
+✔ valid message accepted: event.ui-action (0.33ms)
+✔ valid message accepted: event.interaction-required.question (0.43ms)
+✔ valid message accepted: event.interaction-required.confirmation (0.36ms)
+✔ valid message accepted: request.respond.confirmation (0.32ms)
+✔ valid message accepted: event.call-finished.enriched (0.29ms)
+...
+✔ invalid message rejected: invalid.respond-confirmation-with-text-only (0.86ms)
+✔ invalid message rejected: invalid.interaction-question-without-text-or-prompt (0.80ms)
+✔ invalid message rejected: invalid.interaction-confirmation-without-action-id (0.56ms)
+✔ invalid message rejected: invalid.ui-action-with-arbitrary-url (0.56ms)
+✔ invalid message rejected: invalid.sequence-zero (0.43ms)
+...
+✔ invalid scenario rejected: invalid.scenario.terminal-without-started (0.19ms)
+✔ invalid scenario rejected: invalid.scenario.duplicate-turn-started (0.25ms)
+✔ invalid scenario rejected: invalid.scenario.call-finished-without-started (0.23ms)
+✔ invalid scenario rejected: invalid.scenario.duplicate-call-started (0.39ms)
+✔ invalid scenario rejected: invalid.scenario.event-after-session-closed (0.19ms)
+...
+✔ R3: scenario rejects terminal before TURN_STARTED (0.21ms)
+✔ R3: scenario rejects CALL_FINISHED without matching CALL_STARTED (0.24ms)
+✔ R3: scenario rejects duplicate TURN_STARTED for same turnId (0.20ms)
+✔ R2: question event with renderable question data accepted (0.41ms)
+✔ R2: confirmation event with renderable confirmation data accepted (0.31ms)
+✔ R2: typed respond for confirmation requires decision and rejects plain text answer (1.11ms)
+✔ R1: PROGRESS event accepts structured progress and rejects unknown fields (0.69ms)
+✔ R1: UI_ACTION event accepts closed whitelisted action and rejects arbitrary URL/selector (0.46ms)
+✔ R3: scenario partial replay succeeds when backed by snapshot state (0.58ms)
+ℹ tests 79
 ℹ suites 0
-ℹ pass 55
+ℹ pass 79
 ℹ fail 0
 ℹ skipped 0
+ℹ duration_ms 84.27ms
 ```
 
-契约自身结构检查（同一套测试内的独立断言）：
-
-- `findTypeArrays(contract)` → `[]`：**任何位置都没有 `type: [T, "null"]` 类型数组**，
-  null 一律用互斥分支表达（与接入设计中 Harness 不支持类型数组的结论对齐，避免二次翻译）。
-- `findOpenObjects(contract)` → `[]`：**所有 object 都是 `additionalProperties:false`**，
-  未知字段必须被拒绝。
-
-负例拒绝信息示例（证明检查有实际作用，而非空跑）：
-
-```
-invalid.max-tokens-reported-as-success
-  INVARIANT_TERMINAL_OK: $/payload ok=true 与 endReason=MAX_TOKENS 不一致（只有 COMPLETED 为成功）
-invalid.extra-root-field
-  SCHEMA: $ 必须精确匹配 oneOf 的一个分支，实际匹配 0 个
-  SCHEMA: $ 最接近分支的具体错误: SCHEMA: $ 存在未允许的额外字段 "unexpectedField"
-invalid.client-supplied-owner-id
-  SCHEMA: $ 最接近分支的具体错误: ...
-  INVARIANT_FORBIDDEN_FIELD: $/ownerId 禁止出现（模型 Secret 或客户端自报 owner 授权）
-invalid.respond-payload-belongs-to-another-operation
-  SCHEMA: $ 最接近分支的具体错误: SCHEMA: $ 缺少必需字段 "respondTo" | 存在未允许的额外字段 "subscribeFrom"
-invalid.scenario.event-after-terminal
-  INVARIANT_EVENT_AFTER_TERMINAL: 场景第 1 条 轮次 turn-000000000001 已终结，仍出现 ASSISTANT_MESSAGE
+### 3.2 Codex 独立反例探针验证（全量符合预期）
+运行 `node /Users/moxiao/IdeaProjects/project/docs/verification/harness/h01-round1-probes.mjs`：
+```json
+[
+  { "name": "terminal before TURN_STARTED", "expectedReject": true, "actualAccepted": false },
+  { "name": "CALL_FINISHED without matching CALL_STARTED", "expectedReject": true, "actualAccepted": false },
+  { "name": "duplicate TURN_STARTED", "expectedReject": true, "actualAccepted": false },
+  { "name": "turn content after terminal (control)", "expectedReject": true, "actualAccepted": false },
+  { "name": "question event with renderable question data", "expectedReject": false, "actualAccepted": true, "errors": [] },
+  { "name": "unchanged baseline (control)", "expectedReject": false, "actualAccepted": true },
+  { "name": "same HEAD but modified core loop hash", "expectedReject": true, "actualAccepted": false },
+  { "name": "same bundles but changed profile hash", "expectedReject": true, "actualAccepted": false },
+  { "name": "frontend proposed event names vs Runtime schema", "runtimeEventTypes": [ ...全部 13 种事件... ], "mappings": [ ...全部 12 项 legacy 均 inSchema: true... ] }
+]
 ```
 
-## 4. 覆盖情况
+### 3.3 契约自身结构断言（Harness 兼容性）
+- `findTypeArrays(contract)` → `[]`：**无任何 `type: [T, "null"]` 数组**。
+- `findOpenObjects(contract)` → `[]`：**所有对象类型均 `additionalProperties: false`**。
 
-### 4.1 契约覆盖（派发要求逐项）
+---
 
-| 要求 | 落实 |
+## 4. 交付文件清单与变更说明
+
+| 文件 | 变更说明 |
 | --- | --- |
-| 版本 | `protocolVersion` 固定 `"1.0-draft"`，破坏性变更升主版本 |
-| identity / session / turn / call / request / configVersion | `$defs` 中分别定义；`configVersion` 前缀 `cfg-`，会话内不可变 |
-| open / create / resume / prompt / cancel / steer / respond / subscribe / close | 9 个操作各有独立 `oneOf` 变体，**每个都有有效实例**（见 4.3） |
-| 事件序号 | `sequence` 整数且会话内严格递增 |
-| 结束原因与错误/恢复语义 | `endReason` 六值 + `errorCode` 十三值；`SEQUENCE_EXPIRED`/`SEQUENCE_OUT_OF_RANGE`/`ALREADY_SETTLED` 覆盖重连与重复答复边界 |
-| 区分 capability denied / budget exhausted / max tokens / cancelled / failed / completed | `endReason` 六值枚举 |
-| 不把 token 耗尽当成功 | `TURN_FINISHED.payload.ok` 必须与 `endReason` 一致，不一致即 `INVARIANT_TERMINAL_OK`；三个反例（max tokens 报成功、预算耗尽报成功、完成报失败）均被拒绝 |
-| 字段不含 Secret 或客户端 owner 授权 | 契约内无此类字段；`INVARIANT_FORBIDDEN_FIELD` 递归拒绝 16 个保留名（含 `ownerId`/`owner`/`apiKey`/`secret` 等） |
-| 明确草案待冻结、不实现完整 Agent Service | `README.md` 标注 DRAFT 并列出 6 项待 Codex 冻结决定；未创建 `agent-service/**` |
+| `contracts/agent-runtime/runtime.schema.json` | 增加 `event.progress`、`event.uiAction`；富化 `CALL_FINISHED`、`INTERACTION_REQUIRED`（question/confirmation）与 `request.respond`（typedRespondTo）；规范 `sequence >= 1` |
+| `contracts/agent-runtime/README.md` | 补充 Codex R1 裁决（全大写命名、进度与 UI 动作封闭、序号规则）；补充 R2 交互渲染与结构化确认决策；声明传输 Schema 与 Harness 工具 Schema 隔离；补充 R3 全量状态机规则与部分回放快照规范 |
+| `scripts/harness/runtime-contract.mjs` | 状态机实现 `INVARIANT_TERMINAL_WITHOUT_START`、`INVARIANT_DUPLICATE_TURN_START`、`INVARIANT_CALL_WITHOUT_START`、`INVARIANT_DUPLICATE_CALL_START`、`INVARIANT_CALL_CROSS_TURN`、`INVARIANT_EVENT_AFTER_SESSION_CLOSED`、`INVARIANT_PENDING_CALL_AT_TURN_END`、`INVARIANT_TYPED_RESPOND`；支持 `options.isPartialReplay` |
+| `scripts/harness/runtime-contract.fixtures.json` | 增补至 65 个正反用例（覆盖问答/确认渲染、类型化答复、进度、UI动作、无开始终态、孤立完成、重复启动、关闭后活动、序号0等） |
+| `scripts/harness/runtime-contract.test.mjs` | 增补至 79 项断言，包含 R1/R2/R3 专项测试与快照支撑的部分回放通过断言 |
+| `docs/verification/harness/h01-minimax.md` | 本交付证据文档 |
 
-### 4.2 有效/无效实例分布（52 例）
+---
 
-| 类别 | 数量 | 覆盖 |
-| --- | --- | --- |
-| 有效消息 | 22 | **全部 9 个操作**、**全部 11 种事件类型**、3 种响应状态（含 `NO_OP` 幂等关闭、`REJECTED`+`SEQUENCE_EXPIRED`） |
-| 有效场景 | 2 | happy path（含工具调用后继续、终态 `COMPLETED`）、预算耗尽路径（`ERROR`+终态非成功） |
-| 无效消息 | 22 | 额外字段、Secret 字段、客户端 ownerId、错误版本、未知操作、缺必需字段、payload 串位、类型错误、模式错误、非 UTC 时间戳、缺/错 `endReason`、事件缺 `turnId`、事件与 payload 不匹配、三种 `ok` 不一致、响应与 error 不匹配、scopes 重复 |
-| 合计 | 52 | 55 项测试 = 52 个实例用例 + 契约结构检查 + 操作/事件/响应覆盖检查 + fixture 唯一性检查 |
-| 无效场景 | 6 | 序号回退、轮次重复终态、终态后仍有事件、`configVersion` 中途变更、会话标识混用、调用先于 TURN_STARTED |
+## 5. 待 H05/H10/H11 落实的服务语义（非本轮静态 Schema 职责）
 
-规则分布：`SCHEMA` 17 例，`INVARIANT_*` 11 例（`TERMINAL_OK` 3、`FORBIDDEN_FIELD` 2、
-`SEQUENCE_MONOTONIC`、`TURN_TERMINAL_ONCE`、`EVENT_AFTER_TERMINAL`、`CONFIG_IMMUTABLE`、
-`SESSION_CONSISTENT`、`CALL_WITHIN_TURN` 各 1）。
+以下服务层业务语义由契约记录，但不伪装为纯 Schema 即可保证，将在对应 Task 由服务代码落地：
+1. **单次结算保护（Single Settle）**：`respond` 重复调用返回 `ALREADY_SETTLED`（H10/H11）。
+2. **事件保留窗口与快照回退**：`subscribeFrom` 超限返回 `SEQUENCE_EXPIRED`，前端由 REST 快照重建（H03/H07）。
+3. **Java 写入治理真值**：协议层的 `CONFIRM` 只是意图传递，真正的写入锁、版本比对与幂等由 Java 后端在 H11 终审定稿。
+4. **Secret 不落痕迹**：API Key 仅在表单提交瞬时存在内存，全链路日志/事件流不出现（H04/H08）。
+5. **Session 与 Owner 强绑定**：中间件必须校验 Java 身份签发者与受众，防越权读取他人会话（H05）。
 
-契约结构检查同时断言：全部 9 个操作、11 种事件类型在有效实例中各至少出现一次
-（避免“定义了却从未被正向验证”的字段）。
+---
 
-### 4.3 schema 表达不了的约束
+## 6. 本地提交记录
 
-已离线强制的用 `INVARIANT_*` 实现；无法离线判定的在
-`contracts/agent-runtime/README.md` §5 逐条列出并指定归属 Task，包括：
-`respond` 只结算一次（H10）、序号保留窗口与快照重建（H03）、`close` 幂等语义、
-身份有效期/audience/scope 校验（H05）、owner 解析与跨 owner 隔离（H05）、
-Secret 全链路策略（H04/H05/H07）、跨进程真实顺序与投递（H03 起）、工具 schema 投影（H02/H06）。
-
-## 5. 只读盘点：Java / Python 身份、预算、配置迁移点
-
-只读检查，**未修改任何后端或 AI 文件**。证据层级：静态源码阅读。
-
-| 区域 | 当前入口 | 现状 | 后续迁移依赖 / 风险 |
-| --- | --- | --- | --- |
-| 模型凭据（浏览器→Java） | `backend/.../aicredential/api/AiCredentialController.java`（`/api/ai-settings`，GET/PUT/deepseek-key/tavily-key） | 浏览器把模型 Key 交给 Java 保存 | H04/H08 接独立 Agent Config 后，H12 才退役该入口；迁移前不能宣称已解耦 |
-| 模型凭据（Java→Python） | `backend/.../aicredential/api/InternalAiCredentialController.java`（`/internal/ai-credentials/{provider}` → `RuntimeCredentialResponse(String apiKey)`） | **Java 直接把明文模型 Key 返回给 Python** | 这是核心解耦点：Agent Service 必须改为从自有加密 Secret 域解析；H12 前不得删除旧 API |
-| Python 凭据解析 | `ai-service/app/providers/credentials.py`（`CredentialResolver.resolve`） | 调 Java 取 Key；**仅 404 才回退环境默认值**，其它错误抛 `CredentialServiceUnavailableError` | 迁移时保留“错误不静默降级”的语义；新路径要按 owner 解析，不能退回服务器默认身份 |
-| Python 模型装配 | `ai-service/app/providers/model_factory.py`（`create_chat_model`）、`providers/budgeted_model.py`、`providers/budget.py` | 统一包 `BudgetedChatModel` + `ModelBudgetGuard`，在模型边界预占 | H05 的预算插件必须挂在**同一 `llm/stream` 边界**并覆盖压缩/重试/子 Agent；`max-tokens` 的结束原因不得被当作业务完成 |
-| Python 用量上报 | `ai-service/app/observability/usage.py` → `clients/java_backend.py`（`record_assistant_usage`、`reserve_assistant_usage`、`release_assistant_usage_reservation`） | Java 是预算与用量的真值来源 | Agent Service 需按 owner 预占/上报/释放；重复上报要幂等，取消要释放 |
-| Java 预算入口 | `backend/.../agent/usage/InternalAssistantUsageController.java`（`/internal/assistant-usage`、`/reservations`、`/reservations/{id}/release`、`/budget?ownerId=`） | 预算真值在 Java | `/budget` 以 **query 参数 ownerId** 取数：Agent Service 侧必须禁止模型提供 ownerId，只能使用凭据解析出的 owner（H05 校验） |
-| Python 服务配置 | `ai-service/app/core/settings.py`（`model_provider`、`model_base_url=https://api.deepseek.com`、`model_name=deepseek-v4-flash`、`deepseek_api_key`、`tavily_api_key`、`java_backend_base_url=http://localhost:8080`） | provider/endpoint/model 目前来自服务端环境配置 | 设计第 4 条要求 provider/base URL/model/Key 归独立 Agent Config；H04 建独立域，H12 迁移全部旧消费者 |
-| Java 内网鉴权 | `auth/security/InternalServiceTokenFilter`（`X-Internal-Service-Token`，缺失/错误返回 401） | 服务间共享静态令牌 | 新 Agent Service 需要独立、可撤销、限定 owner/audience/scope 的接入凭据（H05）；不应复用可无限期的共享令牌 |
-| Java 用户身份 | `auth/security/AuthenticatedUser` + `SecurityConfig`（`anyRequest().authenticated()`，`/api/auth/**` 与 `/actuator/health` 除外） | 浏览器登录态 | Agent 接入凭据要由该身份签发，且不与模型 Key 混用 |
-| 工具桥 | `agent/api/InternalAgentToolController`（`/internal/agent-tools/catalog`、`/{toolName}/invoke`）、`AgentToolRegistry`（65536 字节输出上限） | Java 是工具与输出契约真值 | H02 的 Manifest 必须由真实描述符编译；H06 需处理 nullable→`oneOf` 与点号名称投影；**截断不是完整证据、空数据是有效 null、HTTP 失败不得伪装成无数据**（本契约的事件/错误语义已与其对齐） |
-
-## 6. 未覆盖 / 限制
-
-1. **离线层级**：本文件全部证据为离线静态检查与纯 Node 校验，不含 provider / production 证据，
-   也未启动任何服务或调用模型。
-2. **未实现**：完整 Agent Service、Runtime 适配、控制桥、Capability Manifest（H02）、16 个固定评测场景
-   （由 DeepSeek Harness 负责）均未开始；本草案不宣称可运行。
-3. **契约未冻结**：`protocolVersion` 仍为 `1.0-draft`；README §6 的 6 项决定待 Codex 冻结。
-4. **不覆盖**：真实跨进程顺序/延迟/投递语义、序号保留窗口的实际大小、Secret 是否真的不入日志
-   （需 H04/H05 测试），以及真实前端与悬浮球行为（ZCode）。
-5. **快照工件**：`backend/mvnw.cmd` 在本树显示为已修改，是快照 CRLF 规范化差异（见 Codex 的
-   `docs/verification/harness/h01-baseline-note.md`），**非本 Agent 改动，本 Agent 未提交也未恢复该文件**。
-6. `docs/verification/harness/h01-baseline-note.md` 由 Codex 创建，属共享文档，未纳入本 Agent 提交。
-
-## 7. 提交与文件清单
-
-只提交本轮所有权文件（见 §1）；不含 `backend/**`、`ai-service/**`、`web/**`、
-共享计划/交接/基线文件或 Obsidian。**未 push**。
-
-commit：`793039940e3ee0364f65d179811aaf0044454d32`（`feat(contracts): add H01 agent runtime contract draft with offline validation`，本地、未 push）
-基线：`f7311079a83b84c5e7f3a9076ce4efccb3044c86`
-
-复跑命令：
-
-```bash
-cd /Users/moxiao/IdeaProjects/project-harness-h01-minimax
-node --test scripts/harness/runtime-contract.test.mjs
-```
+- 提交 Hash：`8d031fb375b5d52557ee6ae6bc98de400557d355`（最终 amend HEAD）
+- 分支：`codex/harness-h01-minimax-contract`
+- 基线：`f7311079a83b84c5e7f3a9076ce4efccb3044c86`
+- 状态：已本地提交，未 push，等待 Codex 独立验收。
