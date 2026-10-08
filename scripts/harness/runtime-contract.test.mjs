@@ -239,6 +239,7 @@ test('R2: question event with renderable question data accepted', () => {
       interactionId: 'intr-000000000001',
       kind: 'question',
       question: {
+        questionId: 'q-000000000001',
         text: '选择哪一个？',
         options: ['a', 'b'],
       },
@@ -447,4 +448,83 @@ test('R3: scenario partial replay succeeds when backed by snapshot state', () =>
     },
   });
   assert.equal(withSnapshot.ok, true, `快照支撑的部分回放必须通过: ${withSnapshot.errors.join('; ')}`);
+});
+
+
+test('R2: question event without questionId is rejected', () => {
+  const result = validateMessage(contract, {
+    protocolVersion: '1.0-draft',
+    kind: 'event',
+    eventId: 'evt-q-002',
+    sequence: 1,
+    sessionId: 'sess-000000000001',
+    turnId: 'turn-000000000001',
+    type: 'INTERACTION_REQUIRED',
+    occurredAt: '2026-10-08T00:00:01Z',
+    payload: {
+      interactionId: 'intr-000000000001',
+      kind: 'question',
+      question: {
+        text: '选择哪一个？',
+        options: ['a', 'b'],
+      },
+    },
+  });
+  assert.equal(result.ok, false, '缺失 questionId 的 question 卡必须被拒绝');
+  assert.ok(
+    result.errors.some((e) => e.includes('questionId')),
+    `期望指出缺少 questionId，实际: ${result.errors.join('; ')}`,
+  );
+});
+
+test('R2: confirmation response without optional confirmed is valid', () => {
+  // CONFIRM without confirmed
+  const confirmResult = validateMessage(contract, {
+    protocolVersion: '1.0-draft',
+    kind: 'request',
+    requestId: 'req-conf-opt-01',
+    operation: 'respond',
+    sessionRef: { sessionId: 'sess-000000000001', configVersion: 'cfg-000001' },
+    respondTo: {
+      interactionId: 'intr-000000000002',
+      kind: 'confirmation',
+      actionId: 'act-000000000001',
+      expectedVersion: 1,
+      decision: 'CONFIRM',
+    },
+    identity: {
+      subjectRef: 'subj-ref-000000000001',
+      issuer: 'studypilot-java',
+      audience: 'studypilot-agent-service',
+      scopes: ['agent.interaction.respond'],
+      issuedAt: '2026-10-08T00:00:00Z',
+      expiresAt: '2026-10-08T00:15:00Z',
+    },
+  });
+  assert.equal(confirmResult.ok, true, `省略 confirmed 的 CONFIRM 必须合法: ${confirmResult.errors.join('; ')}`);
+
+  // REJECT without confirmed
+  const rejectResult = validateMessage(contract, {
+    protocolVersion: '1.0-draft',
+    kind: 'request',
+    requestId: 'req-conf-opt-02',
+    operation: 'respond',
+    sessionRef: { sessionId: 'sess-000000000001', configVersion: 'cfg-000001' },
+    respondTo: {
+      interactionId: 'intr-000000000002',
+      kind: 'confirmation',
+      actionId: 'act-000000000001',
+      expectedVersion: 1,
+      decision: 'REJECT',
+    },
+    identity: {
+      subjectRef: 'subj-ref-000000000001',
+      issuer: 'studypilot-java',
+      audience: 'studypilot-agent-service',
+      scopes: ['agent.interaction.respond'],
+      issuedAt: '2026-10-08T00:00:00Z',
+      expiresAt: '2026-10-08T00:15:00Z',
+    },
+  });
+  assert.equal(rejectResult.ok, true, `省略 confirmed 的 REJECT 必须合法: ${rejectResult.errors.join('; ')}`);
 });

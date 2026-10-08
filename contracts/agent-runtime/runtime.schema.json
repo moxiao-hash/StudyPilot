@@ -1805,6 +1805,9 @@
             "text"
           ]
         }
+      ],
+      "required": [
+        "questionId"
       ]
     },
     "interactionConfirmation": {
@@ -1888,6 +1891,9 @@
           "allOf": [
             {
               "if": {
+                "required": [
+                  "confirmed"
+                ],
                 "properties": {
                   "decision": {
                     "const": "CONFIRM"
@@ -1895,17 +1901,18 @@
                 }
               },
               "then": {
-                "not": {
-                  "properties": {
-                    "confirmed": {
-                      "const": false
-                    }
+                "properties": {
+                  "confirmed": {
+                    "const": true
                   }
                 }
               }
             },
             {
               "if": {
+                "required": [
+                  "confirmed"
+                ],
                 "properties": {
                   "decision": {
                     "const": "REJECT"
@@ -1913,11 +1920,9 @@
                 }
               },
               "then": {
-                "not": {
-                  "properties": {
-                    "confirmed": {
-                      "const": true
-                    }
+                "properties": {
+                  "confirmed": {
+                    "const": false
                   }
                 }
               }

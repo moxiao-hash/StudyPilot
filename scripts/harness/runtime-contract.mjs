@@ -360,6 +360,8 @@ function validateMessageLevel(message, errors) {
       if (payload.kind === 'question') {
         if (!payload.question) {
           errors.push('INVARIANT_INTERACTION_SHAPE: $/payload kind=question 时必须提供可渲染 question 对象');
+        } else if (!payload.question.questionId) {
+          errors.push('INVARIANT_INTERACTION_SHAPE: $/payload question 必须包含稳定 questionId');
         }
       }
       if (payload.kind === 'confirmation') {

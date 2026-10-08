@@ -91,23 +91,22 @@ node --test scripts/harness/runtime-contract.test.mjs
 当发生用户交互挂起时，Payload 必须提供客户端可直接渲染的结构化对象：
 - **问答提问（`kind: "question"`）**：
   - 必须提供 `question` 对象。
+  - 必须包含 `questionId`（稳定问题 ID，供前端展示与答复引用往返闭环）。
   - 必须包含 `prompt` 或 `text`（提问正文）。
-  - 可包含 `questionId`、可选 `options`（单选/多选项列表，支持字符串或 `{ value, label, description? }`）与 `selectionMode`（`single` 或 `multiple`）。
+  - 可选 `options`（单选/多选项列表，支持字符串或 `{ value, label, description? }`）与 `selectionMode`（`single` 或 `multiple`）。
 - **高风险写入确认（`kind: "confirmation"`）**：
   - 必须提供 `confirmation` 对象。
-  - 必须包含：`executionId`、`actionId`、`toolName`、`summary`、`riskLevel` (`LOW` | `HIGH`)、`expiresAt`（ISO-8601 UTC）。
-  - 可包含 `expectedVersion`。
+  - 必须包含全部确定性要素：`executionId`、`actionId`、`toolName`、`summary`、`expectedVersion`（整数版本锚点）、`riskLevel` (`LOW` | `HIGH`)、`expiresAt`（ISO-8601 UTC）。严禁缺版本的无锚点确认卡。
 
 ### 4.2 类型化答复（`request.respond` -> `respondTo`）
-客户端回复必须区分为结构化问答答复或高风险确认决策：
+客户端回复仅允许 2 个严格互斥分支，已彻底删除无 `kind` 的未标型自由文本分支：
 - **问答答复（`kind: "question"`）**：
   - 必须包含 `interactionId`、`questionId`、`answer`（字符串或多选数组）。
 - **确认决策（`kind: "confirmation"`）**：
-  - 必须包含 `interactionId`、`actionId`、`decision` (`"CONFIRM"` 或 `"REJECT"`)。
-  - 可包含 `confirmed: boolean`。
-  - **红线**：严禁仅使用自然语言字符串（如 `"我确认"`）代业务授权！自然语言不是权限真值，必须提供确定性的 `decision`。
-- **通用问答兜底（无 `kind`）**：
-  - 允许 `{ interactionId, answer: string }` 用于简单自由文本提问，但禁止用于业务写入授权。
+  - 必须包含 `interactionId`、`actionId`、`expectedVersion`、`decision` (`"CONFIRM"` 或 `"REJECT"`)。
+  - 可选包含 `confirmed: boolean`。
+  - **一致性约束**：若提供 `confirmed`，必须与 `decision` 严格一致（`decision: "CONFIRM"` 必须配合 `confirmed: true`；`decision: "REJECT"` 必须配合 `confirmed: false`），冲突矛盾直接拒绝；若省略可选 `confirmed`，仅凭 `decision` 合法生效。
+  - **红线**：严禁仅使用自然语言字符串代业务授权！自然语言不是权限真值，必须提供确定性的 `decision`。
 
 ---
 
