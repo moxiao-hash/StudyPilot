@@ -1815,6 +1815,7 @@
         "actionId",
         "toolName",
         "summary",
+        "expectedVersion",
         "riskLevel",
         "expiresAt"
       ],
@@ -1856,6 +1857,8 @@
           "required": [
             "interactionId",
             "kind",
+            "actionId",
+            "expectedVersion",
             "decision"
           ],
           "properties": {
@@ -1868,6 +1871,10 @@
             "actionId": {
               "$ref": "#/$defs/opaqueRef"
             },
+            "expectedVersion": {
+              "type": "integer",
+              "minimum": 1
+            },
             "decision": {
               "enum": [
                 "CONFIRM",
@@ -1877,7 +1884,45 @@
             "confirmed": {
               "type": "boolean"
             }
-          }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "decision": {
+                    "const": "CONFIRM"
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "properties": {
+                    "confirmed": {
+                      "const": false
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "decision": {
+                    "const": "REJECT"
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "properties": {
+                    "confirmed": {
+                      "const": true
+                    }
+                  }
+                }
+              }
+            }
+          ]
         },
         {
           "type": "object",
@@ -1885,6 +1930,7 @@
           "required": [
             "interactionId",
             "kind",
+            "questionId",
             "answer"
           ],
           "properties": {
@@ -1912,27 +1958,6 @@
                 }
               ]
             }
-          }
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "interactionId",
-            "answer"
-          ],
-          "properties": {
-            "interactionId": {
-              "$ref": "#/$defs/opaqueRef"
-            },
-            "answer": {
-              "$ref": "#/$defs/content"
-            }
-          },
-          "not": {
-            "required": [
-              "decision"
-            ]
           }
         }
       ]

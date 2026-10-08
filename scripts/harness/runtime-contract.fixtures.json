@@ -142,7 +142,8 @@
           "kind": "confirmation",
           "actionId": "act-000000000001",
           "decision": "CONFIRM",
-          "confirmed": true
+          "confirmed": true,
+          "expectedVersion": 1
         },
         "identity": {
           "subjectRef": "subj-ref-000000000001",
@@ -1256,6 +1257,151 @@
           "url": "https://evil.example.com"
         }
       }
+    },
+    {
+      "name": "invalid.respond-confirmation-decision-confirmed-conflict",
+      "rule": "INVARIANT_TYPED_RESPOND",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-conflict-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "actionId": "act-000000000001",
+          "expectedVersion": 1,
+          "decision": "CONFIRM",
+          "confirmed": false
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-untyped-without-kind",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-untyped-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000001",
+          "answer": "我确认"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-confirmation-missing-expected-version",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-nover-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "actionId": "act-000000000001",
+          "decision": "CONFIRM"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.respond-question-missing-question-id",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "request",
+        "requestId": "req-resp-noqid-01",
+        "operation": "respond",
+        "sessionRef": {
+          "sessionId": "sess-000000000001",
+          "configVersion": "cfg-000001"
+        },
+        "respondTo": {
+          "interactionId": "intr-000000000001",
+          "kind": "question",
+          "answer": "两天"
+        },
+        "identity": {
+          "subjectRef": "subj-ref-000000000001",
+          "issuer": "studypilot-java",
+          "audience": "studypilot-agent-service",
+          "scopes": [
+            "agent.interaction.respond"
+          ],
+          "issuedAt": "2026-10-08T00:00:00Z",
+          "expiresAt": "2026-10-08T00:15:00Z"
+        }
+      }
+    },
+    {
+      "name": "invalid.confirmation-card-missing-expected-version",
+      "rule": "SCHEMA",
+      "message": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-conf-nover-01",
+        "sequence": 1,
+        "sessionId": "sess-000000000001",
+        "turnId": "turn-000000000001",
+        "type": "INTERACTION_REQUIRED",
+        "occurredAt": "2026-10-08T00:00:01Z",
+        "payload": {
+          "interactionId": "intr-000000000002",
+          "kind": "confirmation",
+          "confirmation": {
+            "executionId": "exec-000000000001",
+            "actionId": "act-000000000001",
+            "toolName": "roadmap.enroll",
+            "summary": "确认",
+            "riskLevel": "HIGH",
+            "expiresAt": "2026-10-08T00:15:00Z"
+          }
+        }
+      }
     }
   ],
   "invalidScenarios": [
@@ -1582,6 +1728,29 @@
           "occurredAt": "2026-10-08T00:00:02Z"
         }
       ]
+    },
+    {
+      "name": "invalid.scenario.partial-replay-without-snapshot",
+      "rule": "INVARIANT_SNAPSHOT_REQUIRED",
+      "messages": [
+        {
+          "protocolVersion": "1.0-draft",
+          "kind": "event",
+          "eventId": "evt-part-nosnap-01",
+          "sequence": 5,
+          "sessionId": "sess-000000000001",
+          "turnId": "turn-000000000001",
+          "type": "TURN_FINISHED",
+          "occurredAt": "2026-10-08T00:00:05Z",
+          "payload": {
+            "endReason": "COMPLETED",
+            "ok": true
+          }
+        }
+      ],
+      "options": {
+        "isPartialReplay": true
+      }
     }
   ]
 }

@@ -5,12 +5,12 @@
  *   1. 校验契约自身：不得出现 `type: [T, "null"]` 类型数组；所有 object 必须封闭。
  *   2. 用 JSON Schema 子集校验单条消息（request/response/event）。
  *   3. 校验 JSON Schema 表达不了的约束：按名字的禁字段策略、跨字段相等（ok/endReason）、
- *      类型化问答/确认答复（自然语言不能代确认权限）。
+ *      类型化问答/确认答复（自然语言不能代确认权限，必须绑定 actionId/expectedVersion/decision）。
  *   4. 全量轨迹状态机（validateScenario）：
  *      - 轮次生命周期：未启动终态拒绝、重复启动拒绝、终态后事件拒绝、终态时未完成调用拒绝。
  *      - 调用生命周期：孤立 CALL_FINISHED 拒绝、重复 CALL_STARTED 拒绝、跨轮次调用拒绝。
  *      - 会话生命周期：会话关闭后活动拒绝、序号严格单调递增（>=1）、configVersion 不可变。
- *      - 支持显式快照回放模式（options.isPartialReplay），避免误拒合法重连续传。
+ *      - 快照绑定的部分回放模式（options.isPartialReplay + options.snapshot），未带有效快照严禁绕过生命周期检查。
  *
  * 依赖：仅 Node 内置模块。不联网、不启动服务、不调用模型、不需要第三方包。
  * 说明：这是 H01 草案的离线校验器，不是产品运行时校验器；生产实现见 H03/H05。
@@ -357,22 +357,55 @@ function validateMessageLevel(message, errors) {
 
     if (message.type === 'INTERACTION_REQUIRED') {
       const payload = message.payload ?? {};
-      if (payload.kind === 'question' && !payload.question) {
-        errors.push('INVARIANT_INTERACTION_SHAPE: $/payload kind=question 时必须提供可渲染 question 对象');
+      if (payload.kind === 'question') {
+        if (!payload.question) {
+          errors.push('INVARIANT_INTERACTION_SHAPE: $/payload kind=question 时必须提供可渲染 question 对象');
+        }
       }
-      if (payload.kind === 'confirmation' && !payload.confirmation) {
-        errors.push('INVARIANT_INTERACTION_SHAPE: $/payload kind=confirmation 时必须提供可渲染 confirmation 对象');
+      if (payload.kind === 'confirmation') {
+        if (!payload.confirmation) {
+          errors.push('INVARIANT_INTERACTION_SHAPE: $/payload kind=confirmation 时必须提供可渲染 confirmation 对象');
+        } else {
+          if (!payload.confirmation.actionId) {
+            errors.push('INVARIANT_INTERACTION_SHAPE: $/payload confirmation 必须包含 actionId');
+          }
+          if (payload.confirmation.expectedVersion === undefined || payload.confirmation.expectedVersion === null) {
+            errors.push('INVARIANT_INTERACTION_SHAPE: $/payload confirmation 必须包含 expectedVersion');
+          }
+        }
       }
     }
   }
 
   if (message?.kind === 'request' && message.operation === 'respond') {
     const respondTo = message.respondTo;
-    if (respondTo?.kind === 'confirmation') {
-      if (!respondTo.decision || !['CONFIRM', 'REJECT'].includes(respondTo.decision)) {
-        errors.push(
-          'INVARIANT_TYPED_RESPOND: $/respondTo 确认答复必须提供明确 decision (CONFIRM 或 REJECT)，不能使用自然语言文本代业务授权',
-        );
+    if (!respondTo || typeof respondTo !== 'object') {
+      return;
+    }
+    if (!respondTo.kind) {
+      errors.push('INVARIANT_TYPED_RESPOND: $/respondTo 必须明确指定 kind ("question" 或 "confirmation")，严禁无类型自然语言答复');
+    } else if (respondTo.kind === 'confirmation') {
+      if (!respondTo.actionId) {
+        errors.push('INVARIANT_TYPED_RESPOND: $/respondTo 确认答复必须包含 actionId');
+      }
+      if (respondTo.expectedVersion === undefined || respondTo.expectedVersion === null) {
+        errors.push('INVARIANT_TYPED_RESPOND: $/respondTo 确认答复必须包含整数 expectedVersion');
+      }
+      if (respondTo.decision !== 'CONFIRM' && respondTo.decision !== 'REJECT') {
+        errors.push('INVARIANT_TYPED_RESPOND: $/respondTo 确认答复 decision 必须为 CONFIRM 或 REJECT，严禁自然语言代确认');
+      }
+      if (respondTo.decision === 'CONFIRM' && respondTo.confirmed === false) {
+        errors.push('INVARIANT_TYPED_RESPOND: $/respondTo decision=CONFIRM 与 confirmed=false 冲突矛盾');
+      }
+      if (respondTo.decision === 'REJECT' && respondTo.confirmed === true) {
+        errors.push('INVARIANT_TYPED_RESPOND: $/respondTo decision=REJECT 与 confirmed=true 冲突矛盾');
+      }
+    } else if (respondTo.kind === 'question') {
+      if (!respondTo.questionId) {
+        errors.push('INVARIANT_TYPED_RESPOND: $/respondTo 问答答复必须包含 questionId');
+      }
+      if (respondTo.answer === undefined || respondTo.answer === null) {
+        errors.push('INVARIANT_TYPED_RESPOND: $/respondTo 问答答复必须包含 answer');
       }
     }
   }
@@ -404,20 +437,40 @@ export function validateScenario(contract, messages, options = {}) {
   });
 
   const isPartialReplay = options.isPartialReplay === true;
-  const snapshot = options.snapshot ?? {};
+  const snapshot = options.snapshot;
+
+  if (isPartialReplay) {
+    if (!snapshot || typeof snapshot !== 'object') {
+      errors.push(
+        'INVARIANT_SNAPSHOT_REQUIRED: 声明 isPartialReplay: true 时必须提供有效 snapshot 上下文对象，未提供快照不能绕过生命周期检查',
+      );
+    } else {
+      if (!snapshot.sessionId || typeof snapshot.sessionId !== 'string') {
+        errors.push('INVARIANT_SNAPSHOT_INVALID: 快照必须提供有效的 sessionId 绑定');
+      }
+      if (!snapshot.configVersion || typeof snapshot.configVersion !== 'string') {
+        errors.push('INVARIANT_SNAPSHOT_INVALID: 快照必须提供有效的 configVersion 绑定');
+      }
+      if (snapshot.lastSequence === undefined || typeof snapshot.lastSequence !== 'number' || snapshot.lastSequence < 0) {
+        errors.push('INVARIANT_SNAPSHOT_INVALID: 快照必须提供有效的 lastSequence >= 0');
+      }
+    }
+  }
+
+  const safeSnapshot = isPartialReplay && snapshot && typeof snapshot === 'object' ? snapshot : {};
 
   const lastSequenceBySession = new Map();
-  const finishedTurns = new Set(snapshot.finishedTurnIds ?? []);
-  const startedTurns = new Set(snapshot.activeTurnId ? [snapshot.activeTurnId] : []);
+  const finishedTurns = new Set(safeSnapshot.finishedTurnIds ?? []);
+  const startedTurns = new Set(safeSnapshot.activeTurnId ? [safeSnapshot.activeTurnId] : []);
   const activeCalls = new Map(); // callId -> turnId
-  if (snapshot.activeCalls) {
-    for (const [cId, tId] of Object.entries(snapshot.activeCalls)) {
+  if (safeSnapshot.activeCalls) {
+    for (const [cId, tId] of Object.entries(safeSnapshot.activeCalls)) {
       activeCalls.set(cId, tId);
     }
   }
-  let sessionClosed = snapshot.sessionClosed === true;
-  const configVersions = new Set(snapshot.configVersion ? [snapshot.configVersion] : []);
-  const sessionIds = new Set(snapshot.sessionId ? [snapshot.sessionId] : []);
+  let sessionClosed = safeSnapshot.sessionClosed === true;
+  const configVersions = new Set(safeSnapshot.configVersion ? [safeSnapshot.configVersion] : []);
+  const sessionIds = new Set(safeSnapshot.sessionId ? [safeSnapshot.sessionId] : []);
 
   messages.forEach((message, index) => {
     const position = `场景第 ${index} 条`;
@@ -440,9 +493,16 @@ export function validateScenario(contract, messages, options = {}) {
       sessionClosed = true;
     }
 
-    // 1. 序号单调递增检查
+    // 1. 快照一致性检查
+    if (safeSnapshot.sessionId && sessionId !== safeSnapshot.sessionId) {
+      errors.push(
+        `INVARIANT_SESSION_CONSISTENT: ${position} 消息会话标识 ${sessionId} 与快照会话标识 ${safeSnapshot.sessionId} 不一致`,
+      );
+    }
+
+    // 2. 序号单调递增检查
     if (Number.isInteger(message.sequence)) {
-      const previous = lastSequenceBySession.get(sessionId) ?? (snapshot.lastSequence ?? 0);
+      const previous = lastSequenceBySession.get(sessionId) ?? (safeSnapshot.lastSequence ?? 0);
       if (message.sequence <= previous) {
         errors.push(
           `INVARIANT_SEQUENCE_MONOTONIC: ${position} 会话 ${sessionId} 序号 ${message.sequence} 未大于前一条 ${previous}`,
@@ -451,12 +511,17 @@ export function validateScenario(contract, messages, options = {}) {
       lastSequenceBySession.set(sessionId, message.sequence);
     }
 
-    // 2. 配置版本一致性
+    // 3. 配置版本一致性
     if (message.payload && typeof message.payload.configVersion === 'string') {
       configVersions.add(message.payload.configVersion);
+      if (safeSnapshot.configVersion && message.payload.configVersion !== safeSnapshot.configVersion) {
+        errors.push(
+          `INVARIANT_CONFIG_IMMUTABLE: ${position} 消息配置版本 ${message.payload.configVersion} 与快照配置版本 ${safeSnapshot.configVersion} 不一致`,
+        );
+      }
     }
 
-    // 3. 轮次生命周期检查
+    // 4. 轮次生命周期检查
     if (message.type === 'TURN_STARTED' && typeof turnId === 'string') {
       if (startedTurns.has(turnId)) {
         errors.push(`INVARIANT_DUPLICATE_TURN_START: ${position} 轮次 ${turnId} 重复启动 (TURN_STARTED)`);
@@ -465,9 +530,9 @@ export function validateScenario(contract, messages, options = {}) {
     }
 
     if (message.type === TURN_TERMINAL_TYPE && typeof turnId === 'string') {
-      if (!startedTurns.has(turnId) && !isPartialReplay) {
+      if (!startedTurns.has(turnId)) {
         errors.push(
-          `INVARIANT_TERMINAL_WITHOUT_START: ${position} 轮次 ${turnId} 未调用 TURN_STARTED 即出现终态事件`,
+          `INVARIANT_TERMINAL_WITHOUT_START: ${position} 轮次 ${turnId} 未在消息中启动且不在快照活跃轮次中，禁止终结`,
         );
       }
       if (finishedTurns.has(turnId)) {
@@ -492,14 +557,14 @@ export function validateScenario(contract, messages, options = {}) {
           `INVARIANT_EVENT_AFTER_TERMINAL: ${position} 轮次 ${turnId} 已终结，仍出现 ${message.type}`,
         );
       }
-      if (!startedTurns.has(turnId) && !isPartialReplay && message.type !== 'TURN_STARTED') {
+      if (!startedTurns.has(turnId) && message.type !== 'TURN_STARTED') {
         errors.push(
-          `INVARIANT_CALL_WITHIN_TURN: ${position} 轮次 ${turnId} 的 ${message.type} 没有先前的 TURN_STARTED`,
+          `INVARIANT_CALL_WITHIN_TURN: ${position} 轮次 ${turnId} 的 ${message.type} 没有先前的有效启动轮次`,
         );
       }
     }
 
-    // 4. 调用生命周期检查
+    // 5. 调用生命周期检查
     if (message.type === 'CALL_STARTED') {
       if (typeof callId === 'string') {
         if (activeCalls.has(callId)) {
@@ -511,11 +576,11 @@ export function validateScenario(contract, messages, options = {}) {
 
     if (message.type === 'CALL_FINISHED') {
       if (typeof callId === 'string') {
-        if (!activeCalls.has(callId) && !isPartialReplay) {
+        if (!activeCalls.has(callId)) {
           errors.push(
-            `INVARIANT_CALL_WITHOUT_START: ${position} 调用 ${callId} 未启动 (CALL_STARTED) 即出现 CALL_FINISHED`,
+            `INVARIANT_CALL_WITHOUT_START: ${position} 调用 ${callId} 未在消息中启动且不在快照活跃调用中，禁止终结`,
           );
-        } else if (activeCalls.has(callId)) {
+        } else {
           const startedTurnId = activeCalls.get(callId);
           if (startedTurnId !== turnId) {
             errors.push(

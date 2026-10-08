@@ -58,7 +58,7 @@ for (const positive of fixtures.validMessages) {
 
 for (const positive of fixtures.validScenarios) {
   test(`valid scenario accepted: ${positive.name}`, () => {
-    const result = validateScenario(contract, positive.messages);
+    const result = validateScenario(contract, positive.messages, positive.options);
     assert.equal(result.ok, true, `期望通过，实际: ${result.errors.join('; ')}`);
   });
 }
@@ -76,7 +76,7 @@ for (const negative of fixtures.invalidMessages) {
 
 for (const negative of fixtures.invalidScenarios) {
   test(`invalid scenario rejected: ${negative.name}`, () => {
-    const result = validateScenario(contract, negative.messages);
+    const result = validateScenario(contract, negative.messages, negative.options);
     assert.equal(result.ok, false, '无效场景必须被拒绝');
     assert.ok(
       result.errors.some((error) => error.startsWith(negative.rule)),
@@ -288,6 +288,7 @@ test('R2: typed respond for confirmation requires decision and rejects plain tex
       interactionId: 'intr-000000000002',
       kind: 'confirmation',
       actionId: 'act-000000000001',
+      expectedVersion: 1,
       decision: 'CONFIRM',
       confirmed: true,
     },
@@ -313,6 +314,7 @@ test('R2: typed respond for confirmation requires decision and rejects plain tex
       interactionId: 'intr-000000000002',
       kind: 'confirmation',
       actionId: 'act-000000000001',
+      expectedVersion: 1,
       answer: '好的我同意',
     },
     identity: {
@@ -437,6 +439,8 @@ test('R3: scenario partial replay succeeds when backed by snapshot state', () =>
   const withSnapshot = validateScenario(contract, replayEvents, {
     isPartialReplay: true,
     snapshot: {
+      sessionId: 'sess-000000000001',
+      configVersion: 'cfg-000001',
       lastSequence: 4,
       activeTurnId: 'turn-000000000001',
       activeCalls: { 'call-000000000001': 'turn-000000000001' },
