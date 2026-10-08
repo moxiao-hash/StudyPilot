@@ -5,6 +5,7 @@
  * Validates Vue routes, navigation registries, legacy SSE event types,
  * runtime projection mappings, and anti-false-success boundaries.
  * Strictly separates [STRUCTURAL] static checks from [BEHAVIORAL] execution.
+ * Enforces strict 12/12 contract validation against MiniMax schema (fail-closed).
  */
 
 import fs from 'node:fs';
@@ -53,7 +54,7 @@ for (const r of agentRoutes) {
 }
 
 // -----------------------------------------------------------------------------
-// 2. [STRUCTURAL & BEHAVIORAL] UI Action Dispatcher & Real Negative Defenses
+// 2. [STRUCTURAL & BEHAVIORAL] UI Action Dispatcher & Negative Defenses
 // -----------------------------------------------------------------------------
 console.log('\n--- 2. [STRUCTURAL & BEHAVIORAL] UI Action Dispatcher & Negative Defenses ---');
 const dispatcherFile = path.join(rootDir, 'web/src/modules/assistant/uiActionDispatcher.ts');
@@ -74,7 +75,6 @@ assert(dispatcherSource.includes("assertAuthenticityGuards"), "Learning integrit
 // Behavioral execution of dispatcher negative paths via compiled/dynamic import
 console.log('Executing [BEHAVIORAL] offline negative tests on uiActionDispatcher...');
 try {
-  // Load uiActionDispatcher module dynamically
   const dispatcherModule = await import(path.join(rootDir, 'web/src/modules/assistant/uiActionDispatcher.ts'));
   const { dispatchUiAction } = dispatcherModule;
 
@@ -140,7 +140,7 @@ try {
   }
   assert(integrityRejected, "dispatchUiAction BEHAVIORALLY throws and rejects non-delegatable quiz/check-in actions", 'BEHAVIORAL');
 } catch (err) {
-  assert(false, `Failed to execute behavioral tests on uiActionDispatcher: ${err.message}`);
+  assert(false, `Failed to execute behavioral tests on uiActionDispatcher: ${err.message}`, 'BEHAVIORAL');
 }
 
 // -----------------------------------------------------------------------------
@@ -186,7 +186,6 @@ const webFixtureFile = path.join(rootDir, 'web/tests/harness-baseline/event-samp
 assert(fs.existsSync(webFixtureFile), `Web test fixture exists at ${webFixtureFile}`, 'STRUCTURAL');
 assert(fs.readFileSync(samplesFile, 'utf8') === fs.readFileSync(webFixtureFile, 'utf8'), `Web test fixture is byte-identical to scripts/harness fixture`, 'STRUCTURAL');
 
-// Verify Codex Round 2 rulings in samples
 assert(samples.round === 'ROUND2', "Fixture is marked ROUND2 conforming to Codex review", 'STRUCTURAL');
 assert(Array.isArray(samples.runtime_event_mappings) && samples.runtime_event_mappings.length === 12, "12 runtime event mappings defined", 'STRUCTURAL');
 
@@ -198,60 +197,65 @@ const turnFinishedMapping = samples.runtime_event_mappings.find((m) => m.legacy_
 assert(turnFinishedMapping && turnFinishedMapping.target_runtime_event === 'TURN_FINISHED', "TURN_COMPLETED maps to TURN_FINISHED", 'STRUCTURAL');
 assert(turnFinishedMapping.key_identifiers.includes('endReason') && turnFinishedMapping.key_identifiers.includes('ok'), "TURN_FINISHED requires endReason and ok in payload", 'STRUCTURAL');
 
-// Read MiniMax contract explicitly from external worktree
+// Read MiniMax contract explicitly from external worktree (fail-closed if missing)
 const defaultMinimaxContract = '/Users/moxiao/IdeaProjects/project-harness-h01-minimax/contracts/agent-runtime/runtime.schema.json';
 const minimaxContractPath = process.argv[2] || defaultMinimaxContract;
 
 console.log(`Reading MiniMax contract from: ${minimaxContractPath}`);
-if (fs.existsSync(minimaxContractPath)) {
-  const contractContent = fs.readFileSync(minimaxContractPath, 'utf8');
-  const contractHash = crypto.createHash('sha256').update(contractContent).digest('hex');
-  const contractJson = JSON.parse(contractContent);
+assert(fs.existsSync(minimaxContractPath), `MiniMax contract file exists at ${minimaxContractPath} (fail-closed, no skip)`, 'CROSS_CONTRACT');
 
-  console.log(`  Contract SHA-256: ${contractHash}`);
-  console.log(`  Protocol Version: ${contractJson.$defs?.protocolVersion?.const}`);
-  assert(contractJson.$defs?.protocolVersion?.const === '1.0-draft', "MiniMax schema declares protocolVersion '1.0-draft'", 'CROSS_CONTRACT');
+const contractContent = fs.readFileSync(minimaxContractPath, 'utf8');
+const contractHash = crypto.createHash('sha256').update(contractContent).digest('hex');
+const contractJson = JSON.parse(contractContent);
 
-  // Verify provenance recorded in samples
-  assert(samples.contract_provenance?.minimax_schema_sha256 === contractHash, `Recorded contract SHA-256 matches actual MiniMax contract file (${contractHash})`, 'CROSS_CONTRACT');
+console.log(`  Contract SHA-256: ${contractHash}`);
+console.log(`  Protocol Version: ${contractJson.$defs?.protocolVersion?.const}`);
+assert(contractJson.$defs?.protocolVersion?.const === '1.0-draft', "MiniMax schema declares protocolVersion '1.0-draft'", 'CROSS_CONTRACT');
+assert(samples.contract_provenance?.minimax_schema_sha256 === contractHash, `Recorded contract SHA-256 matches actual MiniMax contract file (${contractHash})`, 'CROSS_CONTRACT');
 
-  // Validate concrete runtime event instances
-  const instances = samples.runtime_event_instances;
-  assert(Array.isArray(instances) && instances.length === 12, "12 concrete runtime event instances provided", 'STRUCTURAL');
+// Load MiniMax validator dynamically (fail-closed if missing)
+const minimaxValidatorPath = '/Users/moxiao/IdeaProjects/project-harness-h01-minimax/scripts/harness/runtime-contract.mjs';
+assert(fs.existsSync(minimaxValidatorPath), `MiniMax validator exists at ${minimaxValidatorPath} (fail-closed, no skip)`, 'CROSS_CONTRACT');
 
-  // Load MiniMax validator dynamically if available
-  const minimaxValidatorPath = '/Users/moxiao/IdeaProjects/project-harness-h01-minimax/scripts/harness/runtime-contract.mjs';
-  if (fs.existsSync(minimaxValidatorPath)) {
-    try {
-      const { validateMessage } = await import(minimaxValidatorPath);
-      let supportedCount = 0;
-      let pendingExtensionCount = 0;
+const { validateMessage } = await import(minimaxValidatorPath);
+assert(typeof validateMessage === 'function', "MiniMax validateMessage export is loaded", 'CROSS_CONTRACT');
 
-      for (const inst of instances) {
-        const res = validateMessage(contractJson, inst);
-        if (res.ok) {
-          supportedCount++;
-        } else {
-          pendingExtensionCount++;
-          // Expected pending schema branches from MiniMax: PROGRESS and UI_ACTION
-          assert(
-            inst.type === 'PROGRESS' || inst.type === 'UI_ACTION',
-            `Unmatched instance type '${inst.type}' is an identified schema extension branch for MiniMax Round 2`,
-            'CROSS_CONTRACT'
-          );
-        }
-      }
+// Validate all 12 concrete runtime event instances - MUST BE 100% VALID (12/12)
+const instances = samples.runtime_event_instances;
+assert(Array.isArray(instances) && instances.length === 12, "12 concrete runtime event instances provided", 'STRUCTURAL');
 
-      console.log(`  Instances validated against MiniMax draft schema: ${supportedCount} passed, ${pendingExtensionCount} pending Round 2 schema branches`);
-      assert(supportedCount === 9, "9 instances (TURN_STARTED, CALL_STARTED, CALL_FINISHED*2, INTERACTION_REQUIRED, ASSISTANT_DELTA, TURN_FINISHED*3) strictly match MiniMax draft schema", 'CROSS_CONTRACT');
-      assert(pendingExtensionCount === 3, "3 instances (PROGRESS*2, UI_ACTION*1) cleanly capture the pending PROGRESS and UI_ACTION extensions required from MiniMax", 'CROSS_CONTRACT');
-    } catch (err) {
-      console.warn(`  Warning: MiniMax validator execution skipped: ${err.message}`);
-    }
+let validCount = 0;
+for (const inst of instances) {
+  const res = validateMessage(contractJson, inst);
+  if (res.ok) {
+    validCount++;
+    console.log(`  [VALID_INSTANCE] ${inst.type} (sequence ${inst.sequence}) matches schema`);
+  } else {
+    console.error(`  [INVALID_INSTANCE] ${inst.type} failed schema validation: ${res.errors?.join('; ')}`);
   }
-} else {
-  console.warn(`  Warning: MiniMax contract path ${minimaxContractPath} not found on this machine.`);
 }
+assert(validCount === 12, `All 12/12 runtime event instances strictly pass MiniMax schema validation (passed: ${validCount}/12)`, 'CROSS_CONTRACT');
+
+// [BEHAVIORAL] Negative test instances verification: prove validator rejects invalid instances
+console.log('Executing [BEHAVIORAL] negative instance validation against MiniMax schema...');
+const negativeInstances = samples.negative_test_instances || [];
+assert(negativeInstances.length >= 3, "At least 3 negative test instances defined for schema rejection", 'STRUCTURAL');
+
+let negativeRejectedCount = 0;
+for (const neg of negativeInstances) {
+  const res = validateMessage(contractJson, neg.instance);
+  if (!res.ok) {
+    negativeRejectedCount++;
+    const hasExpectedError = neg.expectedErrorContains
+      ? res.errors.some((e) => e.includes(neg.expectedErrorContains))
+      : true;
+    assert(hasExpectedError, `Negative instance "${neg.name}" correctly rejected with expected error: ${res.errors[0]}`, 'BEHAVIORAL');
+  } else {
+    console.error(`  [FAIL] Negative instance "${neg.name}" was falsely accepted by schema validator!`);
+    failedChecks++;
+  }
+}
+assert(negativeRejectedCount === negativeInstances.length, `All ${negativeInstances.length} negative instances were rejected by schema validator`, 'BEHAVIORAL');
 
 // -----------------------------------------------------------------------------
 // 5. [BOUNDARY] Anti-False-Success Invariants

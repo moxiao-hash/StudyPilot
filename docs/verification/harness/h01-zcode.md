@@ -142,13 +142,15 @@
 按照指令，ZCode 显式读取 MiniMax 工作树的实际契约文件，记录其精确来源与指纹，并在离线脚本中校验我们生成的 12 个实例对象：
 
 - **读取契约路径**：`/Users/moxiao/IdeaProjects/project-harness-h01-minimax/contracts/agent-runtime/runtime.schema.json`
-- **MiniMax 工作树当前提交**：`6371c8439ae81fba6270a0136d3c3028df74e73d`
-- **MiniMax 契约 SHA-256 指纹**：`6541e043eaaf9264354b4c7b771e025ec097386f39d9a156dc473df2f8614313`
+- **MiniMax 工作树当前提交**：`d3a491db26811461ba692a1fc85a92b4522a4daf`
+- **MiniMax 契约 SHA-256 指纹**：`df5950c9f9b482b4bea8a21c67e7cad4c5098bd342ce11139199ec9cc6bc5923`
 - **协议版本**：`1.0-draft`
+- **MiniMax 独立校验器**：`/Users/moxiao/IdeaProjects/project-harness-h01-minimax/scripts/harness/runtime-contract.mjs`（`validateMessage` 入口）
+- **Fail-Closed 契约与校验器检查**：若契约文件或校验器脚本不存在，脚本立即 `exit 1` 失败退出，绝不使用警告跳过（warning+skip）换取虚假成功。
 - **实际消费校验结果**：
-  - 9 个已支持实例（`TURN_STARTED`、`CALL_STARTED`、`CALL_FINISHED(SUCCEEDED)`、`CALL_FINISHED(FAILED)`、`INTERACTION_REQUIRED(confirmation)`、`ASSISTANT_DELTA`、`TURN_FINISHED(COMPLETED)`、`TURN_FINISHED(FAILED)`、`TURN_FINISHED(CANCELLED)`）**100% 严格匹配 MiniMax 草案的 `$defs/eventEnvelope` 与各自分支**；
-  - 3 个实例（`PROGRESS` 2个、`UI_ACTION` 1个）**被准确捕获为待 MiniMax 在 Round 2 交付中补充的公共 Schema 扩展分支**；
-  - 彻底达成了 Codex“先建失败的跨端消费检查，记录 hash，待 MiniMax 新交付后映射验证”的要求，绝不弄虚作假。
+  - 全部 12 个实例（`TURN_STARTED`、`PROGRESS(CONTEXT_LOADED)`、`PROGRESS(PLAN_HINT)`、`CALL_STARTED`、`CALL_FINISHED(SUCCEEDED)`、`CALL_FINISHED(FAILED)`、`INTERACTION_REQUIRED(confirmation)`、`ASSISTANT_DELTA`、`UI_ACTION`、`TURN_FINISHED(COMPLETED)`、`TURN_FINISHED(FAILED)`、`TURN_FINISHED(CANCELLED)`）**100% 严格通过 MiniMax Schema 校验（12/12 通过，0 失败）**；
+  - 彻底移除了把未匹配实例当作“pending extension”的宽松兜底逻辑，要求 12/12 实例全部具备完整的 schema 合法性；
+  - 包含了 3 个非法反例测试（缺少必填 `eventId`、`TURN_FINISHED` 中 `ok=true` 与 `endReason=FAILED` 不一致、事件注入未授权 `ownerId`），经校验器实测均被精准识别并拒绝，证明校验器生效且无虚假成功漏洞。
 
 ---
 
@@ -268,17 +270,33 @@ Executing [BEHAVIORAL] offline negative tests on uiActionDispatcher...
 [STRUCTURAL] TURN_COMPLETED maps to TURN_FINISHED
 [STRUCTURAL] TURN_FINISHED requires endReason and ok in payload
 Reading MiniMax contract from: /Users/moxiao/IdeaProjects/project-harness-h01-minimax/contracts/agent-runtime/runtime.schema.json
-  Contract SHA-256: 6541e043eaaf9264354b4c7b771e025ec097386f39d9a156dc473df2f8614313
+[CROSS_CONTRACT] MiniMax contract file exists at /Users/moxiao/IdeaProjects/project-harness-h01-minimax/contracts/agent-runtime/runtime.schema.json (fail-closed, no skip)
+  Contract SHA-256: df5950c9f9b482b4bea8a21c67e7cad4c5098bd342ce11139199ec9cc6bc5923
   Protocol Version: 1.0-draft
 [CROSS_CONTRACT] MiniMax schema declares protocolVersion '1.0-draft'
-[CROSS_CONTRACT] Recorded contract SHA-256 matches actual MiniMax contract file (6541e043eaaf9264354b4c7b771e025ec097386f39d9a156dc473df2f8614313)
+[CROSS_CONTRACT] Recorded contract SHA-256 matches actual MiniMax contract file (df5950c9f9b482b4bea8a21c67e7cad4c5098bd342ce11139199ec9cc6bc5923)
+[CROSS_CONTRACT] MiniMax validator exists at /Users/moxiao/IdeaProjects/project-harness-h01-minimax/scripts/harness/runtime-contract.mjs (fail-closed, no skip)
+[CROSS_CONTRACT] MiniMax validateMessage export is loaded
 [STRUCTURAL] 12 concrete runtime event instances provided
-[CROSS_CONTRACT] Unmatched instance type 'PROGRESS' is an identified schema extension branch for MiniMax Round 2
-[CROSS_CONTRACT] Unmatched instance type 'PROGRESS' is an identified schema extension branch for MiniMax Round 2
-[CROSS_CONTRACT] Unmatched instance type 'UI_ACTION' is an identified schema extension branch for MiniMax Round 2
-  Instances validated against MiniMax draft schema: 9 passed, 3 pending Round 2 schema branches
-[CROSS_CONTRACT] 9 instances (TURN_STARTED, CALL_STARTED, CALL_FINISHED*2, INTERACTION_REQUIRED, ASSISTANT_DELTA, TURN_FINISHED*3) strictly match MiniMax draft schema
-[CROSS_CONTRACT] 3 instances (PROGRESS*2, UI_ACTION*1) cleanly capture the pending PROGRESS and UI_ACTION extensions required from MiniMax
+  [VALID_INSTANCE] TURN_STARTED (sequence 1) matches schema
+  [VALID_INSTANCE] PROGRESS (sequence 2) matches schema
+  [VALID_INSTANCE] PROGRESS (sequence 3) matches schema
+  [VALID_INSTANCE] CALL_STARTED (sequence 4) matches schema
+  [VALID_INSTANCE] CALL_FINISHED (sequence 5) matches schema
+  [VALID_INSTANCE] CALL_FINISHED (sequence 6) matches schema
+  [VALID_INSTANCE] INTERACTION_REQUIRED (sequence 7) matches schema
+  [VALID_INSTANCE] ASSISTANT_DELTA (sequence 8) matches schema
+  [VALID_INSTANCE] UI_ACTION (sequence 9) matches schema
+  [VALID_INSTANCE] TURN_FINISHED (sequence 10) matches schema
+  [VALID_INSTANCE] TURN_FINISHED (sequence 11) matches schema
+  [VALID_INSTANCE] TURN_FINISHED (sequence 12) matches schema
+[CROSS_CONTRACT] All 12/12 runtime event instances strictly pass MiniMax schema validation (passed: 12/12)
+Executing [BEHAVIORAL] negative instance validation against MiniMax schema...
+[STRUCTURAL] At least 3 negative test instances defined for schema rejection
+[BEHAVIORAL] Negative instance "missing required eventId in envelope" correctly rejected with expected error: SCHEMA: $ 必须精确匹配 oneOf 的一个分支，实际匹配 0 个
+[BEHAVIORAL] Negative instance "TURN_FINISHED ok true with FAILED endReason inconsistency" correctly rejected with expected error: INVARIANT_TERMINAL_OK: $/payload ok=true 与 endReason=FAILED 不一致（只有 COMPLETED 为成功）
+[BEHAVIORAL] Negative instance "forbidden ownerId field injection in event" correctly rejected with expected error: SCHEMA: $ 必须精确匹配 oneOf 的一个分支，实际匹配 0 个
+[BEHAVIORAL] All 3 negative instances were rejected by schema validator
 
 --- 5. [BOUNDARY] Anti-False-Success Invariants ---
 [STRUCTURAL] Guarded routes strictly require auth.isAuthenticated, bouncing to login

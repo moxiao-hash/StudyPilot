@@ -2,12 +2,12 @@
   "version": "1.0.0",
   "task": "H01",
   "round": "ROUND2",
-  "generated_at": "2026-10-08T10:00:00Z",
+  "generated_at": "2026-10-08T10:30:00Z",
   "description": "StudyPilot H01 Frontend Baseline Event Samples & Pluggable Harness Runtime Projections (Round 2 Codex Aligned)",
   "contract_provenance": {
     "minimax_contract_path": "/Users/moxiao/IdeaProjects/project-harness-h01-minimax/contracts/agent-runtime/runtime.schema.json",
-    "minimax_head_commit": "6371c8439ae81fba6270a0136d3c3028df74e73d",
-    "minimax_schema_sha256": "6541e043eaaf9264354b4c7b771e025ec097386f39d9a156dc473df2f8614313",
+    "minimax_head_commit": "d3a491db26811461ba692a1fc85a92b4522a4daf",
+    "minimax_schema_sha256": "df5950c9f9b482b4bea8a21c67e7cad4c5098bd342ce11139199ec9cc6bc5923",
     "protocol_version": "1.0-draft"
   },
   "legacy_sse_events": {
@@ -158,15 +158,15 @@
       "legacy_event": "CONTEXT_LOADED",
       "target_runtime_event": "PROGRESS",
       "semantics": "Informative progress indication that context has been hydrated into session memory",
-      "key_identifiers": ["sessionId", "turnId", "progressKind", "summary", "toolName"],
-      "projection_notes": "Context is read-only positioning facts from Java; does NOT constrain model reasoning loop."
+      "key_identifiers": ["sessionId", "turnId", "kind", "stage", "description", "details"],
+      "projection_notes": "Context is read-only positioning facts from Java; kind=CONTEXT_LOADED, does NOT constrain model reasoning loop."
     },
     {
       "legacy_event": "PLAN_GENERATED",
       "target_runtime_event": "PROGRESS",
       "semantics": "Informative progress disclosure of agent decomposition or intent",
-      "key_identifiers": ["sessionId", "turnId", "progressKind", "summary", "stepCount"],
-      "projection_notes": "Informative display hint; must NOT freeze or pre-bind model tool choices."
+      "key_identifiers": ["sessionId", "turnId", "kind", "stage", "description", "details"],
+      "projection_notes": "Informative display hint; kind=PLAN_HINT, must NOT freeze or pre-bind model tool choices."
     },
     {
       "legacy_event": "TOOL_STARTED",
@@ -179,14 +179,14 @@
       "legacy_event": "TOOL_SUCCEEDED",
       "target_runtime_event": "CALL_FINISHED",
       "semantics": "Tool executed and produced factual result",
-      "key_identifiers": ["sessionId", "turnId", "callId", "status"],
+      "key_identifiers": ["sessionId", "turnId", "callId", "status", "summary"],
       "projection_notes": "Status is SUCCEEDED; output feeds back into model reasoning loop."
     },
     {
       "legacy_event": "TOOL_FAILED",
       "target_runtime_event": "CALL_FINISHED",
       "semantics": "Tool failed or payload was clipped/truncated",
-      "key_identifiers": ["sessionId", "turnId", "callId", "status", "error"],
+      "key_identifiers": ["sessionId", "turnId", "callId", "status", "summary"],
       "projection_notes": "Status is FAILED; clipped results are explicitly non-success so UI never shows false all-success."
     },
     {
@@ -253,9 +253,13 @@
       "type": "PROGRESS",
       "occurredAt": "2026-10-08T10:00:01Z",
       "payload": {
-        "progressKind": "CONTEXT_LOADED",
-        "summary": "已读取最新学习上下文",
-        "toolName": "learning.context.get"
+        "kind": "CONTEXT_LOADED",
+        "stage": "context_hydration",
+        "description": "已读取最新学习上下文",
+        "details": {
+          "contextType": "learning.context.get",
+          "summary": "已读取最新学习上下文"
+        }
       }
     },
     {
@@ -268,9 +272,13 @@
       "type": "PROGRESS",
       "occurredAt": "2026-10-08T10:00:02Z",
       "payload": {
-        "progressKind": "PLAN_GENERATED",
-        "summary": "已规划执行步骤",
-        "intent": "LEARNING_QUERY"
+        "kind": "PLAN_HINT",
+        "stage": "planning",
+        "description": "已规划执行步骤",
+        "details": {
+          "intent": "LEARNING_QUERY",
+          "summary": "查询当前学习进度及薄弱点"
+        }
       }
     },
     {
@@ -334,6 +342,7 @@
           "actionId": "act-0000000001",
           "toolName": "learning.plan.create",
           "summary": "创建每日学习计划",
+          "expectedVersion": 1,
           "riskLevel": "LOW",
           "expiresAt": "2026-10-09T00:00:00Z"
         }
@@ -365,8 +374,7 @@
         "actionId": "act-nav-00000001",
         "actionType": "NAVIGATE",
         "routeKey": "ROADMAP",
-        "params": {},
-        "reason": "按计划打开学习路线"
+        "params": {}
       }
     },
     {
@@ -410,6 +418,54 @@
         "endReason": "CANCELLED",
         "ok": false
       }
+    }
+  ],
+  "negative_test_instances": [
+    {
+      "name": "missing required eventId in envelope",
+      "instance": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "sequence": 1,
+        "sessionId": "sess-0000000001",
+        "turnId": "turn-0000000001",
+        "type": "TURN_STARTED",
+        "occurredAt": "2026-10-08T10:00:00Z"
+      },
+      "expectedErrorContains": "eventId"
+    },
+    {
+      "name": "TURN_FINISHED ok true with FAILED endReason inconsistency",
+      "instance": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-0000000099",
+        "sequence": 99,
+        "sessionId": "sess-0000000001",
+        "turnId": "turn-0000000001",
+        "type": "TURN_FINISHED",
+        "occurredAt": "2026-10-08T10:00:00Z",
+        "payload": {
+          "endReason": "FAILED",
+          "ok": true
+        }
+      },
+      "expectedErrorContains": "INVARIANT_TERMINAL_OK"
+    },
+    {
+      "name": "forbidden ownerId field injection in event",
+      "instance": {
+        "protocolVersion": "1.0-draft",
+        "kind": "event",
+        "eventId": "evt-0000000098",
+        "sequence": 98,
+        "sessionId": "sess-0000000001",
+        "turnId": "turn-0000000001",
+        "type": "TURN_STARTED",
+        "occurredAt": "2026-10-08T10:00:00Z",
+        "ownerId": "attacker-injected-owner"
+      },
+      "expectedErrorContains": "ownerId"
     }
   ],
   "terminal_reasons_and_error_codes": {
@@ -484,12 +540,12 @@
       {
         "id": "REQ-CON-04",
         "title": "Progress and UI Directive Branches (PROGRESS & UI_ACTION)",
-        "specification": "MiniMax schema must include public branches for PROGRESS (progressKind: CONTEXT_LOADED | PLAN_GENERATED) and UI_ACTION (actionType: NAVIGATE | OPEN_MODAL | PREFILL_FORM | REFRESH_RESOURCE | FOCUS_ELEMENT) so client directives and progress hints can be typechecked without polluting content.delta."
+        "specification": "MiniMax schema must include public branches for PROGRESS (kind: CONTEXT_LOADED | PLAN_HINT | STEP_PROGRESS | MODEL_THINKING | CUSTOM) and UI_ACTION (actionType: NAVIGATE | OPEN_MODAL | PREFILL_FORM | REFRESH_RESOURCE | FOCUS_ELEMENT) so client directives and progress hints can be typechecked without polluting content.delta."
       },
       {
         "id": "REQ-CON-05",
         "title": "Typed Question and Confirmation Payloads in INTERACTION_REQUIRED",
-        "specification": "INTERACTION_REQUIRED must provide structured question data (questionId, text, options) or confirmation data (actionId, preview, expectedVersion) so frontend can render actionable cards rather than unrendered empty payloads."
+        "specification": "INTERACTION_REQUIRED must provide structured question data (questionId, text/prompt, options, selectionMode) or confirmation data (executionId, actionId, toolName, summary, expectedVersion, riskLevel, expiresAt) so frontend can render actionable cards rather than unrendered empty payloads."
       },
       {
         "id": "REQ-CON-06",
