@@ -1,8 +1,15 @@
 {
   "version": "1.0.0",
   "task": "H01",
-  "generated_at": "2026-10-08T00:00:00Z",
-  "description": "StudyPilot H01 Frontend Baseline Event Samples & Pluggable Harness Runtime Projections",
+  "round": "ROUND2",
+  "generated_at": "2026-10-08T10:00:00Z",
+  "description": "StudyPilot H01 Frontend Baseline Event Samples & Pluggable Harness Runtime Projections (Round 2 Codex Aligned)",
+  "contract_provenance": {
+    "minimax_contract_path": "/Users/moxiao/IdeaProjects/project-harness-h01-minimax/contracts/agent-runtime/runtime.schema.json",
+    "minimax_head_commit": "6371c8439ae81fba6270a0136d3c3028df74e73d",
+    "minimax_schema_sha256": "6541e043eaaf9264354b4c7b771e025ec097386f39d9a156dc473df2f8614313",
+    "protocol_version": "1.0-draft"
+  },
   "legacy_sse_events": {
     "protocol": {
       "endpoint": "/api/assistant/conversations/{id}/events",
@@ -142,138 +149,318 @@
   "runtime_event_mappings": [
     {
       "legacy_event": "TURN_STARTED",
-      "target_runtime_event": "turn.started",
+      "target_runtime_event": "TURN_STARTED",
       "semantics": "Marks the start of a conversational turn under session",
-      "key_identifiers": ["sessionId", "turnId", "configVersion"],
+      "key_identifiers": ["sessionId", "turnId"],
       "projection_notes": "Preserve turnId so incremental text and terminal replies bind to the exact turn generation."
     },
     {
       "legacy_event": "CONTEXT_LOADED",
-      "target_runtime_event": "context.loaded",
-      "semantics": "Indicates background business context has been hydrated into session memory",
-      "key_identifiers": ["sessionId", "turnId", "contextType"],
-      "projection_notes": "Context is read-only positioning facts from Java, never grants permissions."
+      "target_runtime_event": "PROGRESS",
+      "semantics": "Informative progress indication that context has been hydrated into session memory",
+      "key_identifiers": ["sessionId", "turnId", "progressKind", "summary", "toolName"],
+      "projection_notes": "Context is read-only positioning facts from Java; does NOT constrain model reasoning loop."
     },
     {
       "legacy_event": "PLAN_GENERATED",
-      "target_runtime_event": "reasoning.plan",
-      "semantics": "Optional plan disclosure when agent decomposes a complex query into multi-step execution",
-      "key_identifiers": ["sessionId", "turnId", "intent", "summary", "stepCount"],
-      "projection_notes": "In pluggable runtime, models reason freely; plan disclosure is an informative progress hint."
+      "target_runtime_event": "PROGRESS",
+      "semantics": "Informative progress disclosure of agent decomposition or intent",
+      "key_identifiers": ["sessionId", "turnId", "progressKind", "summary", "stepCount"],
+      "projection_notes": "Informative display hint; must NOT freeze or pre-bind model tool choices."
     },
     {
       "legacy_event": "TOOL_STARTED",
-      "target_runtime_event": "tool.call.started",
+      "target_runtime_event": "CALL_STARTED",
       "semantics": "Dispatched when an authorized business tool begins execution",
       "key_identifiers": ["sessionId", "turnId", "callId", "toolName"],
       "projection_notes": "Emitted only after budget checks and deduplication passes."
     },
     {
       "legacy_event": "TOOL_SUCCEEDED",
-      "target_runtime_event": "tool.call.completed",
+      "target_runtime_event": "CALL_FINISHED",
       "semantics": "Tool executed and produced factual result",
-      "key_identifiers": ["sessionId", "turnId", "callId", "toolName", "summary"],
-      "projection_notes": "Output data feeds back into model reasoning loop for subsequent steps."
+      "key_identifiers": ["sessionId", "turnId", "callId", "status"],
+      "projection_notes": "Status is SUCCEEDED; output feeds back into model reasoning loop."
     },
     {
       "legacy_event": "TOOL_FAILED",
-      "target_runtime_event": "tool.call.failed",
+      "target_runtime_event": "CALL_FINISHED",
       "semantics": "Tool failed or payload was clipped/truncated",
-      "key_identifiers": ["sessionId", "turnId", "callId", "toolName", "errorCode", "error"],
-      "projection_notes": "Clipped results must be distinctively marked as non-success so UI does not show false all-success."
+      "key_identifiers": ["sessionId", "turnId", "callId", "status", "error"],
+      "projection_notes": "Status is FAILED; clipped results are explicitly non-success so UI never shows false all-success."
     },
     {
       "legacy_event": "ACTION_PREVIEW",
-      "target_runtime_event": "interaction.approval.requested",
-      "semantics": "Write tool requires explicit user confirmation via card before executing side-effects",
-      "key_identifiers": ["sessionId", "turnId", "actionId", "executionId", "toolName", "riskLevel", "expiresAt"],
-      "projection_notes": "Must display conspicuous confirmation card; chat text cannot substitute for confirmation."
+      "target_runtime_event": "INTERACTION_REQUIRED",
+      "semantics": "Execution pauses awaiting user approval on write action card",
+      "key_identifiers": ["sessionId", "turnId", "interactionId", "kind", "confirmation"],
+      "projection_notes": "Waiting state (kind: confirmation), NOT a terminal state; chat text cannot substitute for confirmation."
     },
     {
       "legacy_event": "ASSISTANT_DELTA",
-      "target_runtime_event": "content.delta",
+      "target_runtime_event": "ASSISTANT_DELTA",
       "semantics": "Real-time streaming token chunk",
-      "key_identifiers": ["sessionId", "turnId", "deltaIndex", "delta"],
-      "projection_notes": "Must match active turnId; discarded if turn has failed or cancelled."
+      "key_identifiers": ["sessionId", "turnId", "content"],
+      "projection_notes": "Must match active turnId; discarded if turn has already terminated."
     },
     {
       "legacy_event": "UI_ACTION",
-      "target_runtime_event": "client.ui_directive",
-      "semantics": "Whitelisted UI action (NAVIGATE, OPEN_MODAL, PREFILL_FORM, REFRESH_RESOURCE, FOCUS_ELEMENT)",
+      "target_runtime_event": "UI_ACTION",
+      "semantics": "Closed client UI directive (NAVIGATE, OPEN_MODAL, PREFILL_FORM, REFRESH_RESOURCE, FOCUS_ELEMENT)",
       "key_identifiers": ["sessionId", "turnId", "actionId", "actionType", "routeKey", "params"],
-      "projection_notes": "Executed by frontend action dispatcher; reports terminal receipt back via /agent-api."
+      "projection_notes": "Executed by frontend action dispatcher; reports terminal receipt asynchronously."
     },
     {
       "legacy_event": "TURN_COMPLETED",
-      "target_runtime_event": "turn.completed",
-      "semantics": "Terminal success with final grounded reply and finish reason",
-      "key_identifiers": ["sessionId", "turnId", "reply", "finishReason", "usage"],
-      "projection_notes": "finishReason distinguishes 'completed', 'max_tokens', 'budget_exhausted'."
+      "target_runtime_event": "TURN_FINISHED",
+      "semantics": "Terminal success with final grounded reply; endReason=COMPLETED, ok=true",
+      "key_identifiers": ["sessionId", "turnId", "endReason", "ok", "usage"],
+      "projection_notes": "endReason must be uppercase COMPLETED and ok must be true."
     },
     {
       "legacy_event": "TURN_FAILED",
-      "target_runtime_event": "turn.failed",
-      "semantics": "Terminal error with stable error code and sanitized message",
-      "key_identifiers": ["sessionId", "turnId", "errorCode", "message"],
-      "projection_notes": "Cleans up incomplete streaming text; sets status to failed."
+      "target_runtime_event": "TURN_FINISHED",
+      "semantics": "Terminal error; endReason=FAILED, ok=false",
+      "key_identifiers": ["sessionId", "turnId", "endReason", "ok"],
+      "projection_notes": "Cleans up incomplete streaming text; sets conversation status to failed."
     },
     {
       "legacy_event": "TURN_CANCELLED",
-      "target_runtime_event": "turn.cancelled",
-      "semantics": "Turn was aborted via cancel/steer",
-      "key_identifiers": ["sessionId", "turnId", "reason"],
-      "projection_notes": "Replaces partial streaming answer with explicit cancellation note."
+      "target_runtime_event": "TURN_FINISHED",
+      "semantics": "Turn was aborted; endReason=CANCELLED, ok=false",
+      "key_identifiers": ["sessionId", "turnId", "endReason", "ok"],
+      "projection_notes": "User clicked stop or explicit cancel signal was received; distinct from mid-turn steer."
+    }
+  ],
+  "runtime_event_instances": [
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000001",
+      "sequence": 1,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "TURN_STARTED",
+      "occurredAt": "2026-10-08T10:00:00Z"
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000002",
+      "sequence": 2,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "PROGRESS",
+      "occurredAt": "2026-10-08T10:00:01Z",
+      "payload": {
+        "progressKind": "CONTEXT_LOADED",
+        "summary": "已读取最新学习上下文",
+        "toolName": "learning.context.get"
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000003",
+      "sequence": 3,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "PROGRESS",
+      "occurredAt": "2026-10-08T10:00:02Z",
+      "payload": {
+        "progressKind": "PLAN_GENERATED",
+        "summary": "已规划执行步骤",
+        "intent": "LEARNING_QUERY"
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000004",
+      "sequence": 4,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "callId": "call-0000000001",
+      "type": "CALL_STARTED",
+      "occurredAt": "2026-10-08T10:00:03Z",
+      "payload": {
+        "toolName": "roadmap.current.get"
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000005",
+      "sequence": 5,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "callId": "call-0000000001",
+      "type": "CALL_FINISHED",
+      "occurredAt": "2026-10-08T10:00:04Z",
+      "payload": {
+        "status": "SUCCEEDED",
+        "summary": "已获取当前学习路线信息"
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000006",
+      "sequence": 6,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "callId": "call-0000000002",
+      "type": "CALL_FINISHED",
+      "occurredAt": "2026-10-08T10:00:05Z",
+      "payload": {
+        "status": "FAILED",
+        "summary": "工具输出超出安全上限已截断"
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000007",
+      "sequence": 7,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "INTERACTION_REQUIRED",
+      "occurredAt": "2026-10-08T10:00:06Z",
+      "payload": {
+        "interactionId": "act-0000000001",
+        "kind": "confirmation",
+        "confirmation": {
+          "executionId": "exec-0000000001",
+          "actionId": "act-0000000001",
+          "toolName": "learning.plan.create",
+          "summary": "创建每日学习计划",
+          "riskLevel": "LOW",
+          "expiresAt": "2026-10-09T00:00:00Z"
+        }
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000008",
+      "sequence": 8,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "ASSISTANT_DELTA",
+      "occurredAt": "2026-10-08T10:00:07Z",
+      "payload": {
+        "content": "你当前正在学习《Java + AI 全栈工程师学习路线》。"
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000009",
+      "sequence": 9,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "UI_ACTION",
+      "occurredAt": "2026-10-08T10:00:08Z",
+      "payload": {
+        "actionId": "act-nav-00000001",
+        "actionType": "NAVIGATE",
+        "routeKey": "ROADMAP",
+        "params": {},
+        "reason": "按计划打开学习路线"
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000010",
+      "sequence": 10,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "TURN_FINISHED",
+      "occurredAt": "2026-10-08T10:00:09Z",
+      "payload": {
+        "endReason": "COMPLETED",
+        "ok": true
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000011",
+      "sequence": 11,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "TURN_FINISHED",
+      "occurredAt": "2026-10-08T10:00:10Z",
+      "payload": {
+        "endReason": "FAILED",
+        "ok": false
+      }
+    },
+    {
+      "protocolVersion": "1.0-draft",
+      "kind": "event",
+      "eventId": "evt-0000000012",
+      "sequence": 12,
+      "sessionId": "sess-0000000001",
+      "turnId": "turn-0000000001",
+      "type": "TURN_FINISHED",
+      "occurredAt": "2026-10-08T10:00:11Z",
+      "payload": {
+        "endReason": "CANCELLED",
+        "ok": false
+      }
     }
   ],
   "terminal_reasons_and_error_codes": {
-    "finish_reasons": [
+    "end_reasons": [
       {
-        "code": "completed",
+        "code": "COMPLETED",
+        "ok": true,
         "description": "Natural model completion after fulfilling intent or tool operations"
       },
       {
-        "code": "cancelled",
-        "description": "Explicit user cancellation via stop button or steer signal"
-      },
-      {
-        "code": "budget_exhausted",
-        "description": "Session or daily token/call budget limit reached (distinct from error)"
-      },
-      {
-        "code": "max_tokens",
-        "description": "Model generation hit maximum output token cap (must NOT be disguised as full completion)"
-      },
-      {
-        "code": "waiting_confirmation",
-        "description": "Execution paused awaiting user approval on high-risk write action card"
-      },
-      {
-        "code": "failed",
-        "description": "Unrecoverable runtime error, provider failure, or tool exception"
-      }
-    ],
-    "error_codes": [
-      {
-        "code": "CAPABILITY_DENIED",
-        "description": "Requested action or tool is not permitted in current scope/audience"
+        "code": "CANCELLED",
+        "ok": false,
+        "description": "Explicit user cancellation via stop button (turn cancelled)"
       },
       {
         "code": "BUDGET_EXHAUSTED",
-        "description": "User daily or session budget exhausted"
+        "ok": false,
+        "description": "Session or daily token/call budget limit reached (distinct from general failure)"
       },
       {
-        "code": "TIMEOUT",
-        "description": "Execution or upstream connection timed out"
+        "code": "MAX_TOKENS",
+        "ok": false,
+        "description": "Model generation hit maximum output token cap (must NOT be disguised as COMPLETED)"
       },
       {
-        "code": "INVALID_STATE",
-        "description": "Session is in invalid state or expired"
+        "code": "CAPABILITY_DENIED",
+        "ok": false,
+        "description": "Action or tool denied by scope, role, or policy"
       },
       {
-        "code": "UNAUTHORIZED",
-        "description": "Bearer token invalid, expired, or missing"
+        "code": "FAILED",
+        "ok": false,
+        "description": "Unrecoverable runtime error, provider failure, or tool exception"
       }
-    ]
+    ],
+    "interaction_states": [
+      {
+        "state": "INTERACTION_REQUIRED",
+        "description": "Execution paused awaiting user approval or structured question answer; intermediate interactive state, NOT a finished turn"
+      }
+    ],
+    "steer_semantics": {
+      "operation": "steer",
+      "description": "request.steer injects guidance into an active running turn without terminating or resetting the turn"
+    },
+    "sequence_and_replay_rules": {
+      "start": "Persistent server events use 1-based sequential integers (sequence >= 1).",
+      "subscription": "subscribeFrom=0 subscribes from the very first persistent event (sequence 1).",
+      "reconnection": "Reconnecting clients supply Last-Event-ID with last acknowledged sequence; server excludes confirmed events and streams next.",
+      "boundaries": "Snapshot hydration establishes clear replay bounds; streams are not assumed to always contain a synthetic initial event."
+    }
   },
   "consumption_requirements_for_runtime_schema": {
     "submitted_by": "ZCode (Frontend & UX Owner)",
@@ -282,7 +469,7 @@
       {
         "id": "REQ-CON-01",
         "title": "Strict Monotonic Sequence Identification",
-        "specification": "Every server-sent event must carry a monotonically increasing integer 'sequence' starting from 1 per conversation. Reconnecting client sends 'Last-Event-ID' with the last received sequence to replay missed events without duplicating side-effects."
+        "specification": "Every persistent server-sent event must carry a monotonically increasing integer 'sequence' starting from 1 per conversation. Reconnecting client sends 'Last-Event-ID' with the last received sequence to replay missed events without duplicating side-effects."
       },
       {
         "id": "REQ-CON-02",
@@ -292,22 +479,22 @@
       {
         "id": "REQ-CON-03",
         "title": "Distinction Between Max Tokens and Completion",
-        "specification": "The terminal event must provide a typed 'finishReason'. 'max_tokens' must never be conflated with 'completed' so frontend can inform user that output was truncated."
+        "specification": "The terminal event must provide a typed 'endReason'. 'MAX_TOKENS' and 'BUDGET_EXHAUSTED' must never be conflated with 'COMPLETED', and 'ok' must be false for non-completed terminal states."
       },
       {
         "id": "REQ-CON-04",
-        "title": "Clear Separation Between Tool Output and Model Response",
-        "specification": "Tool execution events ('tool.call.*') must be sent as structured metadata cards distinct from 'content.delta'. Tool outputs must not leak into general chat streams unless summarized by model."
+        "title": "Progress and UI Directive Branches (PROGRESS & UI_ACTION)",
+        "specification": "MiniMax schema must include public branches for PROGRESS (progressKind: CONTEXT_LOADED | PLAN_GENERATED) and UI_ACTION (actionType: NAVIGATE | OPEN_MODAL | PREFILL_FORM | REFRESH_RESOURCE | FOCUS_ELEMENT) so client directives and progress hints can be typechecked without polluting content.delta."
       },
       {
         "id": "REQ-CON-05",
-        "title": "Ephemerality of Secrets and Clean Boundary",
-        "specification": "The Runtime event stream must NEVER contain API keys, raw bearer tokens, database passwords, or local file system paths. Sanitized errors only."
+        "title": "Typed Question and Confirmation Payloads in INTERACTION_REQUIRED",
+        "specification": "INTERACTION_REQUIRED must provide structured question data (questionId, text, options) or confirmation data (actionId, preview, expectedVersion) so frontend can render actionable cards rather than unrendered empty payloads."
       },
       {
         "id": "REQ-CON-06",
-        "title": "Structured Interactivity Support (Questions & Steering)",
-        "specification": "Runtime protocol must allow server to issue structured questions ('interaction.question') and allow client to respond ('interaction.response') or steer active run without terminating session."
+        "title": "Ephemerality of Secrets and Clean Boundary",
+        "specification": "The Runtime event stream must NEVER contain API keys, raw bearer tokens, database passwords, or local file system paths. Sanitized errors only."
       }
     ]
   }

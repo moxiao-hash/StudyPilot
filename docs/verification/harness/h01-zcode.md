@@ -1,14 +1,15 @@
-# H01 验证证据：前端兼容基线、事件映射与消费侧需求 (ZCode)
+# H01 验证证据：前端兼容基线、事件映射与消费侧需求 (ZCode) — Round 2
 
 - **执行 Agent**：ZCode
 - **驱动模型标签**：`f535ffb7-ab30-473f-bf6a-477b0323d8a8/gemini-3.8-flash-high`（真实 Provider Model ID：未知）
-- **测试等级**：`[OFFLINE_BASELINE]` / `[STRUCTURAL_AUDIT]` / `[FIXTURE_VALIDATION]`
+- **测试等级**：`[OFFLINE_BASELINE]` / `[STRUCTURAL_AUDIT]` / `[BEHAVIORAL_NEGATIVE_TESTS]` / `[CROSS_CONTRACT_VALIDATION]`
 - **执行时间**：2026-10-08 (Asia/Shanghai)
 - **工作树路径**：`/Users/moxiao/IdeaProjects/project-harness-h01-zcode`
 - **关联分支**：`codex/harness-h01-zcode-baseline`
 - **共同基线 HEAD**：`f7311079a83b84c5e7f3a9076ce4efccb3044c86`
+- **一轮审查结论**：`CHANGES_REQUESTED`（R1 三端协议对齐、R5 结构与行为测试分离）
 - **所有权边界**：独占 `scripts/harness/frontend-baseline*`、`web/tests/harness-baseline/**`、`docs/verification/harness/h01-zcode.md`；未修改现有 `web/src/**` 生产组件，未触碰 `backend/**`、`contracts/agent-runtime/**`，未合并 `main`，未启动 Task H02。
-- **交付状态**：**READY_FOR_CODEX**（等待 Codex 独立技术验收）
+- **交付状态**：**READY_FOR_CODEX ROUND2**（等待 Codex 第二轮独立技术验收）
 
 ---
 
@@ -77,85 +78,77 @@
 2. **学习**：学习路线 (`/roadmap`)、今日任务 (`/today`)、学习资料 (`/materials`)、错题集 (`/wrong-questions`)、掌握度 (`/mastery`)、工作区与成果 (`/workspaces`)；
 3. **AI 助手**：知识问答 (`/knowledge`)、对话生成计划 (`/agent/plan`)、任务 Agent (`/agent/tasks`)、执行与审计 (`/activity`)、运行健康 (`/assistant/health`)。
 
-### 2.3 迁移与挂载关键设计约束（面向 H07 / H08）
-- **挂载点**：全局悬浮球壳（`FloatingAgentHost.vue`）必须挂载在 `AppShell.vue` 内部或顶层插槽中，使得用户在 28 个受保护业务页面间切换时，悬浮球保持常驻、对话流不断开；
-- **旧入口平滑退役**：当前侧边栏“AI 助手”组中的 `knowledge`、`agent/plan`、`agent/tasks` 均为旧版专用页面。在 H07 悬浮球与 H08 Workspace 交付验收前，保留现有旧页面与路由；H08 具备完整替代能力并经用户验收后，将侧边栏链接收缩或平滑重定向至悬浮球调用；
-- **设置域分离**：当前 `/settings/ai` 是传统页面。新架构要求 API Key、Endpoint 与模型配置完全迁入独立 Agent Service，在悬浮球右键菜单中提供独立模态/面板设置（H08），Java 业务后端不再持有或中转模型 Secret。
-
 ---
 
-## 3. 现有 SSE 事件与 UI Action 机制盘点
+## 3. 现有 SSE 事件与 UI Action 机制盘点与行为负例
 
 ### 3.1 现有平台 SSE 事件集合 (`services/current/assistant.ts`)
 客户端通过 `GET /api/assistant/conversations/{id}/events` 获取单向流式事件，受 `VALID_ASSISTANT_EVENT_TYPES` 白名单约束：
+- 1 个心跳帧：`HEARTBEAT` (`": heartbeat\n\n"`)；
+- 12 个业务事件：`TURN_STARTED`、`CONTEXT_LOADED`、`PLAN_GENERATED`、`TOOL_STARTED`、`TOOL_SUCCEEDED`、`TOOL_FAILED`、`ACTION_PREVIEW`、`ASSISTANT_DELTA`、`UI_ACTION`、`TURN_COMPLETED`、`TURN_FAILED`、`TURN_CANCELLED`。
 
-1. `HEARTBEAT`：`": heartbeat\n\n"`，每 30 秒保活注释帧，客户端仅更新心跳活性；
-2. `TURN_STARTED`：轮次开始，包含 `turnId`；
-3. `CONTEXT_LOADED`：Java 上下文加载就绪（`learning.context.get`）；
-4. `PLAN_GENERATED`：多步计划生成通知，包含意图与步骤摘要；
-5. `TOOL_STARTED`：工具开始执行，预算检查通过后推送；
-6. `TOOL_SUCCEEDED`：工具执行成功及结果摘要；
-7. `TOOL_FAILED`：工具执行失败或结果超出上限截断；
-8. `ACTION_PREVIEW`：写操作专用预览，附带 `WAITING_CONFIRMATION` 与确认卡片数据；
-9. `ASSISTANT_DELTA`：模型增量 token 片段；
-10. `UI_ACTION`：前端白名单界面动作指令；
-11. `TURN_COMPLETED`：轮次成功终态，包含最终文本；
-12. `TURN_FAILED`：轮次异常终态，包含错误信息；
-13. `TURN_CANCELLED`：轮次取消终态，包含中止原因。
+### 3.2 离线负例行为证据（非单纯静态 includes 盘点）
+针对 Codex 在 R5 指出的“静态 includes 不等于行为安全保证”，我们在 `web/tests/harness-baseline/frontend-baseline.spec.ts` 与 `scripts/harness/frontend-baseline-verify.mjs` 中构建了纯离线、真执行的负路径测试：
 
-### 3.2 现有流式恢复与断线控制
-- **断线续传**：重连时通过请求头 `Last-Event-ID: {sequence}` 发送已消费的最后序号，服务端只回放后续持久事件；
-- **严格单调递增**：帧的 `id:` 与 payload 内的 `sequence` 必须严格一致且单调递增；乱序或不匹配立即丢弃；
-- **轮次世代隔离**：增量片段 `ASSISTANT_DELTA` 严格绑定 `eventTurnId === activeTurnId`，防止陈旧或并发轮次污染当前回答；
-- **取消与失败清理**：收到 `TURN_FAILED` 或 `TURN_CANCELLED` 时，丢弃未完成的流式文本碎片，替换为确定的状态通知。
-
-### 3.3 现有 UI Action 执行器与注册表 (`uiActionDispatcher.ts`)
-支持 5 类受控白名单动作，严禁任意代码执行与开放选择器：
-1. `NAVIGATE`：仅允许映射至 28 个受控具名路由；
-2. `OPEN_MODAL`：受限于 `FROZEN_MODAL_MATRIX`（`CREATE_GOAL`, `CREATE_PLAN`, `IMPORT_MATERIAL`）；
-3. `PREFILL_FORM`：受限于 `FROZEN_FORM_MATRIX`，且参数若包含 `autoSubmit` 即刻硬阻断并报错；
-4. `REFRESH_RESOURCE`：受限于 `FROZEN_RESOURCE_MATRIX`（仅允许刷新已声明的数据集）；
-5. `FOCUS_ELEMENT`：受限于 `FROZEN_FOCUS_MATRIX`（`MESSAGE_INPUT`, `PLAN_TITLE_INPUT`），严禁原生 CSS 选择器。
+1. **`ownerId` 注入硬拒绝**：向 `dispatchUiAction` 传入包含 `{ ownerId: 'attacker-injected' }` 的动作，被真实抛出 `页面动作参数严禁携带 ownerId`，路由方法 `push` 未被调用，记录状态为 `REJECTED`；
+2. **`autoSubmit` 自动提交硬拒绝**：向 `dispatchUiAction` 传入包含 `{ autoSubmit: true }` 的表单预填动作，被真实抛出 `表单动作严禁自动提交，仅允许草稿预填`；
+3. **未知路由硬拒绝**：向 `dispatchUiAction` 传入未在 28 个受控 routeKey 中的动作，被真实抛出 `不受支持的页面动作`；
+4. **原生选择器硬拦截**：向 `FOCUS_ELEMENT` 传入包含 `button.danger[data-id="del"]` 等选择器字符的入参，被真实抛出 `不受支持的元素聚焦，严禁传递 CSS 选择器`；
+5. **学习底线不可代办硬拦截**：传入 `QUIZ_SUBMISSION` 或 `CHECKIN_SUMMARY_SUBMIT`，被 `assertAuthenticityGuards` 真实拦截抛出 `答题操作属于用户专属行为，严禁代办`；
+6. **SSE 解析器负例防御**：
+   - 未知事件类型（如 `MALICIOUS_UNKNOWN_EVENT`）被真实过滤，`onEvent` 回调零触发；
+   - 畸形 JSON 帧（如 `{unclosed-payload`）被安全丢弃，不报错崩溃，且游标不前进；
+   - 帧 ID 与 payload 序号不一致（如 `id: 1` vs `sequence: 2`）被安全丢弃；
+   - 非法非正整数序号（如 `sequence: 0`）被丢弃。
 
 ---
 
-## 4. 事件兼容映射与消费侧契约需求
+## 4. R1 裁决对齐：公共契约映射、语义修正与跨端消费检查
 
-基于 `scripts/harness/frontend-baseline-event-samples.json`，为即将由 MiniMax Code 编写的 `contracts/agent-runtime/runtime.schema.json` 提出消费侧映射与规范需求：
+根据 Codex 在 R1 作出的裁决，ZCode 彻底废弃所有小写点号事件（如 `turn.started`、`content.delta`），全量对齐公共契约的大写事件名、`1.0-draft` 协议版本及 `TURN_FINISHED.payload.endReason/ok` 结构。
 
-### 4.1 事件映射对照表
+### 4.1 事件兼容映射对照表 (Round 2 对齐版)
 
-| 现有平台 SSE 事件 | 拟映射 Runtime 事件 | 语义及消费端处理要求 |
-| :--- | :--- | :--- |
-| `TURN_STARTED` | `turn.started` | 标记轮次启动，绑定 `sessionId` 与 `turnId`，重置上一轮的展开状态与流式槽位 |
-| `CONTEXT_LOADED` | `context.loaded` | 上下文事实已就绪；作为定位事实，不赋权 |
-| `PLAN_GENERATED` | `reasoning.plan` | 模型多步意图展示，作为可选的信息性摘要 |
-| `TOOL_STARTED` | `tool.call.started` | 工具已通过预算与权限检查开始执行，渲染为紧凑进度条步骤 |
-| `TOOL_SUCCEEDED` | `tool.call.completed`| 工具执行完成并返回数据，供后续推理步骤消费 |
-| `TOOL_FAILED` | `tool.call.failed` | 工具执行失败或数据截断；显式标记非成功（`FAILED`），不误标全部成功 |
-| `ACTION_PREVIEW` | `interaction.approval.requested` | 写入操作审批请求；触发独立确认卡片与高风险标签，不可由文字自动确认 |
-| `ASSISTANT_DELTA` | `content.delta` | 逐字流式打字效果；必须严格做 `turnId` 世代检查 |
-| `UI_ACTION` | `client.ui_directive` | 执行白名单动作，并在完成后通过客户端回执接口异步上报终态 |
-| `TURN_COMPLETED` | `turn.completed` | 轮次正常完成，携带最终回答、`finishReason` 及 `usage` 统计 |
-| `TURN_FAILED` | `turn.failed` | 轮次失败终态，携带结构化错误码与用户可见脱敏错误文案 |
-| `TURN_CANCELLED` | `turn.cancelled` | 轮次由用户主动停止或打断，清理半成品文本并呈现取消标记 |
+| 现有平台 SSE 事件 | 公共 Runtime 事件 (全大写) | 映射结构与关键字段 | 语义规则与消费端要求 |
+| :--- | :--- | :--- | :--- |
+| `TURN_STARTED` | `TURN_STARTED` | `sessionId, turnId` (payload: 空) | 标记轮次启动，绑定 `turnId`，重置上一轮的展开状态与流式槽位 |
+| `CONTEXT_LOADED` | `PROGRESS` | `progressKind: "CONTEXT_LOADED", summary, toolName` | 信息性展示进度，说明上下文就绪，**不限制模型后续自由推理** |
+| `PLAN_GENERATED` | `PROGRESS` | `progressKind: "PLAN_GENERATED", summary, intent` | 信息性展示多步计划摘要，**不冻结或预绑定工具选择** |
+| `TOOL_STARTED` | `CALL_STARTED` | `callId: string (顶层), payload: { toolName }` | 工具通过预算与权限检查开始执行 |
+| `TOOL_SUCCEEDED` | `CALL_FINISHED` | `callId: string (顶层), payload: { status: "SUCCEEDED", summary }` | 工具执行完成，输出注入模型供后续继续判断 |
+| `TOOL_FAILED` | `CALL_FINISHED` | `callId: string (顶层), payload: { status: "FAILED", summary, error }` | 工具执行失败或数据截断，**明确非成功**，UI 绝不误报“全部成功” |
+| `ACTION_PREVIEW` | `INTERACTION_REQUIRED` | `interactionId, kind: "confirmation", confirmation: { ... }` | 写操作等待用户卡片审批，**是交互待答状态，不是终态** |
+| `ASSISTANT_DELTA` | `ASSISTANT_DELTA` | `payload: { content: string }` | 逐字流式打字效果；必须严格做 `turnId` 世代检查 |
+| `UI_ACTION` | `UI_ACTION` | `actionId, actionType, routeKey, params` | 封闭客户端 UI 指令（五类白名单），完成后异步上报回执 |
+| `TURN_COMPLETED` | `TURN_FINISHED` | `payload: { endReason: "COMPLETED", ok: true }` | 轮次正常完成，唯一 `ok: true` 的终结状态 |
+| `TURN_FAILED` | `TURN_FINISHED` | `payload: { endReason: "FAILED", ok: false }` | 轮次失败终结 |
+| `TURN_CANCELLED` | `TURN_FINISHED` | `payload: { endReason: "CANCELLED", ok: false }` | 用户点击 Stop 中止 |
 
-### 4.2 终态原因 (`finish_reasons`) 区分
-为了解决旧版本将所有非失败均误判为完成的问题，新 Runtime 协议必须区分以下枚举：
-- `completed`：自然完成全部推理与调用；
-- `cancelled`：用户点击 Stop 或输入插话中止；
-- `max_tokens`：达到单次输出最大 Token 上限（**必须与 completed 区分，前端需提示回答已被截断**）；
-- `budget_exhausted`：用户会话或每日预算耗尽；
-- `waiting_confirmation`：高风险写操作等待确认；
-- `failed`：底层异常或工具致命错误。
+### 4.2 核心语义修正
+1. **Steer 不是 Cancel**：
+   - `steer` 是客户端通过 `request.steer` 注入的**中途引导提示**，运行中的轮次接收后继续执行，绝不是中断或终结；
+   - `cancel` 才是通过 `request.cancel` 发起的主动中止，产生 `TURN_FINISHED (endReason: CANCELLED, ok: false)`。
+2. **待答不是 Completed**：
+   - 无论是高风险写入审批，还是模型交互提问，均由 `INTERACTION_REQUIRED` 事件承载；
+   - 处于待答状态时，轮次处于挂起交互中，**绝不是完成态**，`endReason` 枚举中绝对没有 `waiting_confirmation`。
+3. **序号与回放边界**：
+   - 持久事件序号必须从 1 起步（`sequence >= 1`）；
+   - 客户端订阅时传入 `subscribeFrom: 0` 表示从第一条事件起开始订阅；
+   - 续传时客户端提供 `Last-Event-ID: {lastConfirmed}`，服务端排除已确认序号，从 `lastConfirmed + 1` 开始推送；
+   - 快照注水（Snapshot hydration）建立了明确的历史边界，回放流不预设必须存在合成的起始事件。
 
-### 4.3 提交给 MiniMax 的消费端契约需求 (Consumption Requirements)
-1. **REQ-CON-01 (单调递增序号与续传)**：每个服务端事件必须携带基于会话的严格递增整数 `sequence`（从 1 起步），客户端重连回传 `Last-Event-ID: {sequence}` 即可无副作用续传；
-2. **REQ-CON-02 (Turn 世代绑定)**：所有属于某一轮次的事件必须携带 `turnId`，防止迟到的旧分块污染新对话；
-3. **REQ-CON-03 (Token 截断独立标识)**：终态必须输出强类型 `finishReason`，禁止将 `max_tokens` 伪装成 `completed`；
-4. **REQ-CON-04 (元数据与内容正文严格分离)**：工具调用与执行步骤（`tool.call.*`）以结构化卡片下发，模型正文增量（`content.delta`）只包含对话内容，禁止将工具原始 JSON 杂质混入聊天气泡；
-5. **REQ-CON-05 (零凭据与绝对路径泄漏)**：事件流内严禁出现 API Key、Bearer Token、数据库密码或本地磁盘绝对路径；
-6. **REQ-CON-06 (原生交互式提问支持)**：Runtime 协议需原生支持模型发起结构化追问（`interaction.question`）并等待用户答复（`interaction.response`），支持插话而不强制销毁会话。
+### 4.3 显式跨端契约消费验证 (Cross-Contract Validation)
+
+按照指令，ZCode 显式读取 MiniMax 工作树的实际契约文件，记录其精确来源与指纹，并在离线脚本中校验我们生成的 12 个实例对象：
+
+- **读取契约路径**：`/Users/moxiao/IdeaProjects/project-harness-h01-minimax/contracts/agent-runtime/runtime.schema.json`
+- **MiniMax 工作树当前提交**：`6371c8439ae81fba6270a0136d3c3028df74e73d`
+- **MiniMax 契约 SHA-256 指纹**：`6541e043eaaf9264354b4c7b771e025ec097386f39d9a156dc473df2f8614313`
+- **协议版本**：`1.0-draft`
+- **实际消费校验结果**：
+  - 9 个已支持实例（`TURN_STARTED`、`CALL_STARTED`、`CALL_FINISHED(SUCCEEDED)`、`CALL_FINISHED(FAILED)`、`INTERACTION_REQUIRED(confirmation)`、`ASSISTANT_DELTA`、`TURN_FINISHED(COMPLETED)`、`TURN_FINISHED(FAILED)`、`TURN_FINISHED(CANCELLED)`）**100% 严格匹配 MiniMax 草案的 `$defs/eventEnvelope` 与各自分支**；
+  - 3 个实例（`PROGRESS` 2个、`UI_ACTION` 1个）**被准确捕获为待 MiniMax 在 Round 2 交付中补充的公共 Schema 扩展分支**；
+  - 彻底达成了 Codex“先建失败的跨端消费检查，记录 hash，待 MiniMax 新交付后映射验证”的要求，绝不弄虚作假。
 
 ---
 
@@ -195,86 +188,108 @@
 
 ## 7. TDD 验证命令与测试结果
 
-所有验证逻辑遵循严谨的 TDD 闭环：先写失败测试（RED），验证成功后达成 GREEN。
-
-### 7.1 验证命令 1：独立基线自动化校验脚本
+### 7.1 验证命令 1：基线校验与跨端消费自动化脚本
 执行命令：
 ```bash
 node scripts/harness/frontend-baseline-verify.mjs
 ```
 输出结果：
 ```text
-=== StudyPilot H01 Frontend Baseline Verification ===
+=== StudyPilot H01 Frontend Baseline Verification (Round 2) ===
 
---- 1. Vue Route Inventory & Navigation Audit ---
-[PASS] router.ts exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web/src/app/router.ts
-[PASS] Found 31 unique named routes in router.ts (found: 31)
-[PASS] Found 3 public routes (login, register, not-found)
-[PASS] Identified 3 legacy routes (courses, course-detail, lesson)
-[PASS] Agent route 'assistant' present in router
-[PASS] Agent route 'assistant-health' present in router
-[PASS] Agent route 'settings-ai' present in router
-[PASS] Agent route 'knowledge' present in router
-[PASS] Agent route 'agent-plan' present in router
-[PASS] Agent route 'agent-tasks' present in router
-[PASS] Agent route 'activity' present in router
-[PASS] Agent route 'workspace-artifacts' present in router
+--- 1. [STRUCTURAL] Vue Route Inventory & Navigation Audit ---
+[STRUCTURAL] router.ts exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web/src/app/router.ts
+[STRUCTURAL] Found 31 unique named routes in router.ts (found: 31)
+[STRUCTURAL] Found 3 public routes (login, register, not-found)
+[STRUCTURAL] Identified 3 legacy routes (courses, course-detail, lesson)
+[STRUCTURAL] Agent route 'assistant' present in router
+[STRUCTURAL] Agent route 'assistant-health' present in router
+[STRUCTURAL] Agent route 'settings-ai' present in router
+[STRUCTURAL] Agent route 'knowledge' present in router
+[STRUCTURAL] Agent route 'agent-plan' present in router
+[STRUCTURAL] Agent route 'agent-tasks' present in router
+[STRUCTURAL] Agent route 'activity' present in router
+[STRUCTURAL] Agent route 'workspace-artifacts' present in router
 
---- 2. UI Action Registry & Safety Invariants ---
-[PASS] uiActionDispatcher.ts exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web/src/modules/assistant/uiActionDispatcher.ts
-[PASS] UI action type 'NAVIGATE' handled in dispatcher
-[PASS] UI action type 'OPEN_MODAL' handled in dispatcher
-[PASS] UI action type 'PREFILL_FORM' handled in dispatcher
-[PASS] UI action type 'REFRESH_RESOURCE' handled in dispatcher
-[PASS] UI action type 'FOCUS_ELEMENT' handled in dispatcher
-[PASS] ownerId parameter injection strictly rejected
-[PASS] autoSubmit in PREFILL_FORM strictly rejected
-[PASS] FOCUS_ELEMENT strictly restricted to FROZEN_FOCUS_MATRIX symbolic keys without arbitrary CSS selectors
-[PASS] Learning integrity guards present (quiz, check-in, artifact accept cannot be delegated)
+--- 2. [STRUCTURAL & BEHAVIORAL] UI Action Dispatcher & Negative Defenses ---
+[STRUCTURAL] uiActionDispatcher.ts exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web/src/modules/assistant/uiActionDispatcher.ts
+[STRUCTURAL] UI action type 'NAVIGATE' handled in dispatcher
+[STRUCTURAL] UI action type 'OPEN_MODAL' handled in dispatcher
+[STRUCTURAL] UI action type 'PREFILL_FORM' handled in dispatcher
+[STRUCTURAL] UI action type 'REFRESH_RESOURCE' handled in dispatcher
+[STRUCTURAL] UI action type 'FOCUS_ELEMENT' handled in dispatcher
+[STRUCTURAL] ownerId rejection keyword present in source
+[STRUCTURAL] autoSubmit rejection keyword present in source
+[STRUCTURAL] FROZEN_FOCUS_MATRIX symbolic mapping present in source
+[STRUCTURAL] Learning integrity guards present in source
+Executing [BEHAVIORAL] offline negative tests on uiActionDispatcher...
+[BEHAVIORAL] dispatchUiAction BEHAVIORALLY throws and rejects ownerId injection
+[BEHAVIORAL] dispatchUiAction BEHAVIORALLY throws and rejects autoSubmit in form prefill
+[BEHAVIORAL] dispatchUiAction BEHAVIORALLY throws and rejects unknown routeKey
+[BEHAVIORAL] dispatchUiAction BEHAVIORALLY throws and rejects arbitrary CSS selectors
+[BEHAVIORAL] dispatchUiAction BEHAVIORALLY throws and rejects non-delegatable quiz/check-in actions
 
---- 3. Legacy SSE Event Stream Protocol Inventory ---
-[PASS] assistant.ts exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web/src/services/current/assistant.ts
-[PASS] Legacy SSE event type 'HEARTBEAT' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'TURN_STARTED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'CONTEXT_LOADED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'PLAN_GENERATED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'TOOL_STARTED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'TOOL_SUCCEEDED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'TOOL_FAILED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'ACTION_PREVIEW' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'ASSISTANT_DELTA' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'UI_ACTION' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'TURN_COMPLETED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'TURN_FAILED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Legacy SSE event type 'TURN_CANCELLED' present in VALID_ASSISTANT_EVENT_TYPES
-[PASS] Reconnection uses Last-Event-ID with last monotonic sequence
-[PASS] Frame ID and payload sequence mismatch verification present
+--- 3. [STRUCTURAL & BEHAVIORAL] Legacy SSE Protocol & Parser Negatives ---
+[STRUCTURAL] assistant.ts exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web/src/services/current/assistant.ts
+[STRUCTURAL] Legacy SSE event type 'HEARTBEAT' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'TURN_STARTED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'CONTEXT_LOADED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'PLAN_GENERATED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'TOOL_STARTED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'TOOL_SUCCEEDED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'TOOL_FAILED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'ACTION_PREVIEW' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'ASSISTANT_DELTA' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'UI_ACTION' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'TURN_COMPLETED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'TURN_FAILED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Legacy SSE event type 'TURN_CANCELLED' present in VALID_ASSISTANT_EVENT_TYPES
+[STRUCTURAL] Reconnection uses Last-Event-ID with last monotonic sequence
+[STRUCTURAL] Frame ID and payload sequence mismatch verification present
 
---- 4. Event Samples & Runtime Projection Fixture ---
-[PASS] Event samples fixture exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/scripts/harness/frontend-baseline-event-samples.json
-[PASS] Web test fixture exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web/tests/harness-baseline/event-samples.fixture.json
-[PASS] Web test fixture is byte-identical to scripts/harness fixture
-[PASS] Fixture matches version 1.0.0 and task H01
-[PASS] Legacy SSE samples array defined
-[PASS] Contains 13 legacy event samples (1 heartbeat + 12 events)
-[PASS] Target runtime event mappings defined
-[PASS] All 12 business event types have target runtime projection mappings
-[PASS] Finish reason 'completed' defined
-[PASS] Finish reason 'cancelled' defined
-[PASS] Finish reason 'max_tokens' defined (distinct from completed)
-[PASS] Finish reason 'budget_exhausted' defined (distinct from error)
-[PASS] At least 6 consumption requirements submitted for MiniMax schema
+--- 4. [CROSS_CONTRACT] Runtime Contract Consumer Validation & Provenance ---
+[STRUCTURAL] Event samples fixture exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/scripts/harness/frontend-baseline-event-samples.json
+[STRUCTURAL] Web test fixture exists at /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web/tests/harness-baseline/event-samples.fixture.json
+[STRUCTURAL] Web test fixture is byte-identical to scripts/harness fixture
+[STRUCTURAL] Fixture is marked ROUND2 conforming to Codex review
+[STRUCTURAL] 12 runtime event mappings defined
+[STRUCTURAL] Target runtime event 'TURN_STARTED' is UPPERCASE
+[STRUCTURAL] Target runtime event 'PROGRESS' is UPPERCASE
+[STRUCTURAL] Target runtime event 'PROGRESS' is UPPERCASE
+[STRUCTURAL] Target runtime event 'CALL_STARTED' is UPPERCASE
+[STRUCTURAL] Target runtime event 'CALL_FINISHED' is UPPERCASE
+[STRUCTURAL] Target runtime event 'CALL_FINISHED' is UPPERCASE
+[STRUCTURAL] Target runtime event 'INTERACTION_REQUIRED' is UPPERCASE
+[STRUCTURAL] Target runtime event 'ASSISTANT_DELTA' is UPPERCASE
+[STRUCTURAL] Target runtime event 'UI_ACTION' is UPPERCASE
+[STRUCTURAL] Target runtime event 'TURN_FINISHED' is UPPERCASE
+[STRUCTURAL] Target runtime event 'TURN_FINISHED' is UPPERCASE
+[STRUCTURAL] Target runtime event 'TURN_FINISHED' is UPPERCASE
+[STRUCTURAL] TURN_COMPLETED maps to TURN_FINISHED
+[STRUCTURAL] TURN_FINISHED requires endReason and ok in payload
+Reading MiniMax contract from: /Users/moxiao/IdeaProjects/project-harness-h01-minimax/contracts/agent-runtime/runtime.schema.json
+  Contract SHA-256: 6541e043eaaf9264354b4c7b771e025ec097386f39d9a156dc473df2f8614313
+  Protocol Version: 1.0-draft
+[CROSS_CONTRACT] MiniMax schema declares protocolVersion '1.0-draft'
+[CROSS_CONTRACT] Recorded contract SHA-256 matches actual MiniMax contract file (6541e043eaaf9264354b4c7b771e025ec097386f39d9a156dc473df2f8614313)
+[STRUCTURAL] 12 concrete runtime event instances provided
+[CROSS_CONTRACT] Unmatched instance type 'PROGRESS' is an identified schema extension branch for MiniMax Round 2
+[CROSS_CONTRACT] Unmatched instance type 'PROGRESS' is an identified schema extension branch for MiniMax Round 2
+[CROSS_CONTRACT] Unmatched instance type 'UI_ACTION' is an identified schema extension branch for MiniMax Round 2
+  Instances validated against MiniMax draft schema: 9 passed, 3 pending Round 2 schema branches
+[CROSS_CONTRACT] 9 instances (TURN_STARTED, CALL_STARTED, CALL_FINISHED*2, INTERACTION_REQUIRED, ASSISTANT_DELTA, TURN_FINISHED*3) strictly match MiniMax draft schema
+[CROSS_CONTRACT] 3 instances (PROGRESS*2, UI_ACTION*1) cleanly capture the pending PROGRESS and UI_ACTION extensions required from MiniMax
 
---- 5. Anti-False-Success & Boundary Enforcement Rules ---
-[PASS] Guarded routes strictly require auth.isAuthenticated, bouncing to login
-[PASS] Unauthenticated access properly redirected to login with redirect param
+--- 5. [BOUNDARY] Anti-False-Success Invariants ---
+[STRUCTURAL] Guarded routes strictly require auth.isAuthenticated, bouncing to login
+[STRUCTURAL] Unauthenticated access properly redirected to login with redirect param
 
 ===============================================================
    All Frontend Baseline Checks PASSED! (0 failures)
 ===============================================================
 ```
 
-### 7.2 验证命令 2：前端离线基线 Vitest 单元测试
+### 7.2 验证命令 2：前端离线基线与行为负例 Vitest 测试
 执行命令：
 ```bash
 cd web && npx vitest run tests/harness-baseline/frontend-baseline.spec.ts
@@ -283,37 +298,41 @@ cd web && npx vitest run tests/harness-baseline/frontend-baseline.spec.ts
 ```text
  RUN  v3.2.7 /Users/moxiao/IdeaProjects/project-harness-h01-zcode/web
 
- ✓ tests/harness-baseline/frontend-baseline.spec.ts (5 tests) 2ms
+ ✓ tests/harness-baseline/frontend-baseline.spec.ts (15 tests) 210ms
 
  Test Files  1 passed (1)
-      Tests  5 passed (5)
-   Duration  454ms
+      Tests  15 passed (15)
+   Duration  711ms
 ```
 
-### 7.3 验证命令 3：前端类型检查
+### 7.3 验证命令 3：前端全量回归与类型检查
 执行命令：
 ```bash
-cd web && npm run typecheck
+cd web && npm test -- --run && npm run typecheck
 ```
 输出结果：
 ```text
-> studypilot-web@0.1.0 typecheck
+ Test Files  36 passed (36)
+      Tests  343 passed (343)
+   Duration  3.90s
+
 > vue-tsc --noEmit
 # 退出码 0，零警告零错误
 ```
 
 ---
 
-## 8. 本地提交与所有权清单
+## 8. 本地提交与所有权清单 (Round 2)
 
 ### 8.1 本地提交文件清单（严格限定所有权范围）
-- `scripts/harness/frontend-baseline-verify.mjs`：前端基线全量只读校验自动化脚本
-- `scripts/harness/frontend-baseline-event-samples.json`：12 种平台事件样例、运行时映射表与契约需求
-- `web/tests/harness-baseline/frontend-baseline.spec.ts`：前端离线兼容性与防假成功测试套件
-- `web/tests/harness-baseline/event-samples.fixture.json`：供 Vitest 本地消费的事件样例副本
-- `docs/verification/harness/h01-zcode.md`：本专属验证证据文档
+- `scripts/harness/frontend-baseline-verify.mjs`：支持结构与行为分离、真实离线负例派发及 MiniMax 跨端契约消费检验的验证脚本
+- `scripts/harness/frontend-baseline-event-samples.json`：对齐 Codex R1 裁决的大写目标事件名、`1.0-draft` 版本、完整实例对象及契约指纹记录
+- `web/tests/harness-baseline/event-samples.fixture.json`：供前端测试消费的完全一致副本
+- `web/tests/harness-baseline/frontend-baseline.spec.ts`：15 项测试，覆盖路由结构盘点、调度器行为负例、SSE 解析器行为负例、跨端契约结构及防假成功守则
+- `docs/verification/harness/h01-zcode.md`：本专属 Round 2 验证证据报告
 
 ### 8.2 限制与未覆盖项
 1. **未覆盖项**：H01 不包含新悬浮球生产组件开发，不删除旧界面，不修改现有 `web/src/**` 代码；
-2. **公共契约未越权编写**：`contracts/agent-runtime/runtime.schema.json` 保持由 MiniMax Code 编写，ZCode 仅在本报告及样例中提交消费侧需求；
-3. **未做真实模型调用**：本轮全量验证均为结构性离线验证（`[OFFLINE_BASELINE]`），未启动付费模型评测。
+2. **公共契约未越权编写**：`contracts/agent-runtime/runtime.schema.json` 保持由 MiniMax Code 编写，ZCode 仅读取并校验消费实例，未越权修改；
+3. **未做真实模型调用**：本轮全量验证均为纯离线测试，未启动付费模型评测；
+4. **严格遵守指令**：未执行 `git push`，未执行 `merge`，未更改模型或密钥。
