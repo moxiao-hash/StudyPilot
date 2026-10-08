@@ -173,7 +173,8 @@ $ node --test scripts/harness/runtime-contract.test.mjs
 
 ## 6. 本地提交记录
 
-- 提交 Hash：`8d031fb375b5d52557ee6ae6bc98de400557d355`（最终 amend HEAD）
+- 实现提交 Hash：`981ca91c25011f8f0051bfb979b902c8ca68a52f`
+- 证据提交 Hash：`<本提交>`
 - 分支：`codex/harness-h01-minimax-contract`
 - 基线：`f7311079a83b84c5e7f3a9076ce4efccb3044c86`
 - 状态：已本地提交，未 push，等待 Codex 独立验收。
