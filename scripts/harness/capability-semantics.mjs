@@ -305,10 +305,145 @@ export function expectedConfirmation(tool, policy) {
 }
 
 /** Minimal input-schema check against the extracted declaration. */
+/**
+ * A legal OUTPUT instance must exist for every acceptable example and must agree
+ * with the registered output contract at the level H02 can verify offline: the
+ * container kind, and that no top-level key is outside the declared field list.
+ * Per-field types, nested schemas and the required set need the upstream
+ * manifest schema, which is not delivered yet, so they stay BLOCKED rather than
+ * being asserted or silently skipped.
+ */
+const SHAPE_PLACEHOLDER = '<shape-placeholder>';
+
+/** Every leaf of a shape fixture must be the documented placeholder. */
+function assertPlaceholderLeaves(tool, value, path) {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => assertPlaceholderLeaves(tool, item, `${path}[${index}]`));
+    return;
+  }
+  if (value && typeof value === 'object') {
+    for (const [key, child] of Object.entries(value)) assertPlaceholderLeaves(tool, child, `${path}.${key}`);
+    return;
+  }
+  if (value !== SHAPE_PLACEHOLDER) {
+    fail(
+      'E_OUTPUT_INSTANCE',
+      `${tool.name}: a shape_placeholder fixture must use "${SHAPE_PLACEHOLDER}" leaves, got ${JSON.stringify(value)} at ${path}`,
+    );
+  }
+}
+
+export function checkExampleOutput(tool, output, fixtureKind) {
+  if (fixtureKind === 'contract_defect') {
+    if (output !== null && output !== undefined) {
+      fail('E_OUTPUT_INSTANCE', `${tool.name}: a contract-defect example must not claim a result`);
+    }
+    return;
+  }
+  const nullable = tool.nullableTopLevel === true;
+  if (output === null || output === undefined) {
+    // A registered nullable top-level output is the only legal null result.
+    if (nullable) return;
+    fail('E_OUTPUT_INSTANCE', `${tool.name}: an acceptable example must include an output instance (only a nullable-output tool may return null)`);
+  }
+  const container = tool.outputContainer;
+  const declared = new Set(tool.outputFields ?? []);
+  // A shape fixture must not smuggle real business values in as a "shape".
+  if (fixtureKind === 'shape_placeholder') assertPlaceholderLeaves(tool, output, 'output');
+  if (container === 'array') {
+    if (!Array.isArray(output)) {
+      fail('E_OUTPUT_INSTANCE', `${tool.name}: output must be a JSON array`);
+    }
+    for (const [index, item] of output.entries()) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        fail('E_OUTPUT_INSTANCE', `${tool.name}: output[${index}] must be an object`);
+      }
+      for (const key of Object.keys(item)) {
+        if (!declared.has(key)) {
+          fail('E_OUTPUT_INSTANCE', `${tool.name}: output[${index}] has undeclared field "${key}"`);
+        }
+      }
+    }
+    return;
+  }
+  if (!output || typeof output !== 'object' || Array.isArray(output)) {
+    fail('E_OUTPUT_INSTANCE', `${tool.name}: output must be a JSON object`);
+  }
+  for (const key of Object.keys(output)) {
+    if (!declared.has(key)) {
+      fail('E_OUTPUT_INSTANCE', `${tool.name}: output has undeclared field "${key}"`);
+    }
+  }
+}
+
+/**
+ * Recursively reject identity, authorization and credential keys at ANY depth.
+ * The Java registry only rejects a top-level `ownerId` argument, so a nested
+ * forged identity (for example navigation params.ownerId) would otherwise slip
+ * through the metadata even though it can never be a legitimate argument.
+ */
+function assertNoInjectedIdentity(tool, value, path) {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => assertNoInjectedIdentity(tool, item, `${path}[${index}]`));
+    return;
+  }
+  if (!value || typeof value !== 'object') return;
+  for (const [key, child] of Object.entries(value)) {
+    if (OWNER_KEYS.includes(key)) {
+      fail('E_OWNER_INJECTION', `${tool.name}: nested example argument ${path}.${key} forges the caller identity`);
+    }
+    if (AUTHORIZATION_KEYS.includes(key)) {
+      fail('E_AUTHORIZATION_LEAK', `${tool.name}: nested example argument ${path}.${key} carries authorization`);
+    }
+    if (CREDENTIAL_KEYS.includes(key)) {
+      fail('E_CREDENTIAL_INJECTION', `${tool.name}: nested example argument ${path}.${key} carries credential material`);
+    }
+    assertNoInjectedIdentity(tool, child, `${path}.${key}`);
+  }
+}
+
+/**
+ * The navigation tool has its own whitelist semantics: routeKey must be one of
+ * the routes Java registers, params must match exactly the required set for that
+ * route, and each value must satisfy the Java SAFE_IDENTIFIER pattern.
+ */
+function checkNavigationExample(tool, input) {
+  const routes = tool.routes ?? {};
+  const routeKey = input.routeKey;
+  if (!Object.prototype.hasOwnProperty.call(routes, routeKey)) {
+    fail('E_NAVIGATION_ROUTE', `${tool.name}: routeKey "${routeKey}" is not in the Java route whitelist`);
+  }
+  const required = routes[routeKey];
+  const params = input.params;
+  if (required.length === 0) {
+    if (params !== undefined && params !== null && Object.keys(params).length > 0) {
+      fail('E_NAVIGATION_PARAMS', `${tool.name}: route "${routeKey}" takes no params, got ${JSON.stringify(Object.keys(params))}`);
+    }
+    return;
+  }
+  if (!params || typeof params !== 'object' || Array.isArray(params)) {
+    fail('E_NAVIGATION_PARAMS', `${tool.name}: route "${routeKey}" requires params ${JSON.stringify(required)}`);
+  }
+  const keys = Object.keys(params).sort();
+  const expected = [...required].sort();
+  if (keys.join(',') !== expected.join(',')) {
+    fail(
+      'E_NAVIGATION_PARAMS',
+      `${tool.name}: route "${routeKey}" params must be exactly ${JSON.stringify(expected)}, got ${JSON.stringify(keys)}`,
+    );
+  }
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value !== 'string' || !SAFE_IDENTIFIER.test(value)) {
+      fail('E_NAVIGATION_SAFE_IDENTIFIER', `${tool.name}: param "${key}" must match the Java safe-identifier pattern`);
+    }
+  }
+}
+
 export function checkExampleInput(tool, input) {
   if (typeof input !== 'object' || input === null || Array.isArray(input)) {
     fail('E_EXAMPLE_SCHEMA', `${tool.name}: example input must be a JSON object`);
   }
+  assertNoInjectedIdentity(tool, input, 'input');
   for (const key of Object.keys(input)) {
     // Identity is injected by Java and is never a caller argument; a metadata
     // example that carries it would teach a model to forge it.
@@ -339,10 +474,14 @@ export function checkExampleInput(tool, input) {
       fail('E_EXAMPLE_SCHEMA', `${tool.name}: example input is missing required argument "${required}"`);
     }
   }
+  if (tool.routes) checkNavigationExample(tool, input);
 }
 
 const OWNER_KEYS = ['ownerId', 'owner_id'];
 const AUTHORIZATION_KEYS = ['grant', 'grants', 'authorization', 'authorizations', 'permissions', 'scope', 'scopes'];
+const CREDENTIAL_KEYS = ['secret', 'secrets', 'apiKey', 'api_key', 'token', 'accessToken', 'credential', 'credentials', 'password'];
+/** NavigationToolHandler.SAFE_IDENTIFIER, verbatim from the Java source. */
+const SAFE_IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
 
 const COMPLETION_CLAIMS = [
   /AI\s*(Rubric\s*)?(通过|及格)[^。]{0,12}(即|就|视为)[^。]{0,8}(完成|成功)/i,
@@ -379,6 +518,8 @@ function findPermissiveClaim(prose, patterns) {
 
 /** Java class names available under backend/src/main/java, built once. */
 let javaClassIndex = null;
+/** Class simple name -> source text of the file declaring it (for method tracing). */
+let javaClassSource = null;
 function javaClasses() {
   if (javaClassIndex) return javaClassIndex;
   javaClassIndex = new Set();
@@ -405,13 +546,37 @@ function javaClasses() {
   return javaClassIndex;
 }
 
+/** Source text per declared class name, so an unverified collaborator method can be traced. */
+function javaClassSources() {
+  if (javaClassSource) return javaClassSource;
+  javaClassSource = new Map();
+  const root = join(REPO_ROOT, 'backend', 'src', 'main', 'java');
+  if (!existsSync(root)) return javaClassSource;
+  const walk = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        walk(join(directory, entry.name));
+        continue;
+      }
+      if (!entry.name.endsWith('.java')) continue;
+      const text = readFileSync(join(directory, entry.name), 'utf8');
+      javaClassSource.set(entry.name.slice(0, -'.java'.length), text);
+      for (const declared of text.matchAll(/\b(?:class|interface|enum|record)\s+([A-Z][A-Za-z0-9_]*)/g)) {
+        javaClassSource.set(declared[1], text);
+      }
+    }
+  };
+  walk(root);
+  return javaClassSource;
+}
+
 /**
  * Provenance must point at real source: the declared line range must exist and
  * must actually mention this wire name, and every class named in `handler` must
  * exist in the backend source tree. This is what stops a plausible-looking but
  * fabricated provenance string from passing.
  */
-function checkProvenance(entry) {
+function checkProvenance(entry, tool) {
   const provenance = entry.source_provenance;
   if (!provenance || typeof provenance !== 'object') {
     fail('E_REQUIRED_FIELD_MISSING', `${entry.name}: source_provenance must be a mapping`);
@@ -442,18 +607,49 @@ function checkProvenance(entry) {
   if (typeof handler !== 'string' || handler.trim() === '') {
     fail('E_PROVENANCE', `${entry.name}: source_provenance.handler is required`);
   }
-  // Only `Class.method` / `Class#method` pairs count as class claims; free prose
-  // such as "the Java-injected caller identity" must not be read as a class name.
-  const classes = new Set(
-    [...handler.matchAll(/\b([A-Z][A-Za-z0-9_]*)\s*[.#]/g)].map((found) => found[1]),
-  );
-  if (classes.size === 0) {
+  // Execution binding: every `Class.method` pair in the handler must either be
+  // visible in THIS tool's own registration context (the real binding), or be
+  // declared as an unverified deeper collaborator that must nevertheless trace to
+  // real source. A fabricated binding can therefore not pass, and a fabricated
+  // method cannot be laundered through the unverified list.
+  const pairs = [...handler.matchAll(/\b([A-Z][A-Za-z0-9_]*)\s*[.#]\s*([a-z][A-Za-z0-9_]*)/g)]
+    .map((found) => ({ className: found[1], method: found[2] }));
+  if (pairs.length === 0) {
     fail('E_PROVENANCE', `${entry.name}: source_provenance.handler must name at least one "Class.method"`);
   }
-  const known = javaClasses();
-  for (const name of classes) {
-    if (!known.has(name)) {
-      fail('E_PROVENANCE', `${entry.name}: handler class "${name}" does not exist in the backend source tree`);
+  const boundClasses = new Set(tool.boundClasses ?? []);
+  const boundMethods = new Set(tool.boundMethods ?? []);
+  const unverified = new Set(provenance.unverified_symbols ?? []);
+  const verifiedPairs = pairs.filter(
+    (pair) => boundClasses.has(pair.className) && boundMethods.has(pair.method),
+  );
+  if (verifiedPairs.length === 0) {
+    fail(
+      'E_PROVENANCE',
+      `${entry.name}: no "Class.method" in the handler is bound in this tool's registration context`,
+    );
+  }
+  const sources = javaClassSources();
+  for (const pair of pairs) {
+    const isBound = boundClasses.has(pair.className) && boundMethods.has(pair.method);
+    if (isBound) continue;
+    const label = `${pair.className}.${pair.method}`;
+    if (!unverified.has(label)) {
+      fail(
+        'E_PROVENANCE',
+        `${entry.name}: "${label}" is not bound to this tool's registration and is not declared in source_provenance.unverified_symbols`,
+      );
+    }
+    const source = sources.get(pair.className);
+    if (source === undefined) {
+      fail('E_PROVENANCE', `${entry.name}: unverified symbol class "${pair.className}" does not exist`);
+    }
+    const methodPattern = new RegExp(`\\b${pair.method}\\s*\\(`);
+    if (!methodPattern.test(source)) {
+      fail(
+        'E_PROVENANCE',
+        `${entry.name}: unverified symbol "${label}" names a method that does not exist on "${pair.className}"`,
+      );
     }
   }
   if (typeof provenance.output_schema !== 'string' || !existsSync(join(REPO_ROOT, provenance.output_schema))) {
@@ -514,6 +710,8 @@ export function validateMetadata(doc, fixture, tools) {
       inputProperties: { routeKey: 'string', params: 'object' },
       inputRequired: ['routeKey'],
       outputFields: navigation.outputFields ?? [],
+      boundClasses: navigation.boundClasses ?? [],
+      boundMethods: navigation.boundMethods ?? [],
       routes: navigation.routes,
     },
   ];
@@ -560,7 +758,7 @@ export function validateMetadata(doc, fixture, tools) {
       }
     }
 
-    checkProvenance(entry);
+    checkProvenance(entry, tool);
 
     // semantic substance: no shared cliché standing in for real meaning
     if (typeof entry.description !== 'string' || entry.description.trim().length < 12) {
@@ -605,27 +803,104 @@ export function validateMetadata(doc, fixture, tools) {
       }
     }
 
-    // examples must satisfy the real input schema
+    // examples must declare their outcome, satisfy the real input schema when
+    // they are acceptable, document why an illegal input is rejected, and carry
+    // a legal output instance (or an explicit defect/error explanation).
     if (!Array.isArray(entry.examples) || entry.examples.length === 0) {
       fail('E_REQUIRED_FIELD_MISSING', `${entry.name}: examples must be a non-empty list`);
     }
+    const contractDefect = (fixture.defectOverrides?.items ?? []).find((item) => item.tool === entry.name);
     for (const example of entry.examples) {
-      checkExampleInput(tool, example?.input);
+      const outcome = example?.outcome;
+      if (!['ok', 'rejected', 'unavailable'].includes(outcome)) {
+        fail('E_OUTPUT_INSTANCE', `${entry.name}: example outcome "${outcome}" must be ok|rejected|unavailable`);
+      }
+      if (example.fixture_kind !== 'shape_placeholder'
+        && example.fixture_kind !== 'rejection'
+        && example.fixture_kind !== 'contract_defect') {
+        fail('E_OUTPUT_INSTANCE', `${entry.name}: example fixture_kind "${example.fixture_kind}" is not recognised`);
+      }
+      if (typeof example.fixture_source !== 'string' || !existsSync(join(REPO_ROOT, example.fixture_source))) {
+        fail('E_OUTPUT_INSTANCE', `${entry.name}: example fixture_source must point at an existing file`);
+      }
+      if (typeof example.expect !== 'string' || example.expect.trim() === '') {
+        fail('E_OUTPUT_INSTANCE', `${entry.name}: example expect is required`);
+      }
+
+      let inputError = null;
+      try {
+        checkExampleInput(tool, example.input);
+      } catch (error) {
+        if (!(error instanceof SemanticError)) throw error;
+        inputError = error;
+      }
+
+      if (outcome === 'ok') {
+        if (inputError) {
+          // Propagate the specific cause (owner injection, route, params,
+          // credentials) rather than flattening everything to a schema error.
+          fail(
+            inputError.code,
+            `${entry.name}: outcome "ok" but the input is illegal (${inputError.message})`,
+          );
+        }
+        checkExampleOutput(tool, example.output, example.fixture_kind);
+        if (example.error) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: an "ok" example must not declare an error`);
+        }
+      } else if (outcome === 'rejected') {
+        if (!inputError) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: outcome "rejected" but the input passes every rule`);
+        }
+        if (!example.error || typeof example.error.code !== 'string' || !example.error.message) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: a rejected example must declare error.code and error.message`);
+        }
+        if (example.output !== null && example.output !== undefined) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: a rejected example must not claim a result`);
+        }
+      } else {
+        // unavailable: the input is legal but the tool cannot currently succeed.
+        if (inputError) {
+          fail(
+            'E_OUTPUT_INSTANCE',
+            `${entry.name}: outcome "unavailable" requires a legal input (${inputError.code})`,
+          );
+        }
+        if (!contractDefect) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: outcome "unavailable" needs a frozen contract defect`);
+        }
+        if (example.fixture_kind !== 'contract_defect') {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: an unavailable example must be fixture_kind contract_defect`);
+        }
+        if (!example.error || typeof example.error.code !== 'string' || !example.error.message) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: an unavailable example must declare the real error`);
+        }
+        checkExampleOutput(tool, example.output, example.fixture_kind);
+      }
+    }
+    if (contractDefect) {
+      const acceptable = entry.examples.filter((example) => example.outcome === 'ok');
+      if (acceptable.length > 0) {
+        fail(
+          'E_OUTPUT_INSTANCE',
+          `${entry.name}: a tool with verified defect ${contractDefect.defectId} must not claim a successful example`,
+        );
+      }
     }
 
     // exposure follows the H02 boundary, not the effect alone; a tool with a
     // verified contract defect cannot be `allowed` because it fails the
     // implementation condition, so the override wins over the category rule.
-    const override = (fixture.defectOverrides?.items ?? []).find((item) => item.tool === entry.name);
+    const defectOverride = (fixture.defectOverrides?.items ?? []).find((item) => item.tool === entry.name);
     const exposureRule = expectedExposure(tool, fixture.exposurePolicy);
     if (!exposureRule) fail('E_EXPOSURE_POLICY', `${entry.name}: no exposure rule matches this tool`);
-    const requiredState = override ? override.state : exposureRule.state;
+    const requiredState = defectOverride ? defectOverride.state : exposureRule.state;
     const actualState = entry.exposure?.state;
     if (!['allowed', 'disabled', 'pending'].includes(actualState)) {
       fail('E_EXPOSURE_POLICY', `${entry.name}: exposure.state "${actualState}" is not a valid state`);
     }
     if (actualState !== requiredState) {
-      const source = override ? `verified defect ${override.defectId}` : `policy ${exposureRule.id}`;
+      const source = defectOverride ? `verified defect ${defectOverride.defectId}` : `policy ${exposureRule.id}`;
       fail(
         'E_EXPOSURE_POLICY',
         `${entry.name}: exposure.state is "${actualState}" but ${source} requires "${requiredState}"`,
@@ -634,12 +909,12 @@ export function validateMetadata(doc, fixture, tools) {
     if (typeof entry.exposure?.reason !== 'string' || entry.exposure.reason.trim() === '') {
       fail('E_EXPOSURE_POLICY', `${entry.name}: exposure.reason is required`);
     }
-    if (override) {
-      for (const token of override.reasonMustContain ?? []) {
+    if (defectOverride) {
+      for (const token of defectOverride.reasonMustContain ?? []) {
         if (!entry.exposure.reason.includes(token)) {
           fail(
             'E_EXPOSURE_POLICY',
-            `${entry.name}: the exposure reason for defect ${override.defectId} must name "${token}"`,
+            `${entry.name}: the exposure reason for defect ${defectOverride.defectId} must name "${token}"`,
           );
         }
       }
@@ -783,6 +1058,21 @@ function applyOps(doc, ops) {
       case 'set_example_input': {
         const target = find(op.tool);
         target.examples[op.index].input = op.value;
+        break;
+      }
+      case 'delete_example_field': {
+        const target = find(op.tool);
+        for (const example of target.examples) delete example[op.field];
+        break;
+      }
+      case 'set_example_field': {
+        const target = find(op.tool);
+        target.examples[op.index][op.field] = op.value;
+        break;
+      }
+      case 'set_example_output': {
+        const target = find(op.tool);
+        target.examples[op.index].output = op.value;
         break;
       }
       case 'copy_tool_field': {

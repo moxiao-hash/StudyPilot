@@ -17,6 +17,7 @@ import {
   checkExampleInput,
   expectedConfirmation,
   expectedExposure,
+  checkExampleOutput,
   loadMetadata,
   parseYamlSubset,
   runValidation,
@@ -382,4 +383,143 @@ test('metadata: strict third-party parser agrees with this subset parser', { ski
       }
     }
   }
+});
+
+// --- R-D1: execution binding ----------------------------------------------
+
+test('binding: a fabricated method on a real class is rejected', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  doc.tools[0].source_provenance.handler = 'AgentGovernanceService.thisMethodDoesNotExist';
+  assert.throws(
+    () => validateMetadata(doc, fixture, fixture.frozenFacts.tools),
+    (error) => error.code === 'E_PROVENANCE',
+  );
+});
+
+test('binding: a real but unbound execution class is rejected', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  doc.tools[0].source_provenance.handler = 'RoadmapScheduleService.getOrCreate';
+  assert.throws(
+    () => validateMetadata(doc, fixture, fixture.frozenFacts.tools),
+    (error) => error.code === 'E_PROVENANCE',
+  );
+});
+
+test('binding: a fabricate method cannot be laundered through unverified_symbols', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  const entry = doc.tools[0];
+  entry.source_provenance.handler = 'AssistantHealthService.summarize and AgentGovernanceService.thisMethodDoesNotExist';
+  entry.source_provenance.unverified_symbols = ['AgentGovernanceService.thisMethodDoesNotExist'];
+  assert.throws(
+    () => validateMetadata(doc, fixture, fixture.frozenFacts.tools),
+    (error) => error.code === 'E_PROVENANCE',
+  );
+});
+
+test('binding: frozen facts carry per-tool bound symbol sets', () => {
+  const health = fixture.frozenFacts.tools.find((tool) => tool.name === 'governance.health.get');
+  assert.ok(health.boundClasses.includes('AssistantHealthService'));
+  assert.ok(health.boundMethods.includes('summarize'));
+  assert.ok(!health.boundClasses.includes('RoadmapScheduleService'), 'other beans must not leak into this context');
+  assert.deepEqual(health.handlerServices, ['AssistantHealthService'], 'the injected TYPE, not the variable name');
+});
+
+// --- R-D2: navigation whitelist, params and identity -----------------------
+
+const NAV_TOOL = {
+  name: 'navigation.resolve',
+  inputProperties: { routeKey: 'string', params: 'object' },
+  inputRequired: ['routeKey'],
+  routes: { TODAY: [], ROADMAP_NODE: ['nodeId'] },
+};
+
+test('navigation: only whitelisted routes are legal', () => {
+  checkExampleInput(NAV_TOOL, { routeKey: 'TODAY' });
+  assert.throws(() => checkExampleInput(NAV_TOOL, { routeKey: 'NOT_A_ROUTE' }), (e) => e.code === 'E_NAVIGATION_ROUTE');
+});
+
+test('navigation: params must match the route requirement exactly', () => {
+  checkExampleInput(NAV_TOOL, { routeKey: 'ROADMAP_NODE', params: { nodeId: 'n-1' } });
+  assert.throws(() => checkExampleInput(NAV_TOOL, { routeKey: 'ROADMAP_NODE', params: {} }), (e) => e.code === 'E_NAVIGATION_PARAMS');
+  assert.throws(() => checkExampleInput(NAV_TOOL, { routeKey: 'ROADMAP_NODE', params: { wrongKey: 'x' } }), (e) => e.code === 'E_NAVIGATION_PARAMS');
+  assert.throws(() => checkExampleInput(NAV_TOOL, { routeKey: 'TODAY', params: { nodeId: 'n-1' } }), (e) => e.code === 'E_NAVIGATION_PARAMS');
+});
+
+test('navigation: param values must satisfy the Java safe-identifier pattern', () => {
+  assert.throws(
+    () => checkExampleInput(NAV_TOOL, { routeKey: 'ROADMAP_NODE', params: { nodeId: 'bad value/../etc' } }),
+    (e) => e.code === 'E_NAVIGATION_SAFE_IDENTIFIER',
+  );
+});
+
+test('navigation: nested identity or credentials are rejected at any depth', () => {
+  assert.throws(
+    () => checkExampleInput(NAV_TOOL, { routeKey: 'TODAY', params: { ownerId: 'forged' } }),
+    (e) => e.code === 'E_OWNER_INJECTION',
+  );
+  assert.throws(
+    () => checkExampleInput(NAV_TOOL, { routeKey: 'TODAY', nested: { deep: { apiKey: 'x' } } }),
+    (e) => e.code === 'E_CREDENTIAL_INJECTION' || e.code === 'E_EXAMPLE_SCHEMA',
+  );
+});
+
+test('identity: a nested forged owner is rejected on a non-navigation tool too', () => {
+  assert.throws(
+    () => checkExampleInput({ name: 'x.y', inputProperties: { filter: 'object' }, inputRequired: [] }, { filter: { ownerId: 'forged' } }),
+    (e) => e.code === 'E_OWNER_INJECTION',
+  );
+});
+
+// --- R-D3: legal output instances -----------------------------------------
+
+const OUT_TOOL = { name: 'y.z', outputContainer: 'object', outputFields: ['a', 'b'], nullableTopLevel: false };
+
+test('output: accepts a contract-shaped instance and rejects undeclared fields', () => {
+  checkExampleOutput(OUT_TOOL, { a: '<shape-placeholder>', b: '<shape-placeholder>' }, 'shape_placeholder');
+  assert.throws(() => checkExampleOutput(OUT_TOOL, { unexpected: 'x' }, 'shape_placeholder'), (e) => e.code === 'E_OUTPUT_INSTANCE');
+});
+
+test('output: a shape fixture may not smuggle real values', () => {
+  assert.throws(() => checkExampleOutput(OUT_TOOL, { a: 0.99 }, 'shape_placeholder'), (e) => e.code === 'E_OUTPUT_INSTANCE');
+});
+
+test('output: container kind must match the registered contract', () => {
+  const arrayTool = { name: 'a.b', outputContainer: 'array', outputFields: ['k'], nullableTopLevel: false };
+  checkExampleOutput(arrayTool, [{ k: '<shape-placeholder>' }], 'shape_placeholder');
+  assert.throws(() => checkExampleOutput(arrayTool, { k: '<shape-placeholder>' }, 'shape_placeholder'), (e) => e.code === 'E_OUTPUT_INSTANCE');
+  assert.throws(() => checkExampleOutput(OUT_TOOL, [], 'shape_placeholder'), (e) => e.code === 'E_OUTPUT_INSTANCE');
+});
+
+test('output: only the nullable tool may return a null result', () => {
+  checkExampleOutput({ ...OUT_TOOL, nullableTopLevel: true }, null, 'shape_placeholder');
+  assert.throws(() => checkExampleOutput(OUT_TOOL, null, 'shape_placeholder'), (e) => e.code === 'E_OUTPUT_INSTANCE');
+});
+
+test('output: a contract-defect example must not claim any result', () => {
+  checkExampleOutput(OUT_TOOL, null, 'contract_defect');
+  assert.throws(() => checkExampleOutput(OUT_TOOL, { a: '<shape-placeholder>' }, 'contract_defect'), (e) => e.code === 'E_OUTPUT_INSTANCE');
+});
+
+test('examples: every shipped example declares outcome, fixture_kind and fixture_source', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  let ok = 0;
+  let rejected = 0;
+  let unavailable = 0;
+  for (const entry of doc.tools) {
+    for (const example of entry.examples) {
+      assert.ok(['ok', 'rejected', 'unavailable'].includes(example.outcome), `${entry.name}: outcome`);
+      assert.ok(['shape_placeholder', 'rejection', 'contract_defect'].includes(example.fixture_kind), `${entry.name}: fixture_kind`);
+      assert.equal(typeof example.fixture_source, 'string', `${entry.name}: fixture_source`);
+      assert.equal(typeof example.expect, 'string', `${entry.name}: expect`);
+      if (example.outcome === 'ok') { ok += 1; assert.ok(example.output, `${entry.name}: ok needs an output`); }
+      if (example.outcome === 'rejected') { rejected += 1; assert.ok(example.error, `${entry.name}: rejected needs an error`); }
+      if (example.outcome === 'unavailable') { unavailable += 1; assert.equal(example.output, null, `${entry.name}: unavailable needs a null output`); assert.ok(example.error, `${entry.name}: unavailable needs an error`); }
+    }
+  }
+  assert.ok(ok > 60, `expected many acceptable examples, got ${ok}`);
+  assert.ok(rejected >= 1, 'at least one deliberate rejection fixture');
+  assert.ok(
+    unavailable >= fixture.defectOverrides.items.length,
+    'every verified defect contributes at least one unavailable example',
+  );
 });

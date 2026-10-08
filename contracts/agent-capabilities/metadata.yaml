@@ -41,7 +41,7 @@ tools:
       notes: "本次调用只做 JVM 内校验与数据库读写，没有外部依赖。"
     exposure:
       state: pending
-      reason: "D3 已核实契约缺陷：AgentToolOutputSchemas.java#L132-L137 登记 HEALTH 共 12 个字段且闭合；AssistantHealthService.summarize L47 返回 AssistantHealthResponse，含 modelCalls/failedModelCalls/modelFailureRate/model*Tokens/unknownPriceCalls/usageEstimatedCost/currency/priceStatus/priceVersion 等约 29 个组件。AgentToolOutputValidator L83-L89 对未声明字段抛“存在未声明的输出字段” → 恒定失败。 在缺陷修复前不进入候选目录。"
+      reason: "D3 静态推导的契约缺陷（未运行 Java 复现）：（静态推导，未经运行期复现）AgentToolOutputSchemas.java#L132-L137 登记 HEALTH 共 12 个字段且闭合；AssistantHealthService.summarize L47 返回 AssistantHealthResponse，含 modelCalls/failedModelCalls/modelFailureRate/model*Tokens/unknownPriceCalls/usageEstimatedCost/currency/priceStatus/priceVersion 等约 29 个组件。AgentToolOutputValidator L83-L89 对未声明字段抛“存在未声明的输出字段” → 按代码路径推导必然失败。 在缺陷修复前不进入候选目录。"
     authoritative_facts:
       - fact: totalExecutions
         meaning: "How many assistant executions have been recorded for this caller in total."
@@ -55,6 +55,13 @@ tools:
       - name: "overall assistant health"
         input: {}
         expect: "The caller's aggregate health object; in the current baseline the call is rejected by output-contract validation instead (see error_contract)."
+        outcome: unavailable
+        fixture_kind: contract_defect
+        output: null
+        error:
+          code: D3
+          message: "AgentToolOutputSchemas.java#L132-L137 登记 HEALTH 共 12 个字段且闭合；AssistantHealthService.summarize L47 返回 AssistantHealthResponse，含 modelCalls/failedModelCalls/modelFailureRate/model*Tokens/unknownPriceCalls/usageEstimatedCost/currency/priceStatus/priceVersion 等约 29 个组件。AgentToolOutputValidator L83-L89 对未声明字段抛“存在未声明的输出字段” → 恒定失败。"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L44-L49
       handler: "AssistantHealthService.summarize — bean assistantHealthTool calls service.summarize with the caller identity injected by Java"
@@ -95,6 +102,18 @@ tools:
       - name: "full learning snapshot"
         input: {}
         expect: "Aggregate object with learning collections, roadmap (object or null), wrong-question summary, counts, workspaces and warnings."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          generatedAt: "<shape-placeholder>"
+          learning: "<shape-placeholder>"
+          roadmap: "<shape-placeholder>"
+          wrongQuestions: "<shape-placeholder>"
+          unreadNotificationCount: "<shape-placeholder>"
+          pendingConfirmationCount: "<shape-placeholder>"
+          workspaces: "<shape-placeholder>"
+          warnings: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L51-L57
       handler: "AgentLearningContextService.get — bean learningContextTool calls service.get with the caller identity injected by Java"
@@ -134,6 +153,15 @@ tools:
       - name: "all goals"
         input: {}
         expect: "Array of goal objects (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            title: "<shape-placeholder>"
+            targetDate: "<shape-placeholder>"
+            weeklyStudyHours: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L59-L64
       handler: "CreateLearningGoalService.list — bean learningGoalsTool maps service.list through LearningGoalResponse::from"
@@ -173,6 +201,17 @@ tools:
       - name: "all plans"
         input: {}
         expect: "Array of plan objects (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            goalId: "<shape-placeholder>"
+            title: "<shape-placeholder>"
+            startDate: "<shape-placeholder>"
+            endDate: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+            version: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L66-L71
       handler: "LearningPlanService.list — bean learningPlansTool maps service.list through LearningPlanResponse::from"
@@ -212,6 +251,17 @@ tools:
         input:
           planId: "<plan-id from learning.plans.list>"
         expect: "The plan object for that id, or a not-found error if it is not owned by the caller."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          goalId: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          startDate: "<shape-placeholder>"
+          endDate: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          version: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L73-L79
       handler: "LearningPlanService.requireOwnedPlan — bean learningPlanTool calls service.requireOwnedPlan with the caller identity and the planId argument, projected through LearningPlanResponse::from"
@@ -253,9 +303,41 @@ tools:
         input:
           date: "2026-03-01"
         expect: "Array of task objects scheduled for that date (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            planId: "<shape-placeholder>"
+            title: "<shape-placeholder>"
+            scheduledDate: "<shape-placeholder>"
+            estimatedMinutes: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+            version: "<shape-placeholder>"
+            completedAt: "<shape-placeholder>"
+            actualMinutes: "<shape-placeholder>"
+            taskKind: "<shape-placeholder>"
+            knowledgePoint: "<shape-placeholder>"
+            sourceAttemptId: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
       - name: "all tasks"
         input: {}
         expect: "Array of every task owned by the caller."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            planId: "<shape-placeholder>"
+            title: "<shape-placeholder>"
+            scheduledDate: "<shape-placeholder>"
+            estimatedMinutes: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+            version: "<shape-placeholder>"
+            completedAt: "<shape-placeholder>"
+            actualMinutes: "<shape-placeholder>"
+            taskKind: "<shape-placeholder>"
+            knowledgePoint: "<shape-placeholder>"
+            sourceAttemptId: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L81-L88
       handler: "LearningTaskService.list — bean learningTasksTool calls service.list with the injected caller identity and a date parsed from the optional date argument (null when absent)"
@@ -295,6 +377,17 @@ tools:
       - name: "current roadmap"
         input: {}
         expect: "Compact roadmap object, or null when the user has not enrolled."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          enrollmentId: "<shape-placeholder>"
+          roadmapCode: "<shape-placeholder>"
+          templateVersion: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          completedRequiredNodes: "<shape-placeholder>"
+          totalRequiredNodes: "<shape-placeholder>"
+          stages: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L90-L95
       handler: "RoadmapQueryService.currentMapIfPresent — bean roadmapCurrentTool maps the Optional through AgentRoadmapMapResponse::from, or else null"
@@ -335,6 +428,20 @@ tools:
         input:
           stageId: "<stage-id from roadmap.current.get>"
         expect: "Stage object with module summaries and full nodes, or not-found if the id is not in the enrolled template."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          code: "<shape-placeholder>"
+          order: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          description: "<shape-placeholder>"
+          graduationProjectTitle: "<shape-placeholder>"
+          completedRequiredNodes: "<shape-placeholder>"
+          totalRequiredNodes: "<shape-placeholder>"
+          modules: "<shape-placeholder>"
+          nodes: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L97-L103
       handler: "RoadmapQueryService.currentStage — bean roadmapStageTool calls service.currentStage with the injected caller identity and the stageId argument"
@@ -376,6 +483,21 @@ tools:
         input:
           moduleId: "<module-id from roadmap.stage.get>"
         expect: "Module object with counters, milestone node and node list."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          stageId: "<shape-placeholder>"
+          code: "<shape-placeholder>"
+          order: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          description: "<shape-placeholder>"
+          completedRequiredNodes: "<shape-placeholder>"
+          totalRequiredNodes: "<shape-placeholder>"
+          displayStatus: "<shape-placeholder>"
+          milestoneNode: "<shape-placeholder>"
+          nodes: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L105-L111
       handler: "RoadmapQueryService.currentModule — bean roadmapModuleTool calls service.currentModule with the injected caller identity and the moduleId argument"
@@ -416,6 +538,32 @@ tools:
         input:
           nodeId: "<node-id from roadmap.current.get>"
         expect: "Full node blueprint including objectives, prerequisites and status flags."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          code: "<shape-placeholder>"
+          order: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          objectives: "<shape-placeholder>"
+          highFrequency: "<shape-placeholder>"
+          commonMistakes: "<shape-placeholder>"
+          searchKeywords: "<shape-placeholder>"
+          estimatedMinutes: "<shape-placeholder>"
+          practiceMinutes: "<shape-placeholder>"
+          difficulty: "<shape-placeholder>"
+          required: "<shape-placeholder>"
+          prerequisiteCodes: "<shape-placeholder>"
+          availabilityStatus: "<shape-placeholder>"
+          learningStatus: "<shape-placeholder>"
+          checkInStatus: "<shape-placeholder>"
+          quizStatus: "<shape-placeholder>"
+          artifactStatus: "<shape-placeholder>"
+          completionStatus: "<shape-placeholder>"
+          diagnosticMastered: "<shape-placeholder>"
+          displayStatus: "<shape-placeholder>"
+          version: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L113-L119
       handler: "RoadmapQueryService.currentNode — bean roadmapNodeTool calls service.currentNode with the injected caller identity and the nodeId argument"
@@ -442,7 +590,7 @@ tools:
       notes: "本次调用只做 JVM 内校验与数据库读写，没有外部依赖。"
     exposure:
       state: pending
-      reason: "D1 已核实契约缺陷：AgentReadToolConfiguration.java#L123-L128 以 getOrCreate(ownerId, date, date) 调用，start==end；RoadmapScheduleService.validateWindow L317-L320 要求 end == start+6，故恒定抛 IllegalArgumentException(\"路线日程必须是包含首尾日期的连续七天\")。且 getOrCreate 为 @Transactional，成功路径会惰性创建/刷新排期行，不是纯只读。 在缺陷修复前不进入候选目录。"
+      reason: "D1 静态推导的契约缺陷（未运行 Java 复现）：（静态推导，未经运行期复现）AgentReadToolConfiguration.java#L123-L128 以 getOrCreate(ownerId, date, date) 调用，start==end；RoadmapScheduleService.validateWindow L317-L320 要求 end == start+6，故按代码路径推导必然抛 IllegalArgumentException(\"路线日程必须是包含首尾日期的连续七天\")。且 getOrCreate 为 @Transactional，成功路径会惰性创建/刷新排期行，不是纯只读。 在缺陷修复前不进入候选目录。"
     authoritative_facts:
       - fact: scheduleId
         meaning: "Identity of the caller's rolling schedule state."
@@ -457,6 +605,13 @@ tools:
         input:
           date: "2026-03-01"
         expect: "Schedule object for the window around that date; in the current baseline the call fails with the seven-day-window error described above."
+        outcome: unavailable
+        fixture_kind: contract_defect
+        output: null
+        error:
+          code: D1
+          message: "AgentReadToolConfiguration.java#L123-L128 以 getOrCreate(ownerId, date, date) 调用，start==end；RoadmapScheduleService.validateWindow L317-L320 要求 end == start+6，故恒定抛 IllegalArgumentException(\"路线日程必须是包含首尾日期的连续七天\")。且 getOrCreate 为 @Transactional，成功路径会惰性创建/刷新排期行，不是纯只读。"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L121-L129
       handler: "RoadmapScheduleService.getOrCreate — bean todayScheduleTool calls service.getOrCreate with the injected caller identity and the same parsed date as both window bounds"
@@ -497,6 +652,14 @@ tools:
           from: "2026-03-01"
           to: "2026-03-07"
         expect: "Array of unfinished items within that seven-day window (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - date: "<shape-placeholder>"
+            nodeId: "<shape-placeholder>"
+            title: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L131-L151
       handler: "RoadmapScheduleService.getOrCreate — bean unfinishedScheduleTool then applies an in-config stream filter that drops COMPLETED items"
@@ -538,6 +701,15 @@ tools:
         input:
           nodeId: "<node-id from roadmap.current.get>"
         expect: "Node quiz status object with quiz id, latest attempt id and generation detail."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          nodeId: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          quizId: "<shape-placeholder>"
+          latestAttemptId: "<shape-placeholder>"
+          generation: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L153-L161
       handler: "RoadmapLearningLoopService.quiz — bean nodeQuizStatusTool calls service.quiz with the injected caller identity and the nodeId argument"
@@ -579,6 +751,18 @@ tools:
         input:
           quizId: "<quiz-id from assessment.node_quiz_status.get>"
         expect: "Quiz object with a question list that contains no correct answers, explanations or rubric."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          materialId: "<shape-placeholder>"
+          taskId: "<shape-placeholder>"
+          lessonId: "<shape-placeholder>"
+          kind: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          modelName: "<shape-placeholder>"
+          questions: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L163-L172
       handler: "QuizService.get — bean quizTool calls service.get and projects the bundle through QuizResponse.from(quiz, questions)"
@@ -619,6 +803,17 @@ tools:
         input:
           attemptId: "<attempt-id from assessment.node_quiz_status.get>"
         expect: "Attempt object with score, per-question results and review progress."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          quizId: "<shape-placeholder>"
+          score: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          warning: "<shape-placeholder>"
+          results: "<shape-placeholder>"
+          reviewProgress: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L174-L180
       handler: "QuizService.getAttempt — bean quizAttemptTool calls service.getAttempt with the injected caller identity and the attemptId argument"
@@ -658,6 +853,18 @@ tools:
       - name: "all mastery records"
         input: {}
         expect: "Array of mastery records (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - knowledgePoint: "<shape-placeholder>"
+            score: "<shape-placeholder>"
+            quizScore: "<shape-placeholder>"
+            taskScore: "<shape-placeholder>"
+            selfAssessmentScore: "<shape-placeholder>"
+            evidenceCount: "<shape-placeholder>"
+            attemptCount: "<shape-placeholder>"
+            updatedAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L182-L187
       handler: "QuizService.listMastery — bean masteryTool maps service.listMastery through MasteryResponse::from"
@@ -696,6 +903,14 @@ tools:
       - name: "wrong-question overview"
         input: {}
         expect: "Summary object with counts, per-chapter list and current review (or null)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          activeCount: "<shape-placeholder>"
+          masteredCount: "<shape-placeholder>"
+          chapters: "<shape-placeholder>"
+          currentReview: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L189-L196
       handler: "WrongQuestionService.summary — bean wrongQuestionSummaryTool calls service.summary with the injected caller identity"
@@ -722,7 +937,7 @@ tools:
       notes: "本次调用只做 JVM 内校验与数据库读写，没有外部依赖。"
     exposure:
       state: pending
-      reason: "D2 已核实契约缺陷：AgentToolOutputSchemas.java#L379 登记为 array(WRONG_QUESTION)，但 WrongQuestionService.list L143 返回 WrongQuestionPageResponse{items,totalElements,page,size}（record 定义 L5-L10）。AgentToolRegistry.invoke L82 在调用边界强校验输出，数组期望与对象实际不一致 → 恒定失败。 在缺陷修复前不进入候选目录。"
+      reason: "D2 静态推导的契约缺陷（未运行 Java 复现）：（静态推导，未经运行期复现）AgentToolOutputSchemas.java#L379 登记为 array(WRONG_QUESTION)，但 WrongQuestionService.list L143 返回 WrongQuestionPageResponse{items,totalElements,page,size}（record 定义 L5-L10）。AgentToolRegistry.invoke L82 在调用边界强校验输出，数组期望与对象实际不一致 → 按代码路径推导必然失败。 在缺陷修复前不进入候选目录。"
     authoritative_facts:
       - fact: id
         meaning: "Identity of the wrong-question entry, used to track review progress."
@@ -739,11 +954,25 @@ tools:
           page: 0
           size: 20
         expect: "Page of wrong-question entries; in the current baseline the call is rejected by output-contract validation instead (see error_contract)."
+        outcome: unavailable
+        fixture_kind: contract_defect
+        output: null
+        error:
+          code: D2
+          message: "AgentToolOutputSchemas.java#L379 登记为 array(WRONG_QUESTION)，但 WrongQuestionService.list L143 返回 WrongQuestionPageResponse{items,totalElements,page,size}（record 定义 L5-L10）。AgentToolRegistry.invoke L82 在调用边界强校验输出，数组期望与对象实际不一致 → 恒定失败。"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java
       - name: "one chapter"
         input:
           chapterKey: "<chapterKey from assessment.wrong_questions.summary>"
           size: 10
         expect: "Wrong questions belonging to that chapter, up to ten per page."
+        outcome: unavailable
+        fixture_kind: contract_defect
+        output: null
+        error:
+          code: D2
+          message: "AgentToolOutputSchemas.java#L379 登记为 array(WRONG_QUESTION)，但 WrongQuestionService.list L143 返回 WrongQuestionPageResponse{items,totalElements,page,size}（record 定义 L5-L10）。AgentToolRegistry.invoke L82 在调用边界强校验输出，数组期望与对象实际不一致 → 恒定失败。"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L198-L212
       handler: "WrongQuestionService.list — bean wrongQuestionsTool calls service.list with the injected caller identity, status defaulting to ACTIVE, optional chapter key, page defaulting to 0 and size defaulting to 20"
@@ -783,6 +1012,26 @@ tools:
       - name: "all materials"
         input: {}
         expect: "Array of material metadata objects (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            title: "<shape-placeholder>"
+            materialType: "<shape-placeholder>"
+            category: "<shape-placeholder>"
+            privacyLevel: "<shape-placeholder>"
+            sourceUrl: "<shape-placeholder>"
+            originalFilename: "<shape-placeholder>"
+            mediaType: "<shape-placeholder>"
+            contentLength: "<shape-placeholder>"
+            processingStatus: "<shape-placeholder>"
+            summary: "<shape-placeholder>"
+            tags: "<shape-placeholder>"
+            knowledgePoints: "<shape-placeholder>"
+            processingWarnings: "<shape-placeholder>"
+            contentReference: "<shape-placeholder>"
+            failureReason: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L214-L219
       handler: "MaterialService.list — bean materialsTool maps service.list through MaterialResponse::from"
@@ -823,6 +1072,26 @@ tools:
         input:
           materialId: "<material-id from materials.list>"
         expect: "Material metadata object with summary, tags and processing outcome."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          materialType: "<shape-placeholder>"
+          category: "<shape-placeholder>"
+          privacyLevel: "<shape-placeholder>"
+          sourceUrl: "<shape-placeholder>"
+          originalFilename: "<shape-placeholder>"
+          mediaType: "<shape-placeholder>"
+          contentLength: "<shape-placeholder>"
+          processingStatus: "<shape-placeholder>"
+          summary: "<shape-placeholder>"
+          tags: "<shape-placeholder>"
+          knowledgePoints: "<shape-placeholder>"
+          processingWarnings: "<shape-placeholder>"
+          contentReference: "<shape-placeholder>"
+          failureReason: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L221-L227
       handler: "MaterialService.get — bean materialTool calls service.get with the injected caller identity and the materialId argument, projected through MaterialResponse::from"
@@ -862,6 +1131,17 @@ tools:
       - name: "all notifications"
         input: {}
         expect: "Array of notification objects, newest first (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            type: "<shape-placeholder>"
+            title: "<shape-placeholder>"
+            content: "<shape-placeholder>"
+            read: "<shape-placeholder>"
+            createdAt: "<shape-placeholder>"
+            readAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L229-L234
       handler: "NotificationService.list — bean notificationsTool maps service.list through NotificationResponse::from"
@@ -901,6 +1181,26 @@ tools:
       - name: "execution history"
         input: {}
         expect: "Array of execution records, newest first (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            idempotencyKey: "<shape-placeholder>"
+            executionType: "<shape-placeholder>"
+            triggerType: "<shape-placeholder>"
+            riskLevel: "<shape-placeholder>"
+            requiredScope: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+            summary: "<shape-placeholder>"
+            resultSummary: "<shape-placeholder>"
+            errorMessage: "<shape-placeholder>"
+            modelName: "<shape-placeholder>"
+            promptTokens: "<shape-placeholder>"
+            completionTokens: "<shape-placeholder>"
+            latencyMs: "<shape-placeholder>"
+            estimatedCost: "<shape-placeholder>"
+            createdAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L236-L241
       handler: "AgentGovernanceService.listExecutions — bean executionsTool maps service.listExecutions through AgentExecutionResponse::from"
@@ -940,6 +1240,16 @@ tools:
       - name: "audit trail"
         input: {}
         expect: "Array of audit entries, newest first (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            action: "<shape-placeholder>"
+            targetType: "<shape-placeholder>"
+            targetId: "<shape-placeholder>"
+            details: "<shape-placeholder>"
+            createdAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L243-L248
       handler: "AgentGovernanceService.listAuditLogs — bean auditLogsTool maps service.listAuditLogs through AuditLogResponse::from"
@@ -979,6 +1289,15 @@ tools:
       - name: "registered workspaces"
         input: {}
         expect: "Array of workspace records, oldest first (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            name: "<shape-placeholder>"
+            rootPath: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+            createdAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L250-L254
       handler: "RoadmapArtifactService.workspaces — bean workspacesTool calls service.workspaces with the injected caller identity"
@@ -1005,7 +1324,7 @@ tools:
       notes: "属主校验后即抛冲突，不调用模型、不写库；真实 AI Rubric 评审只在 REST 侧可用。"
     exposure:
       state: pending
-      reason: "D4 已核实契约缺陷：RoadmapArtifactService.evaluate L278-L283 在属主校验后无条件抛 ConflictException(\"真实 DeepSeek Rubric 评审尚未接入…\")，agent 路径无法返回结果，也不调用模型。真实 AI Rubric 在 REST 侧 ArtifactReviewService，Agent 工具触达不到。 在缺陷修复前不进入候选目录。"
+      reason: "D4 静态推导的契约缺陷（未运行 Java 复现）：（静态推导，未经运行期复现）RoadmapArtifactService.evaluate L278-L283 在属主校验后无条件抛 ConflictException(\"真实 DeepSeek Rubric 评审尚未接入…\")，agent 路径无法返回结果，也不调用模型。真实 AI Rubric 在 REST 侧 ArtifactReviewService，Agent 工具触达不到。 在缺陷修复前不进入候选目录。"
     authoritative_facts:
       - fact: status
         meaning: "The artifact's review state that a working evaluation would have to advance; unchanged today."
@@ -1020,6 +1339,13 @@ tools:
         input:
           artifactId: "<artifact-id from artifacts.list>"
         expect: "No data: the caller receives the conflict error stating that real rubric review is not wired in."
+        outcome: unavailable
+        fixture_kind: contract_defect
+        output: null
+        error:
+          code: D4
+          message: "RoadmapArtifactService.evaluate L278-L283 在属主校验后无条件抛 ConflictException(\"真实 DeepSeek Rubric 评审尚未接入…\")，agent 路径无法返回结果，也不调用模型。真实 AI Rubric 在 REST 侧 ArtifactReviewService，Agent 工具触达不到。"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L256-L262
       handler: "RoadmapArtifactService.evaluate — bean artifactEvaluateTool calls service.evaluate with the injected caller identity and the artifactId argument"
@@ -1060,6 +1386,27 @@ tools:
         input:
           artifactId: "<artifact-id from artifacts.list>"
         expect: "Artifact object with status, review history and any recorded scan/rubric outcome."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          workspaceId: "<shape-placeholder>"
+          relativePath: "<shape-placeholder>"
+          canonicalPath: "<shape-placeholder>"
+          description: "<shape-placeholder>"
+          testEvidence: "<shape-placeholder>"
+          evaluationMode: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          submissionVersion: "<shape-placeholder>"
+          roadmapNode: "<shape-placeholder>"
+          reviewHistory: "<shape-placeholder>"
+          rubricScore: "<shape-placeholder>"
+          rubricFeedback: "<shape-placeholder>"
+          sensitiveScanPassed: "<shape-placeholder>"
+          sensitiveFindings: "<shape-placeholder>"
+          acceptedAt: "<shape-placeholder>"
+          createdAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L264-L270
       handler: "RoadmapArtifactService.artifact — bean artifactTool calls service.artifact with the injected caller identity and the artifactId argument"
@@ -1099,6 +1446,27 @@ tools:
       - name: "all artifacts"
         input: {}
         expect: "Array of artifact records, newest first (possibly empty, or a truncation envelope if too large)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            workspaceId: "<shape-placeholder>"
+            relativePath: "<shape-placeholder>"
+            canonicalPath: "<shape-placeholder>"
+            description: "<shape-placeholder>"
+            testEvidence: "<shape-placeholder>"
+            evaluationMode: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+            submissionVersion: "<shape-placeholder>"
+            roadmapNode: "<shape-placeholder>"
+            reviewHistory: "<shape-placeholder>"
+            rubricScore: "<shape-placeholder>"
+            rubricFeedback: "<shape-placeholder>"
+            sensitiveScanPassed: "<shape-placeholder>"
+            sensitiveFindings: "<shape-placeholder>"
+            acceptedAt: "<shape-placeholder>"
+            createdAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L272-L276
       handler: "RoadmapArtifactService.artifacts — bean artifactsTool calls service.artifacts with the injected caller identity"
@@ -1138,6 +1506,15 @@ tools:
       - name: "current learning settings"
         input: {}
         expect: "Settings object, or a not-found error when the user never saved settings."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          timeZone: "<shape-placeholder>"
+          dailyStudyLimitMinutes: "<shape-placeholder>"
+          weekendPreference: "<shape-placeholder>"
+          defaultPrivacyLevel: "<shape-placeholder>"
+          weeklyAvailability: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L278-L282
       handler: "UserSettingsService.get — bean learningSettingsTool calls service.get with the injected caller identity, projected through UserSettingsResponse::from"
@@ -1179,6 +1556,19 @@ tools:
       - name: "AI credential status"
         input: {}
         expect: "Desensitized status object with provider/model names, per-provider configured flags and masked suffixes, and a warning when defaults are unverifiable."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          modelProvider: "<shape-placeholder>"
+          modelName: "<shape-placeholder>"
+          deepseek: "<shape-placeholder>"
+          tavily: "<shape-placeholder>"
+          deepseekConfigured: "<shape-placeholder>"
+          deepseekMaskedSuffix: "<shape-placeholder>"
+          tavilyConfigured: "<shape-placeholder>"
+          tavilyMaskedSuffix: "<shape-placeholder>"
+          warning: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L284-L288
       handler: "AiCredentialService.settings — bean aiSettingsStatusTool calls service.settings with the injected caller identity; internally uses DefaultCredentialStatusClient over HTTP and AiCredentialCipher to derive the masked suffix"
@@ -1214,6 +1604,12 @@ tools:
       - name: "automation switch"
         input: {}
         expect: "Object with paused and an updated timestamp (epoch when never configured)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          paused: "<shape-placeholder>"
+          updatedAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L290-L297
       handler: "AssistantAutomationService.settings — bean automationSettingsTool calls service.settings with the injected caller identity, projected through AutomationSettingsResponse::from"
@@ -1253,6 +1649,19 @@ tools:
       - name: "all automation rules"
         input: {}
         expect: "Array of rule records, newest first (possibly empty)."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          - id: "<shape-placeholder>"
+            type: "<shape-placeholder>"
+            status: "<shape-placeholder>"
+            timezone: "<shape-placeholder>"
+            localTime: "<shape-placeholder>"
+            riskLevel: "<shape-placeholder>"
+            requiredScope: "<shape-placeholder>"
+            createdAt: "<shape-placeholder>"
+            updatedAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L299-L306
       handler: "AssistantAutomationService.list — bean automationRulesTool maps service.list through AutomationRuleResponse::from"
@@ -1300,6 +1709,16 @@ tools:
           roadmapCode: backend-engineer
           templateVersion: 3
         expect: "An action awaiting confirmation with a null result; after the user confirms, an enrollment object with id, roadmapCode, templateVersion, title, status and enrolledAt."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          roadmapCode: "<shape-placeholder>"
+          templateVersion: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          enrolledAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L52-L63
       handler: "RoadmapEnrollmentService.enroll(the Java-injected caller identity, roadmapCode, templateVersion) via the GovernedFunctionalAgentToolHandler bean roadmapEnrollTool."
@@ -1343,6 +1762,21 @@ tools:
         input:
           upgradeId: upg-9f2c1a
         expect: "An action awaiting confirmation first; after confirmation an upgrade object with sourceVersion, targetVersion, status and the node and module delta lists."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          sourceVersion: "<shape-placeholder>"
+          targetVersion: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          unchangedNodeCodes: "<shape-placeholder>"
+          addedNodeCodes: "<shape-placeholder>"
+          removedNodeCodes: "<shape-placeholder>"
+          manualReviewNodeCodes: "<shape-placeholder>"
+          addedModuleCount: "<shape-placeholder>"
+          removedModuleCount: "<shape-placeholder>"
+          changedModuleCount: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L65-L73
       handler: "RoadmapUpgradeService.confirm(the Java-injected caller identity, upgradeId) via the GovernedFunctionalAgentToolHandler bean roadmapUpgradeTool."
@@ -1386,6 +1820,15 @@ tools:
           targetDate: "2026-01-31"
           weeklyStudyHours: 8
         expect: "Either an immediate goal object when a LEARNING_MANAGEMENT grant is active, or an action awaiting authorization; on success the goal has id, title, targetDate, weeklyStudyHours and status."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          targetDate: "<shape-placeholder>"
+          weeklyStudyHours: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L75-L95
       handler: "CreateLearningGoalService.create(the Java-injected caller identity, title, targetDate, weeklyStudyHours) wrapped by AgentToolRequestValidator.requireValid, via the GovernedFunctionalAgentToolHandler bean learningGoalCreateTool."
@@ -1432,6 +1875,17 @@ tools:
           startDate: "2026-01-05"
           endDate: "2026-01-18"
         expect: "A plan object with id, goalId, title, startDate, endDate, status and version, or an action awaiting authorization when no active PLAN_GENERATION grant exists."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          goalId: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          startDate: "<shape-placeholder>"
+          endDate: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          version: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L97-L112
       handler: "LearningPlanService.create(the Java-injected caller identity, validated CreateLearningPlanRequest) via the GovernedFunctionalAgentToolHandler bean learningPlanCreateTool."
@@ -1474,6 +1928,15 @@ tools:
           from: "2026-01-05"
           to: "2026-01-11"
         expect: "A schedule object with scheduleId, timeZone, dailyCapacityMinutes, weekendsEnabled and the day list, or an action awaiting authorization when the grant is missing."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          scheduleId: "<shape-placeholder>"
+          timeZone: "<shape-placeholder>"
+          dailyCapacityMinutes: "<shape-placeholder>"
+          weekendsEnabled: "<shape-placeholder>"
+          days: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L114-L123
       handler: "RoadmapScheduleService.refresh(the Java-injected caller identity, LocalDate from, LocalDate to) via the GovernedFunctionalAgentToolHandler bean scheduleRefreshTool."
@@ -1522,6 +1985,22 @@ tools:
           status: COMPLETED
           actualMinutes: 45
         expect: "An action awaiting confirmation first; after confirmation a task object whose status is COMPLETED, whose version is incremented and whose actualMinutes is recorded."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          planId: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          scheduledDate: "<shape-placeholder>"
+          estimatedMinutes: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          version: "<shape-placeholder>"
+          completedAt: "<shape-placeholder>"
+          actualMinutes: "<shape-placeholder>"
+          taskKind: "<shape-placeholder>"
+          knowledgePoint: "<shape-placeholder>"
+          sourceAttemptId: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L125-L143
       handler: "LearningTaskService.changeStatusIdempotently(taskId, validated InternalChangeTaskStatusRequest) via the GovernedFunctionalAgentToolHandler bean taskStatusWriteTool."
@@ -1564,6 +2043,15 @@ tools:
         input:
           chapterKey: ch-transactions
         expect: "A wrong-review object with id, quizId, status, questionCount and remainingCount, or an action awaiting authorization without an active QUIZ_GENERATION grant."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          quizId: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          questionCount: "<shape-placeholder>"
+          remainingCount: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L145-L158
       handler: "WrongQuestionReviewService.create(the Java-injected caller identity, validated CreateWrongQuestionReviewRequest) via the GovernedFunctionalAgentToolHandler bean wrongQuestionReviewWriteTool."
@@ -1605,6 +2093,15 @@ tools:
         input:
           nodeId: node-spring-tx
         expect: "A node-quiz object with nodeId, status and the nested generation job fields, or an action awaiting authorization."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          nodeId: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          quizId: "<shape-placeholder>"
+          latestAttemptId: "<shape-placeholder>"
+          generation: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L160-L173
       handler: "RoadmapLearningLoopService.retryQuiz(the Java-injected caller identity, nodeId, validated RetryRoadmapQuizRequest) via the GovernedFunctionalAgentToolHandler bean roadmapQuizRetryWriteTool."
@@ -1646,6 +2143,15 @@ tools:
         input:
           nodeId: node-spring-tx
         expect: "A node-quiz object with nodeId, status, quizId or latestAttemptId and the nested generation record, or an action awaiting authorization. Behaviour is currently identical to assessment.node_quiz.retry."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          nodeId: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          quizId: "<shape-placeholder>"
+          latestAttemptId: "<shape-placeholder>"
+          generation: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L175-L188
       handler: "RoadmapLearningLoopService.retryQuiz(the Java-injected caller identity, nodeId, validated RetryRoadmapQuizRequest) via the GovernedFunctionalAgentToolHandler bean roadmapQuizGenerateWriteTool."
@@ -1687,6 +2193,17 @@ tools:
         input:
           notificationId: ntf-10231
         expect: "A notification object with read true and readAt set, or an action awaiting authorization."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          type: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          content: "<shape-placeholder>"
+          read: "<shape-placeholder>"
+          createdAt: "<shape-placeholder>"
+          readAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L190-L201
       handler: "NotificationService.markRead(the Java-injected caller identity, notificationId) via the GovernedFunctionalAgentToolHandler bean notificationMarkReadTool."
@@ -1728,6 +2245,15 @@ tools:
         input:
           dailyStudyLimitMinutes: 90
         expect: "An action awaiting confirmation first; after confirmation a settings object whose dailyStudyLimitMinutes is 90 and whose other fields are unchanged."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          timeZone: "<shape-placeholder>"
+          dailyStudyLimitMinutes: "<shape-placeholder>"
+          weekendPreference: "<shape-placeholder>"
+          defaultPrivacyLevel: "<shape-placeholder>"
+          weeklyAvailability: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L203-L227
       handler: "UserSettingsService.get then UserSettingsService.save(the Java-injected caller identity, validated UpdateUserSettingsRequest) via the GovernedFunctionalAgentToolHandler bean learningSettingsUpdateTool."
@@ -1769,6 +2295,15 @@ tools:
           name: studypilot-backend
           rootPath: "/Users/owner/projects/studypilot/backend"
         expect: "An action awaiting confirmation first; after confirmation a workspace object with id, name, rootPath, status and createdAt."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          name: "<shape-placeholder>"
+          rootPath: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          createdAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L229-L241
       handler: "RoadmapArtifactService.createWorkspace(the Java-injected caller identity, validated CreateProjectWorkspaceRequest) via the GovernedFunctionalAgentToolHandler bean workspaceRegisterTool."
@@ -1819,6 +2354,27 @@ tools:
           description: "事务传播实验与结论"
           testEvidence: "mvn test 通过，共 12 项，已复核日志"
         expect: "An action awaiting confirmation first; after confirmation an artifact object with status SUBMITTED, submissionVersion, sensitiveScanPassed and null acceptedAt."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          workspaceId: "<shape-placeholder>"
+          relativePath: "<shape-placeholder>"
+          canonicalPath: "<shape-placeholder>"
+          description: "<shape-placeholder>"
+          testEvidence: "<shape-placeholder>"
+          evaluationMode: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          submissionVersion: "<shape-placeholder>"
+          roadmapNode: "<shape-placeholder>"
+          reviewHistory: "<shape-placeholder>"
+          rubricScore: "<shape-placeholder>"
+          rubricFeedback: "<shape-placeholder>"
+          sensitiveScanPassed: "<shape-placeholder>"
+          sensitiveFindings: "<shape-placeholder>"
+          acceptedAt: "<shape-placeholder>"
+          createdAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L243-L264
       handler: "RoadmapArtifactService.submit(the Java-injected caller identity, validated CreateRoadmapArtifactRequest) via the GovernedFunctionalAgentToolHandler bean artifactSubmitTool."
@@ -1865,6 +2421,26 @@ tools:
           category: SYLLABUS
           privacyLevel: NORMAL
         expect: "A material object with id, materialType TEXT, processingStatus PROCESSING and empty extraction fields, or an action awaiting authorization."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          materialType: "<shape-placeholder>"
+          category: "<shape-placeholder>"
+          privacyLevel: "<shape-placeholder>"
+          sourceUrl: "<shape-placeholder>"
+          originalFilename: "<shape-placeholder>"
+          mediaType: "<shape-placeholder>"
+          contentLength: "<shape-placeholder>"
+          processingStatus: "<shape-placeholder>"
+          summary: "<shape-placeholder>"
+          tags: "<shape-placeholder>"
+          knowledgePoints: "<shape-placeholder>"
+          processingWarnings: "<shape-placeholder>"
+          contentReference: "<shape-placeholder>"
+          failureReason: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L266-L281
       handler: "MaterialService.createText(the Java-injected caller identity, validated CreateTextMaterialRequest) via the GovernedFunctionalAgentToolHandler bean textMaterialImportWriteTool."
@@ -1911,6 +2487,26 @@ tools:
           category: REFERENCE
           privacyLevel: NORMAL
         expect: "A material object with id, sourceUrl, materialType WEB_PAGE and processingStatus PROCESSING, or an action awaiting authorization."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          id: "<shape-placeholder>"
+          title: "<shape-placeholder>"
+          materialType: "<shape-placeholder>"
+          category: "<shape-placeholder>"
+          privacyLevel: "<shape-placeholder>"
+          sourceUrl: "<shape-placeholder>"
+          originalFilename: "<shape-placeholder>"
+          mediaType: "<shape-placeholder>"
+          contentLength: "<shape-placeholder>"
+          processingStatus: "<shape-placeholder>"
+          summary: "<shape-placeholder>"
+          tags: "<shape-placeholder>"
+          knowledgePoints: "<shape-placeholder>"
+          processingWarnings: "<shape-placeholder>"
+          contentReference: "<shape-placeholder>"
+          failureReason: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L283-L298
       handler: "MaterialService.createWeb(the Java-injected caller identity, validated CreateWebMaterialRequest) via the GovernedFunctionalAgentToolHandler bean webMaterialImportWriteTool."
@@ -1959,6 +2555,22 @@ tools:
           workspaceId: ws-1f2a
           templateType: MAVEN_TEST
         expect: "Without an active RUNNER_MANAGEMENT grant an action awaiting authorization; with a grant an immediate runner result with status, exitCode, commandTokens, success and stdout or stderr summaries."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          executionId: "<shape-placeholder>"
+          governanceExecutionId: "<shape-placeholder>"
+          workspaceId: "<shape-placeholder>"
+          templateType: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          exitCode: "<shape-placeholder>"
+          commandTokens: "<shape-placeholder>"
+          stdoutSummary: "<shape-placeholder>"
+          stderrSummary: "<shape-placeholder>"
+          success: "<shape-placeholder>"
+          durationMillis: "<shape-placeholder>"
+          executedAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L301-L322
       handler: "RunnerGovernanceService.submitExecution(the Java-injected caller identity, RunnerExecutionRequest) wrapped by requireRunnerSuccess and runnerIdempotencyKey, via the GovernedFunctionalAgentToolHandler bean runnerCheckRunTool."
@@ -2003,6 +2615,22 @@ tools:
           workspaceId: ws-1f2a
           templateType: PREPARE_DEPENDENCIES
         expect: "An action awaiting confirmation first; after the user confirms, a runner result with status, exitCode, commandTokens and success."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          executionId: "<shape-placeholder>"
+          governanceExecutionId: "<shape-placeholder>"
+          workspaceId: "<shape-placeholder>"
+          templateType: "<shape-placeholder>"
+          status: "<shape-placeholder>"
+          exitCode: "<shape-placeholder>"
+          commandTokens: "<shape-placeholder>"
+          stdoutSummary: "<shape-placeholder>"
+          stderrSummary: "<shape-placeholder>"
+          success: "<shape-placeholder>"
+          durationMillis: "<shape-placeholder>"
+          executedAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L324-L345
       handler: "RunnerGovernanceService.submitExecution(the Java-injected caller identity, RunnerExecutionRequest) wrapped by requireRunnerSuccess, via the GovernedFunctionalAgentToolHandler bean runnerDependenciesPrepareTool."
@@ -2051,6 +2679,19 @@ tools:
           expectedSha256: "3f1c9b2d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef"
           explanation: "修正事务传播说明"
         expect: "An action awaiting confirmation first; after confirmation a patch preview shaped result with safeToApply true, conflict false and the resultSha256 of the written file."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          targetFile: "<shape-placeholder>"
+          unifiedDiff: "<shape-placeholder>"
+          expectedSha256: "<shape-placeholder>"
+          resultSha256: "<shape-placeholder>"
+          conflict: "<shape-placeholder>"
+          conflictReason: "<shape-placeholder>"
+          affectedLines: "<shape-placeholder>"
+          safeToApply: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L370-L386
       handler: "WorkspaceDeveloperService.validatePatchRequest as preflight, then WorkspaceDeveloperService.applyConfirmedPatch on confirmation, via the GovernedFunctionalAgentToolHandler bean developerPatchApplyTool."
@@ -2099,6 +2740,15 @@ tools:
           expectedHead: "9a1c4e2b3d5f60718293a4b5c6d7e8f901234567"
           changeFingerprint: b7d3f1c9a2e4...
         expect: "An action awaiting confirmation first; after confirmation a commit result with commitId, message, paths and committedAt."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          commitId: "<shape-placeholder>"
+          message: "<shape-placeholder>"
+          paths: "<shape-placeholder>"
+          committedAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L388-L403
       handler: "WorkspaceDeveloperService.validateGitCommit as preflight, then WorkspaceDeveloperService.commitConfirmed on confirmation, via the GovernedFunctionalAgentToolHandler bean developerGitCommitTool."
@@ -2149,6 +2799,15 @@ tools:
           expectedRemoteRefCommit: "7b2d4c1f90ae..."
           timeoutSeconds: 30
         expect: "An action awaiting confirmation first; after confirmation a push result with pushedCommit, remoteName, branch and pushedAt."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          remoteName: "<shape-placeholder>"
+          branch: "<shape-placeholder>"
+          pushedCommit: "<shape-placeholder>"
+          pushedAt: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L405-L423
       handler: "WorkspaceDeveloperService.validateGitPush as preflight, then WorkspaceDeveloperService.pushConfirmed on confirmation, via the GovernedFunctionalAgentToolHandler bean developerGitPushTool."
@@ -2198,6 +2857,20 @@ tools:
           actionKey: OPEN_STUDYPILOT_ROUTE
           targetKey: ASSISTANT
         expect: "An action awaiting confirmation first; after confirmation a local interface execution result with channel, actionKey, targetKey, localAdapterInvoked true and receiptStatus, or a deterministic local adapter error when the adapter fails."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          channel: "<shape-placeholder>"
+          actionKey: "<shape-placeholder>"
+          targetKey: "<shape-placeholder>"
+          localAdapterInvoked: "<shape-placeholder>"
+          adapter: "<shape-placeholder>"
+          targetDigest: "<shape-placeholder>"
+          receiptStatus: "<shape-placeholder>"
+          startedAt: "<shape-placeholder>"
+          finishedAt: "<shape-placeholder>"
+          message: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
       - name: "business API preferred"
         input:
           businessApiAvailable: true
@@ -2205,10 +2878,27 @@ tools:
           actionKey: OPEN_STUDYPILOT_ROUTE
           targetKey: ASSISTANT
         expect: "A result with localAdapterInvoked false because the policy returned the BUSINESS_API decision and no local adapter was invoked."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          channel: "<shape-placeholder>"
+          actionKey: "<shape-placeholder>"
+          targetKey: "<shape-placeholder>"
+          localAdapterInvoked: "<shape-placeholder>"
+          adapter: "<shape-placeholder>"
+          targetDigest: "<shape-placeholder>"
+          receiptStatus: "<shape-placeholder>"
+          startedAt: "<shape-placeholder>"
+          finishedAt: "<shape-placeholder>"
+          message: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L445-L473
-      handler: "LocalInterfaceFallbackService.validate as preflight, then LocalInterfaceFallbackService.execute on confirmation, which uses InterfaceFallbackPolicy.preview and LocalAutomationClient.invoke, via the GovernedFunctionalAgentToolHandler bean developerInterfaceFallbackExecuteTool."
+      handler: "LocalInterfaceFallbackService.validate as preflight, then LocalInterfaceFallbackService.execute on confirmation; those two are the direct binding to this tool, and they in turn use InterfaceFallbackPolicy.preview and LocalAutomationClient.invoke (declared as unverified deeper collaborators), via the GovernedFunctionalAgentToolHandler bean developerInterfaceFallbackExecuteTool."
       output_schema: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+      unverified_symbols:
+        - InterfaceFallbackPolicy.preview
+        - LocalAutomationClient.invoke
   - name: navigation.resolve
     description: "Resolves one of the 28 Java-whitelisted Vue routeKeys plus exactly its required safe-identifier params into a deterministic navigation target. It performs no write and reads no business data."
     when_to_use:
@@ -2243,16 +2933,35 @@ tools:
         input:
           routeKey: TODAY
         expect: "A navigation target with routeKey TODAY and an empty params map."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          routeKey: "<shape-placeholder>"
+          params: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
       - name: "open a roadmap node"
         input:
           routeKey: ROADMAP_NODE
           params:
             nodeId: node-spring-tx
         expect: "A navigation target with routeKey ROADMAP_NODE and params containing nodeId set to node-spring-tx."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          routeKey: "<shape-placeholder>"
+          params: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
       - name: "reject an unknown route"
         input:
           routeKey: ADMIN_CONSOLE
         expect: "An invalid-argument error naming the unregistered front-end route, and no navigation target is returned."
+        outcome: rejected
+        fixture_kind: rejection
+        output: null
+        error:
+          code: E_NAVIGATION_ROUTE
+          message: "NavigationToolHandler.invoke throws IllegalArgumentException(\"未注册的前端路由: \" + routeKey)"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/NavigationToolHandler.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/NavigationToolHandler.java#L11-L56
       handler: "NavigationToolHandler.invoke, which uses the in-place ROUTES table and the SAFE_IDENTIFIER regex and returns NavigationTarget."
@@ -2300,6 +3009,22 @@ tools:
           templateType: MAVEN_TEST
           idempotencyKey: run-2026-01-05-1
         expect: "A runner preview object with workspaceId, workspaceName, templateType, commandTokens, renderedCommand, confirmationRequired, riskLevel, timeoutSeconds and workingDirectory."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          workspaceName: "<shape-placeholder>"
+          workspacePath: "<shape-placeholder>"
+          templateType: "<shape-placeholder>"
+          templateDescription: "<shape-placeholder>"
+          riskLevel: "<shape-placeholder>"
+          commandTokens: "<shape-placeholder>"
+          renderedCommand: "<shape-placeholder>"
+          timeoutSeconds: "<shape-placeholder>"
+          confirmationRequired: "<shape-placeholder>"
+          explanation: "<shape-placeholder>"
+          workingDirectory: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L309-L328
       handler: "RunnerGovernanceService.preview(the Java-injected caller identity, RunnerExecutionRequest) via the FunctionalAgentToolHandler bean runnerExecutionPreviewTool."
@@ -2339,6 +3064,13 @@ tools:
         input:
           workspaceId: ws-1f2a
         expect: "A file tree object with workspaceId, rootPath and a bounded entries array."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          rootPath: "<shape-placeholder>"
+          entries: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L329-L338
       handler: "WorkspaceDeveloperService.getFileTree(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerFileTreeTool."
@@ -2381,6 +3113,15 @@ tools:
           workspaceId: ws-1f2a
           path: src/main/java/demo/TxDemo.java
         expect: "A file read object with workspaceId, relativePath, content, sizeBytes and truncated."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          relativePath: "<shape-placeholder>"
+          content: "<shape-placeholder>"
+          sizeBytes: "<shape-placeholder>"
+          truncated: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L340-L351
       handler: "WorkspaceDeveloperService.readFile(the Java-injected caller identity, workspaceId, path) via the FunctionalAgentToolHandler bean developerFileReadTool."
@@ -2421,6 +3162,13 @@ tools:
           workspaceId: ws-1f2a
           q: changeStatusIdempotently
         expect: "A code search object with workspaceId, query and a bounded matches array of relativePath, lineNumber and lineContent."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          query: "<shape-placeholder>"
+          matches: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L353-L364
       handler: "WorkspaceDeveloperService.searchCode(the Java-injected caller identity, workspaceId, q) via the FunctionalAgentToolHandler bean developerCodeSearchTool."
@@ -2465,6 +3213,17 @@ tools:
         input:
           workspaceId: ws-1f2a
         expect: "A Git status object with gitRepository, branch, currentCommit, clean and the modified and untracked lists."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          gitRepository: "<shape-placeholder>"
+          branch: "<shape-placeholder>"
+          currentCommit: "<shape-placeholder>"
+          clean: "<shape-placeholder>"
+          modifiedFiles: "<shape-placeholder>"
+          untrackedFiles: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L366-L375
       handler: "WorkspaceDeveloperService.getGitStatus(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitStatusTool."
@@ -2503,6 +3262,13 @@ tools:
         input:
           workspaceId: ws-1f2a
         expect: "A Git text object with workspaceId, content and truncated."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          content: "<shape-placeholder>"
+          truncated: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L377-L386
       handler: "WorkspaceDeveloperService.getGitDiff(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitDiffTool."
@@ -2542,10 +3308,24 @@ tools:
           workspaceId: ws-1f2a
           limit: 10
         expect: "A Git text object with workspaceId, content and truncated."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          content: "<shape-placeholder>"
+          truncated: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
       - name: "default log"
         input:
           workspaceId: ws-1f2a
         expect: "A Git text object using the service default limit of 20 entries worth of log text."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          content: "<shape-placeholder>"
+          truncated: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L388-L398
       handler: "WorkspaceDeveloperService.getGitLog(the Java-injected caller identity, workspaceId, limit) via the FunctionalAgentToolHandler bean developerGitLogTool."
@@ -2593,6 +3373,19 @@ tools:
           targetFile: src/main/java/demo/TxDemo.java
           diff: "@@ -1,1 +1,1 @@\n-old\n+new\n"
         expect: "A patch preview object with expectedSha256, resultSha256, conflict, conflictReason, affectedLines and safeToApply."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          targetFile: "<shape-placeholder>"
+          unifiedDiff: "<shape-placeholder>"
+          expectedSha256: "<shape-placeholder>"
+          resultSha256: "<shape-placeholder>"
+          conflict: "<shape-placeholder>"
+          conflictReason: "<shape-placeholder>"
+          affectedLines: "<shape-placeholder>"
+          safeToApply: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L400-L411
       handler: "WorkspaceDeveloperService.previewPatch(the Java-injected caller identity, workspaceId, targetFile, diff) via the FunctionalAgentToolHandler bean developerPatchPreviewTool."
@@ -2635,6 +3428,17 @@ tools:
           changedFiles:
             - src/main/java/demo/TxDemo.java
         expect: "A test recommendation object with workspaceId, templates, executions, requiresDependencyPreparation and reasons."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          templates: "<shape-placeholder>"
+          executions: "<shape-placeholder>"
+          templateType: "<shape-placeholder>"
+          workingDirectory: "<shape-placeholder>"
+          requiresDependencyPreparation: "<shape-placeholder>"
+          reasons: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L413-L424
       handler: "WorkspaceDeveloperService.recommendTests(the Java-injected caller identity, workspaceId, changedFiles) via the FunctionalAgentToolHandler bean developerTestsRecommendTool."
@@ -2681,6 +3485,16 @@ tools:
             - src/main/java/demo/TxDemo.java
           message: "fix: correct transaction propagation demo"
         expect: "A commit preview object with workspaceId, branch, expectedHead, changeFingerprint, paths and message."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          branch: "<shape-placeholder>"
+          expectedHead: "<shape-placeholder>"
+          changeFingerprint: "<shape-placeholder>"
+          paths: "<shape-placeholder>"
+          message: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L426-L437
       handler: "WorkspaceDeveloperService.previewGitCommit(the Java-injected caller identity, workspaceId, paths, message) via the FunctionalAgentToolHandler bean developerGitCommitPreviewTool."
@@ -2725,6 +3539,19 @@ tools:
         input:
           workspaceId: ws-1f2a
         expect: "A push preview object with remoteName, remoteUrlDigest, branch, expectedHead, expectedRemoteRef, expectedRemoteRefCommit, aheadCount and timeoutSeconds."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          workspaceId: "<shape-placeholder>"
+          remoteName: "<shape-placeholder>"
+          remoteUrlDigest: "<shape-placeholder>"
+          branch: "<shape-placeholder>"
+          expectedHead: "<shape-placeholder>"
+          expectedRemoteRef: "<shape-placeholder>"
+          expectedRemoteRefCommit: "<shape-placeholder>"
+          aheadCount: "<shape-placeholder>"
+          timeoutSeconds: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L439-L448
       handler: "WorkspaceDeveloperService.previewGitPush(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitPushPreviewTool."
@@ -2771,6 +3598,15 @@ tools:
           actionKey: OPEN_STUDYPILOT_ROUTE
           targetKey: ASSISTANT
         expect: "An interface fallback decision with fallbackRequired true and the policy reason."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          channel: "<shape-placeholder>"
+          actionKey: "<shape-placeholder>"
+          targetKey: "<shape-placeholder>"
+          fallbackRequired: "<shape-placeholder>"
+          reason: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
       - name: "business API available"
         input:
           businessApiAvailable: true
@@ -2778,6 +3614,15 @@ tools:
           actionKey: OPEN_STUDYPILOT_ROUTE
           targetKey: ASSISTANT
         expect: "A decision with channel BUSINESS_API, fallbackRequired false and the reason that a deterministic business API exists."
+        outcome: ok
+        fixture_kind: shape_placeholder
+        output:
+          channel: "<shape-placeholder>"
+          actionKey: "<shape-placeholder>"
+          targetKey: "<shape-placeholder>"
+          fallbackRequired: "<shape-placeholder>"
+          reason: "<shape-placeholder>"
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L450-L463
       handler: "InterfaceFallbackPolicy.preview(businessApiAvailable, channel, actionKey, targetKey) via the FunctionalAgentToolHandler bean developerInterfaceFallbackPreviewTool."

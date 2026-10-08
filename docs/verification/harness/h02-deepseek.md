@@ -104,39 +104,83 @@ else                        -> PENDING                （立即执行）
 
 ---
 
-## 3. 已核实基线缺陷（本端独立复现，非转述）
+## 3. 基线契约缺陷 D1–D4（静态源码推导，未运行 Java 行为复现）
 
-以下 4 项由本端直接读真实 handler 与校验代码确认。它们不是"元数据写错"，而是**已注册工具当前无法满足其声明契约**，因此不满足 `allowed` 所需的"实现条件"，按 `pending` 暴露并写明真实原因。
+**证据层级声明**：以下 4 项是本端**静态阅读真实 handler 与校验代码后推导**的结论，**没有**运行 Java 测试、启动后端、访问数据库或调用模型。因此措辞一律是"按代码路径推导必然走到该异常/校验失败"，而**不是**"实测失败""恒定失败"或"已运行复现"。缺陷判定与 `pending` 处理是保守的；真正的行为复现应由 Java Owner 执行，业务修复另行授权。首轮验收正是要求此处措辞准确，本轮已改正。
 
-### D1 `schedule.today.get` — 恒定失败，且非纯只读
+以下 4 项不是"元数据写错"，而是**已注册工具按其声明契约当前无法成功**，因此不满足 `allowed` 所需的"实现条件"，按 `pending` 暴露并写明推导依据。
+
+### D1 `schedule.today.get` — 推导必然失败，且非纯只读
 
 - `AgentReadToolConfiguration.java:123-128` 以 `service.getOrCreate(context.ownerId(), LocalDate.parse(text(arguments,"date")), date)` 调用，即 **start == end**。
 - `RoadmapScheduleService.validateWindow`（`:317-320`）要求 `end.equals(start.plusDays(6))`，否则抛 `IllegalArgumentException("路线日程必须是包含首尾日期的连续七天")`。
-- 故该工具经注册表调用**必然失败**；且 `getOrCreate` 为 `@Transactional`，成功路径会惰性创建/刷新排期行（`:84` 调 `refresh`），与 `effect=READ` 的"无副作用"描述不符。
+- 故该工具经注册表调用时**按代码路径推导必然抛错**；且 `getOrCreate` 为 `@Transactional`，成功路径会惰性创建/刷新排期行（`:84` 调 `refresh`），与 `effect=READ` 的"无副作用"描述不符。
 - 影响：矩阵 §2 把它列为 `dashboard`/`today` 的读取工具。
 
 ### D2 `assessment.wrong_questions.list` — 输出契约类型不符
 
 - `AgentToolOutputSchemas.java:379` 登记为 `array(WRONG_QUESTION)`；
 - `WrongQuestionService.list`（`:143`）返回 `WrongQuestionPageResponse{items,totalElements,page,size}`（record 定义 `assessment/api/WrongQuestionPageResponse.java:5-10`）；
-- `AgentToolRegistry.invoke`（`:82`）在调用边界强校验输出 → 期望数组、实际对象，**必然失败**。
+- `AgentToolRegistry.invoke`（`:82`）在调用边界强校验输出 → 期望数组、实际对象，**按代码路径推导必然在调用边界失败**。
 - 现有 `AgentToolCapabilityBehaviorTest` 只覆盖了 `wrong_questions.summary`，未覆盖本工具（故测试未暴露）。
 
 ### D3 `governance.health.get` — 输出字段超出闭合契约
 
 - `AgentToolOutputSchemas.java:132-137` 登记 `HEALTH` 共 12 个字段且闭合；
 - `AssistantHealthService.summarize`（`agent/application/AssistantHealthService.java:47`）返回 `AssistantHealthResponse`，含 `modelCalls`、`failedModelCalls`、`modelFailureRate`、`modelPromptTokens`、`modelCachedPromptTokens`、`modelUncachedPromptTokens`、`modelCompletionTokens`、`modelReasoningTokens`、`modelTotalTokens`、`unknownPriceCalls`、`usageEstimatedCost`、`currency`、`priceStatus`、`priceVersion` 等约 29 个组件；
-- `AgentToolOutputValidator`（`:83-89`）在 `additionalProperties:false` 下抛"存在未声明的输出字段" → **必然失败**。
+- `AgentToolOutputValidator`（`:83-89`）在 `additionalProperties:false` 下抛"存在未声明的输出字段" → **按代码路径推导必然在调用边界失败**。
 
-### D4 `artifacts.evaluate` — 恒定抛冲突，Agent 路径未接入
+### D4 `artifacts.evaluate` — 推导必然抛冲突，Agent 路径未接入
 
 - `RoadmapArtifactService.evaluate`（`:278-283`）在属主校验后**无条件**抛 `ConflictException("真实 DeepSeek Rubric 评审尚未接入，不能根据用户填写的测试文字生成验收分数")`；
 - 真实 AI Rubric 评审在 REST 侧 `ArtifactReviewService`，Agent 工具触达不到；
-- 故该工具无法返回结果，也不调用模型（`cost_hint.local: true`）。
+- 故按代码路径推导该工具无法返回结果，也不调用模型（`cost_hint.local: true`，静态推导）。
 
 > 这三类缺陷（D1/D2/D3）恰好说明 shared §5 的告警是对的：**能力矩阵与静态字符串不能当作 handler 已实现的证明**。修复归 Java Owner；本端只登记事实、证据与暴露状态，未改任何业务代码。
 
 ---
+
+## 3.1 第二轮整改（R-D1 / R-D2 / R-D3）
+
+首轮 Codex 独立内存变异发现 6 个漏项，本轮逐条闭环。整改只动本端 Owner 文件，未改生产 Java、公共 Schema、编译器、他端文件或 H01 冻结契约。
+
+### R-D1 真实执行绑定（原先只检类是否存在）
+
+`source_provenance.handler` 现在必须满足**执行绑定**校验：
+
+1. 提取器为每个工具抽取其**真实登记上下文**的符号集（包含该工具注册所在 bean 方法的完整方法体）：`boundClasses` / `boundMethods`，并把注入的**类型名**（而非参数变量名）记入 `handlerServices`。
+2. handler 中的每一个 `Class.method` 必须要么**出现在本工具的注册上下文中**（真实绑定），要么被显式列进 `source_provenance.unverified_symbols`（更深层协作者）。
+3. `unverified_symbols` 也不是免检通道：其类必须在源码树中存在，且该方法名必须真的出现在该类的源文件里。因此**虚构方法无法通过 unverified 列表洗白**。
+4. 至少存在一个直接绑定配对，否则拒绝。
+
+该规则当场抓出一处**真实元数据错误**：`developer.interface_fallback.execute` 原先声称的 `InterfaceFallbackPolicy.preview` / `LocalAutomationClient.invoke` 并非该工具的直接绑定，已改为真实绑定 `LocalInterfaceFallbackService.validate` / `.execute`，并把那两个更深的协作者列入 `unverified_symbols`（它们确实存在于源码）。
+
+### R-D2 导航白名单、逐 route 安全参数与递归身份注入
+
+- `routeKey` 必须落在 Java 注册的 28 个白名单路由内，否则 `E_NAVIGATION_ROUTE`。
+- `params` 必须**恰好**等于该 route 的必需参数集合（多、少、错位都拒绝），否则 `E_NAVIGATION_PARAMS`。
+- 每个参数值必须匹配 Java 的 `SAFE_IDENTIFIER = [A-Za-z0-9][A-Za-z0-9._:-]{0,127}`，否则 `E_NAVIGATION_SAFE_IDENTIFIER`。
+- **递归**扫描示例入参的任意深度，拒绝 `ownerId`/授权/凭据字段（`E_OWNER_INJECTION` / `E_AUTHORIZATION_LEAK` / `E_CREDENTIAL_INJECTION`）。Java 注册表只拦顶层 `ownerId`，嵌套伪造身份（如 `params.ownerId`）此前会漏过。
+
+该规则同样当场抓出**本端自己的元数据错误**：导航示例里出现过并不在 Java 白名单中的 `ADMIN_CONSOLE` 路由。
+
+### R-D3 合法输入输出实例与结果必需字段
+
+示例升级为带**结果语义**的三态结构：
+
+| 字段 | 含义 |
+| --- | --- |
+| `outcome` | `ok`（输入合法且必须给出结果实例）、`rejected`（输入**故意非法**且必须给出错误）、`unavailable`（输入合法但工具当前无法成功，仅限已冻结缺陷工具） |
+| `output` | `ok` 时必填的契约形状实例；`rejected`/`unavailable` 时必须为 null |
+| `error` | `rejected`/`unavailable` 时必填，代码 + 真实 Java 错误语义 |
+| `fixture_kind` | `shape_placeholder` / `rejection` / `contract_defect` |
+| `fixture_source` | **必须指向真实存在的仓库文件**（输出契约登记文件或注册配置） |
+
+校验器强制：`ok` 示例的输出容器类型必须与登记的 `outputContainer` 一致，且不得出现未声明字段；`shape_placeholder` 的每个叶子**必须**是文档化的占位符 `"<shape-placeholder>"`，从而**不允许把伪造业务数值伪装成形状 fixture**；`rejected` 示例的输入必须**真的**违反某条规则（否则拒绝"假拒绝"）；`unavailable` 必须对应已冻结的缺陷；已判 `pending` 的工具**不得**存在 `ok` 示例。
+
+当前分布：72 个示例 = 66 `ok` + 1 `rejected`（导航未知路由）+ 5 `unavailable`（D1–D4，其中 `artifacts.evaluate` 有 2 个示例）。
+
+> **明确 BLOCKED（不记为已完成）**：逐字段类型、嵌套 schema 与 `required` 集合的完整输出一致性校验依赖 MiniMax 的 `manifest.schema.json`，该文件**至今未交付**。本端因此只实现了离线可验证的子集（容器类型、顶层字段闭包、占位符纪律、结果/失败语义、fixture 溯源），并在报告与报告中如实标注为 BLOCKED，**没有**把输出校验声称为已完成。
 
 ## 4. 能力矩阵漂移（文档 vs 代码）
 
@@ -155,7 +199,7 @@ else                        -> PENDING                （立即执行）
 
 ---
 
-## 5. 其他已核实的语义事实
+## 5. 其他静态核实的语义事实
 
 | 事实 | 证据 |
 | --- | --- |
@@ -177,7 +221,7 @@ else                        -> PENDING                （立即执行）
 
 `contracts/agent-capabilities/metadata.yaml` 只承载**补充语义**，键为真实 Java wire name：
 
-每项必需字段：`name`、`description`、`when_to_use`、`when_not_to_use`、`error_contract`、`cost_hint{local,external_dependency,notes}`、`exposure{state,reason}`、`confirmation{mode,waiting_status,notes}`、`authoritative_facts[{fact,meaning}]`、`examples[{name,input,expect}]`、`source_provenance{registration,handler,output_schema}`。
+每项必需字段：`name`、`description`、`when_to_use`、`when_not_to_use`、`error_contract`、`cost_hint{local,external_dependency,notes}`、`exposure{state,reason}`、`confirmation{mode,waiting_status,notes}`、`authoritative_facts[{fact,meaning}]`、`examples[{name,outcome,input,output,error,fixture_kind,fixture_source,expect}]`、`source_provenance{registration,handler,output_schema,unverified_symbols?}`。
 
 `cost_hint` 是**结构化**的，不靠措辞判断：`local: true` 要求 `external_dependency: null`；`local: false` 要求 `external_dependency` 为非空字符串并写明具体依赖。两者必须严格互斥，因此“非本地”声明必须指名依赖，不能靠含糊文案蒙过。早期版本用关键词判定，已被一次真实反例证伪后改为结构判定。
 
@@ -207,6 +251,11 @@ else                        -> PENDING                （立即执行）
 | `E_FABRICATED_COMPLETION` | 文案声称"AI 评分通过即完成""PENDING 即成功""无需确认" |
 | `E_REDLINE_CREDENTIAL` | 文案允许读取/注入凭据明文 |
 | `E_REDLINE_UNSTATED` | 学习真实性红线未在 `when_not_to_use` 中声明 |
+| `E_NAVIGATION_ROUTE` | 导航 `routeKey` 不在 Java 白名单内 |
+| `E_NAVIGATION_PARAMS` | 导航 `params` 与该 route 的必需集合不符 |
+| `E_NAVIGATION_SAFE_IDENTIFIER` | 导航参数值不符合 Java 安全标识模式 |
+| `E_CREDENTIAL_INJECTION` | 示例任意深度出现凭据字段 |
+| `E_OUTPUT_INSTANCE` | 缺结果实例、输出违反登记契约、占位符纪律被破坏，或示例结果语义自相矛盾 |
 | `E_COST_HINT` | `cost_hint.local` 与 `external_dependency` 不一致，或缺成本说明 |
 | `E_MISSING_SEMANTICS` | 描述过短，或两个工具的描述/边界完全相同（**套话代替语义**） |
 
@@ -223,7 +272,7 @@ else                        -> PENDING                （立即执行）
 
 ### 6.4 人工正反例与 RED→GREEN
 
-`agent-service/tests/fixtures/capability-semantics.json` 含 4 条正例与 **29 条反例**，每条反例声明 `ops`（对真实元数据的变异）与 `expectErrorCode`。反例覆盖任务书要求的全部检测面：
+`agent-service/tests/fixtures/capability-semantics.json` 含 4 条正例与 **43 条反例**，每条反例声明 `ops`（对真实元数据的变异）与 `expectErrorCode`。反例覆盖任务书要求的全部检测面：
 
 - 来源遗漏 N01、重复 wire name N02、未实现工具/伪造 wire name N03（`studypilot.quiz.answer`）
 - 写操作错误开放 N04、coding/runner 能力错误开放 N05
@@ -235,6 +284,9 @@ else                        -> PENDING                （立即执行）
 - 把 AI 评分当成完成 N16、套话代替语义 N17
 - 出处造假 N21/N22/N23/N24、已核实缺陷工具被标为可用 N25、缺陷原因不写真实失败条件 N26
 - 成本提示无依据 N27/N28、外部依赖声明为空串 N29
+- **R-D1** 虚构方法 N30、真实但错误的执行类 N31、用 `unverified_symbols` 洗白虚构方法 N32
+- **R-D2** 非法 routeKey N33、嵌套身份注入 N34、路由参数不符 N35、参数不符合安全标识 N36
+- **R-D3** 非法输出实例 N37、删光 `expect` N38、可接受示例缺结果 N39、假拒绝 N40、缺陷工具谎称成功 N41、形状 fixture 塞入伪造业务值 N42、`fixture_source` 指向不存在文件 N43
 
 ---
 
@@ -255,13 +307,13 @@ $ node scripts/harness/capability-semantics.mjs
 PASS  65 metadata entries (allowed 28, disabled 33, pending 4)
       confirmations: 11 always, 10 conditional
       274 authoritative facts, 72 examples
-      negative fixtures 29/29 rejected with the expected code
+      negative fixtures 43/43 rejected with the expected code
 
 $ node scripts/harness/capability-semantics.mjs --check
 MATCH  frozen H02 capability facts still match the Java source
 
 $ node --test scripts/harness/capability-semantics.test.mjs
-ℹ tests 30   ℹ pass 30   ℹ fail 0
+ℹ tests 45   ℹ pass 45   ℹ fail 0
 ```
 
 **独立第三方解析器核对**（只作一次性独立验证，未把 Python 引入交付链）：
@@ -278,17 +330,20 @@ PyYAML tools: 65 | equal to source: True
 
 这两点是 shared「静态自测不能替代独立核对」的实例：若无外部解析器，缺陷会以“自测通过”的形式留在交付物里。
 
+首轮验收的 9 个独立变异已全部按预期表现（其中 6 个此前被误接受，现均被拒）：有效元数据接受；缺工具、重复 wire、虚构方法、真实但错误的执行类、非法导航路由、嵌套身份注入、非法输出实例、缺结果期望——全部拒绝。本端用等价内存变异复现（脚本位于 `/tmp`，未写入仓库），未运行 Codex 的探针脚本本身，因为它会把结果写回 Codex 所属目录。
+
 ---
 
 ## 8. 限制与未覆盖项
 
-1. **MiniMax 的 `manifest.schema.json` 在本次盘点时尚未交付**：观测时其工作树 `project-harness-h02-minimax` 仍停在基线 `16b37d34…`，`contracts/` 下只有 H01 的 `agent-runtime/`，无 `agent-capabilities/`。按任务书，本端先完成来源盘点与元数据落盘（格式/字段已记录），未写入该树。Schema 到位后只需做字段名映射的对齐复跑，元数据语义不需要重写。
-2. **未做跨端实例消费测试**：shared 的吞吐检查点要求在接口就绪后先用最小离线正例连通跨端输入；因上游 Schema 未到，本端无法完成该连通，属显式未覆盖项（非静默跳过）。
-3. **静态提取不等于注册证明**：本端提取器用于漂移与覆盖交叉核对；注册完整性由 MiniMax 从真实描述符导出证明。
-4. **输出契约逐字段审计未做全量**：本端对"直接返回服务对象"的只读工具做了重点核对，发现并确认 D2/D3 两处类型/字段不符；其余工具未做 65 个的全字段两两比对，属残余风险（ZCode 负责独立覆盖核对）。
-5. **未运行任何 Java 测试、未启动后端、未访问数据库**：D1–D4 全部由源码静态推导得出，并给出 file:line；它们应由 Java Owner 用真实测试复现确认。
-6. 红线检查是结构性的，不构成行为保证（见 §6.3）。
-7. `cost_hint` 不含任何 token/费用数值；未知即写未知，只记录代码中真实存在的边界（如 64 KiB 输出上限、Runner 模板超时秒数）。延迟 worker 侧的真实开销未实测，只按“成本发生在请求之外”如实标注，未做估值。
+1. **BLOCKED — 上游 `manifest.schema.json` 未交付**：MiniMax 工作树仍停在基线 `16b37d34…`，`contracts/` 下只有 H01 的 `agent-runtime/`，无 `agent-capabilities/`；且首轮验收记录 MiniMax 仍限流、ZCode 因 429 RESOURCE_EXHAUSTED 额度冷却终止。按任务书，本端先完成来源盘点与元数据落盘（格式/字段已记录），**未写入他端树**。Schema 到位后只需做字段名映射对齐与复跑，元数据语义不需要重写。
+2. **BLOCKED — 跨端实例消费测试未做**：shared 的吞吐检查点要求在接口就绪后先用最小离线正例连通跨端输入。因上游 Schema 未到且两端受限，本端**无法**完成该连通。这是显式 BLOCKED，不是 warning+skip，也**没有**把跨端兼容记为已验证。
+3. **BLOCKED — 完整输出契约一致性**：逐字段类型、嵌套 schema 与 `required` 集合依赖上游 Schema（见 §3.1）。本端只实现离线可验证子集并如实标注。
+4. **静态提取不等于注册证明**：本端提取器用于漂移与覆盖交叉核对；注册完整性由 MiniMax 从真实描述符导出证明。
+5. **输出契约逐字段审计未做全量**：本端对"直接返回服务对象"的只读工具做了重点核对，发现并确认 D2/D3 两处类型/字段不符；其余工具未做 65 个的全字段两两比对，属残余风险（ZCode 负责独立覆盖核对）。
+6. **未运行任何 Java 测试、未启动后端、未访问数据库**：D1–D4 全部由源码静态推导得出，并给出 file:line；它们应由 Java Owner 用真实测试复现确认。
+7. 红线检查是结构性的，不构成行为保证（见 §6.3）。
+8. `cost_hint` 不含任何 token/费用数值；未知即写未知，只记录代码中真实存在的边界（如 64 KiB 输出上限、Runner 模板超时秒数）。延迟 worker 侧的真实开销未实测，只按“成本发生在请求之外”如实标注，未做估值。
 
 ---
 
@@ -296,13 +351,13 @@ PyYAML tools: 65 | equal to source: True
 
 | 项 | 值 |
 | --- | --- |
-| 状态 | **READY_FOR_CODEX** |
+| 状态 | **READY_FOR_CODEX（ROUND 2）** |
 | cwd | `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek` |
 | 分支 | `codex/harness-h02-deepseek` |
 | 基线 | `16b37d34c882a17e7bc45c69c84411f28f52bff8` |
-| 交付提交 | `c94cbc9046455291ba4f600a9aa54163f73ab0fd`（含下列 6 个 Owner 文件；本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
-| 测试 | fixtures/元数据：65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 29/29 以预期错误码被拒；`--check` 无漂移；`node --test` 30/30；PyYAML 严格解析与源事实逐字段相等 |
-| 元数据统计 | 65 条 = 43 READ + 21 WRITE + 1 NAVIGATE；`always_user_confirmation` 11、`conditional_scope_grant` 10、`none` 44；`authoritative_facts` 274 条；`examples` 72 条；`cost_hint.local:false` 5 条 |
+| 交付提交 | 见本节末「提交」行（二轮整改提交） |
+| 测试 | 元数据 65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 **43/43** 以预期错误码被拒；`--check` 无漂移；`node --test` **45/45**；PyYAML 严格解析与源事实逐字段相等；首轮 9 个独立变异全部按预期表现 |
+| 元数据统计 | 65 条 = 43 READ + 21 WRITE + 1 NAVIGATE；`always_user_confirmation` 11、`conditional_scope_grant` 10、`none` 44；`authoritative_facts` 274 条；`examples` 72 条 = 66 `ok` + 1 `rejected` + 5 `unavailable`；`cost_hint.local:false` 5 条 |
 | 证据层级 | mock/offline（无模型、无服务、无数据库） |
 | 未覆盖项 | 见第 8 节 |
 | 下一步 | 停在 H02，等 Codex 独立验收；**不进入 H03** |

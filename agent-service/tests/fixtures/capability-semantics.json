@@ -49,7 +49,37 @@
       "apiKey",
       "token"
     ],
-    "forbiddenAnywhereReason": "模型不得指定 owner、不得自我扩权、不得携带凭据材料。"
+    "forbiddenAnywhereReason": "模型不得指定 owner、不得自我扩权、不得携带凭据材料。",
+    "exampleRequiredKeys": [
+      "name",
+      "outcome",
+      "input",
+      "fixture_kind",
+      "fixture_source",
+      "expect"
+    ],
+    "exampleOutcomes": {
+      "ok": "输入合法且必须给出契约形状 output 实例；不得声明 error。",
+      "rejected": "输入必须真的违反某条规则；必须声明 error.code/message；output 必须为 null；不得是假拒绝。",
+      "unavailable": "输入合法但工具当前无法成功；仅限已冻结缺陷工具；output 必须为 null 且必须声明真实 error。"
+    },
+    "shapePlaceholder": "<shape-placeholder>",
+    "outputVerificationScope": {
+      "verifiableOffline": [
+        "容器类型与登记 outputContainer 一致",
+        "顶层字段闭包（不得出现未声明字段）",
+        "形状 fixture 的叶子必须是文档化占位符",
+        "结果/失败语义与缺陷工具一致性",
+        "fixture_source 必须指向真实文件"
+      ],
+      "blockedOnUpstreamSchema": [
+        "逐字段类型",
+        "嵌套 schema",
+        "required 集合",
+        "数组元素级约束"
+      ],
+      "reason": "MiniMax 的 contracts/agent-capabilities/manifest.schema.json 尚未交付；本端不把输出校验记为已完成。"
+    }
   },
   "exposurePolicy": {
     "note": "exposure 由 H02 shared 边界决定，不由 effect 或风险等级猜测。allowed 只表示满足后续权限与实现条件时可进入候选目录，不等于当前开通运行。",
@@ -629,6 +659,221 @@
         }
       ],
       "expectErrorCode": "E_COST_HINT"
+    },
+    {
+      "id": "N30",
+      "intent": "R-D1 虚构不存在的方法",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "governance.health.get",
+          "field": "source_provenance.handler",
+          "value": "AgentGovernanceService.thisMethodDoesNotExist"
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N31",
+      "intent": "R-D1 用真实但错误的执行类",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "governance.health.get",
+          "field": "source_provenance.handler",
+          "value": "RoadmapScheduleService.getOrCreate"
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N32",
+      "intent": "R-D1 用 unverified_symbols 洗白虚构方法",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "governance.health.get",
+          "field": "source_provenance.handler",
+          "value": "AssistantHealthService.summarize and AgentGovernanceService.thisMethodDoesNotExist"
+        },
+        {
+          "op": "add_tool_field",
+          "tool": "governance.health.get",
+          "field": "source_provenance.unverified_symbols",
+          "value": [
+            "AgentGovernanceService.thisMethodDoesNotExist"
+          ]
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N33",
+      "intent": "R-D2 导航非法 routeKey",
+      "ops": [
+        {
+          "op": "set_example_input",
+          "tool": "navigation.resolve",
+          "index": 0,
+          "value": {
+            "routeKey": "NOT_A_ROUTE"
+          }
+        }
+      ],
+      "expectErrorCode": "E_NAVIGATION_ROUTE"
+    },
+    {
+      "id": "N34",
+      "intent": "R-D2 嵌套身份注入",
+      "ops": [
+        {
+          "op": "set_example_input",
+          "tool": "navigation.resolve",
+          "index": 0,
+          "value": {
+            "routeKey": "TODAY",
+            "params": {
+              "ownerId": "forged"
+            }
+          }
+        }
+      ],
+      "expectErrorCode": "E_OWNER_INJECTION"
+    },
+    {
+      "id": "N35",
+      "intent": "R-D2 路由参数与该 route 所需不符",
+      "ops": [
+        {
+          "op": "set_example_input",
+          "tool": "navigation.resolve",
+          "index": 0,
+          "value": {
+            "routeKey": "ROADMAP_NODE",
+            "params": {
+              "wrongKey": "x"
+            }
+          }
+        }
+      ],
+      "expectErrorCode": "E_NAVIGATION_PARAMS"
+    },
+    {
+      "id": "N36",
+      "intent": "R-D2 参数不符合安全标识模式",
+      "ops": [
+        {
+          "op": "set_example_input",
+          "tool": "navigation.resolve",
+          "index": 0,
+          "value": {
+            "routeKey": "ROADMAP_NODE",
+            "params": {
+              "nodeId": "bad value/../../etc"
+            }
+          }
+        }
+      ],
+      "expectErrorCode": "E_NAVIGATION_SAFE_IDENTIFIER"
+    },
+    {
+      "id": "N37",
+      "intent": "R-D3 非法输出实例",
+      "ops": [
+        {
+          "op": "set_example_output",
+          "tool": "governance.health.get",
+          "index": 0,
+          "value": {
+            "unexpected": "not_schema"
+          }
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N38",
+      "intent": "R-D3 删除全部 expect",
+      "ops": [
+        {
+          "op": "delete_example_field",
+          "tool": "governance.health.get",
+          "field": "expect"
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N39",
+      "intent": "R-D3 可接受示例缺结果实例",
+      "ops": [
+        {
+          "op": "set_example_output",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "value": null
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N40",
+      "intent": "R-D3 标记为拒绝但输入其实合法",
+      "ops": [
+        {
+          "op": "set_example_field",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "field": "outcome",
+          "value": "rejected"
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N41",
+      "intent": "R-D3 缺陷工具谎称成功示例",
+      "ops": [
+        {
+          "op": "set_example_field",
+          "tool": "governance.health.get",
+          "index": 0,
+          "field": "outcome",
+          "value": "ok"
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N42",
+      "intent": "R-D3 形状 fixture 里塞入伪造业务值",
+      "ops": [
+        {
+          "op": "set_example_output",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "value": [
+            {
+              "score": 0.99
+            }
+          ]
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N43",
+      "intent": "R-D3 fixture_source 指向不存在文件",
+      "ops": [
+        {
+          "op": "set_example_field",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "field": "fixture_source",
+          "value": "docs/does-not-exist.json"
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
     }
   ],
   "frozenFacts": {
@@ -743,6 +988,91 @@
       "outputFields": [
         "routeKey",
         "params"
+      ],
+      "boundClasses": [
+        "A",
+        "AGENT_ACTIVITY",
+        "AI_SETTINGS",
+        "ASSISTANT",
+        "ASSISTANT_HEALTH",
+        "AgentToolContext",
+        "AgentToolDescriptor",
+        "AgentToolEffect",
+        "AgentToolHandler",
+        "AgentToolOutputSchemas",
+        "AgentToolRiskLevel",
+        "COURSES",
+        "COURSE_DETAIL",
+        "Component",
+        "DASHBOARD",
+        "IllegalArgumentException",
+        "JsonNode",
+        "KNOWLEDGE",
+        "LEARNING_GOALS",
+        "LEARNING_PLAN",
+        "LEARNING_PLANS",
+        "LEARNING_SETTINGS",
+        "LESSON",
+        "LinkedHashMap",
+        "MASTERY",
+        "MATERIALS",
+        "MATERIAL_DETAIL",
+        "Map",
+        "NAVIGATE",
+        "NAVIGATION",
+        "NONE",
+        "NOTIFICATIONS",
+        "NavigationTarget",
+        "NavigationToolHandler",
+        "Object",
+        "ObjectMapper",
+        "Override",
+        "PLAN_ASSISTANT",
+        "QUIZ",
+        "QUIZ_ATTEMPT",
+        "ROADMAP",
+        "ROADMAP_MODULE",
+        "ROADMAP_NODE",
+        "ROADMAP_STAGE",
+        "ROUTES",
+        "SAFE_IDENTIFIER",
+        "Set",
+        "String",
+        "TASK_ASSISTANT",
+        "TODAY",
+        "WORKSPACE_ARTIFACTS",
+        "WRONG_QUESTIONS",
+        "Za"
+      ],
+      "boundMethods": [
+        "add",
+        "asText",
+        "contains",
+        "copyOf",
+        "createObjectNode",
+        "descriptor",
+        "entry",
+        "equals",
+        "forEach",
+        "get",
+        "getKey",
+        "getValue",
+        "if",
+        "invoke",
+        "isMissingNode",
+        "isObject",
+        "isTextual",
+        "keySet",
+        "matches",
+        "of",
+        "ofEntries",
+        "path",
+        "properties",
+        "put",
+        "putArray",
+        "putObject",
+        "schemaFor",
+        "withObject"
       ]
     },
     "tools": [
@@ -757,7 +1087,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "artifactEvaluateTool",
         "handlerServices": [
-          "service"
+          "RoadmapArtifactService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "RoadmapArtifactService",
+          "Set",
+          "WORKSPACE"
+        ],
+        "boundMethods": [
+          "artifactEvaluateTool",
+          "evaluate",
+          "of",
+          "ownerId",
+          "read",
+          "text"
         ],
         "registrationLine": 258,
         "inputProperties": {
@@ -799,7 +1145,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "artifactTool",
         "handlerServices": [
-          "service"
+          "RoadmapArtifactService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "RoadmapArtifactService",
+          "Set",
+          "WORKSPACE"
+        ],
+        "boundMethods": [
+          "artifact",
+          "artifactTool",
+          "of",
+          "ownerId",
+          "read",
+          "text"
         ],
         "registrationLine": 266,
         "inputProperties": {
@@ -841,7 +1203,22 @@
         "timeoutMillis": 15000,
         "beanMethod": "artifactsTool",
         "handlerServices": [
-          "service"
+          "RoadmapArtifactService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "RoadmapArtifactService",
+          "Set",
+          "WORKSPACE"
+        ],
+        "boundMethods": [
+          "artifacts",
+          "artifactsTool",
+          "of",
+          "ownerId",
+          "read"
         ],
         "registrationLine": 274,
         "inputProperties": {},
@@ -879,7 +1256,32 @@
         "timeoutMillis": 120000,
         "beanMethod": "artifactSubmitTool",
         "handlerServices": [
-          "service"
+          "RoadmapArtifactService"
+        ],
+        "boundClasses": [
+          "ARTIFACT_MANAGEMENT",
+          "ARTIFACT_SUBMISSION",
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "CreateRoadmapArtifactRequest",
+          "ExecutionType",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "RoadmapArtifactService",
+          "Set",
+          "WORKSPACE"
+        ],
+        "boundMethods": [
+          "artifactSubmitTool",
+          "of",
+          "operationIdempotencyKey",
+          "ownerId",
+          "requireValid",
+          "submit",
+          "text",
+          "write"
         ],
         "registrationLine": 248,
         "inputProperties": {
@@ -929,7 +1331,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "quizAttemptTool",
         "handlerServices": [
-          "service"
+          "QuizService"
+        ],
+        "boundClasses": [
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "QuizService",
+          "Set"
+        ],
+        "boundMethods": [
+          "getAttempt",
+          "of",
+          "ownerId",
+          "quizAttemptTool",
+          "read",
+          "text"
         ],
         "registrationLine": 176,
         "inputProperties": {
@@ -961,7 +1379,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "masteryTool",
         "handlerServices": [
-          "service"
+          "QuizService"
+        ],
+        "boundClasses": [
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "Map",
+          "MasteryResponse",
+          "ObjectMapper",
+          "QuizService",
+          "Set"
+        ],
+        "boundMethods": [
+          "listMastery",
+          "map",
+          "masteryTool",
+          "of",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 184,
         "inputProperties": {},
@@ -990,7 +1427,31 @@
         "timeoutMillis": 120000,
         "beanMethod": "roadmapQuizGenerateWriteTool",
         "handlerServices": [
-          "service"
+          "RoadmapLearningLoopService"
+        ],
+        "boundClasses": [
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "LOW",
+          "Map",
+          "ObjectMapper",
+          "QUIZ_GENERATION",
+          "RetryRoadmapQuizRequest",
+          "RoadmapLearningLoopService",
+          "Set"
+        ],
+        "boundMethods": [
+          "of",
+          "operationIdempotencyKey",
+          "ownerId",
+          "requireValid",
+          "retryQuiz",
+          "roadmapQuizGenerateWriteTool",
+          "text",
+          "write"
         ],
         "registrationLine": 180,
         "inputProperties": {
@@ -1020,7 +1481,31 @@
         "timeoutMillis": 120000,
         "beanMethod": "roadmapQuizRetryWriteTool",
         "handlerServices": [
-          "service"
+          "RoadmapLearningLoopService"
+        ],
+        "boundClasses": [
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "LOW",
+          "Map",
+          "ObjectMapper",
+          "QUIZ_GENERATION",
+          "RetryRoadmapQuizRequest",
+          "RoadmapLearningLoopService",
+          "Set"
+        ],
+        "boundMethods": [
+          "of",
+          "operationIdempotencyKey",
+          "ownerId",
+          "requireValid",
+          "retryQuiz",
+          "roadmapQuizRetryWriteTool",
+          "text",
+          "write"
         ],
         "registrationLine": 165,
         "inputProperties": {
@@ -1050,7 +1535,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "nodeQuizStatusTool",
         "handlerServices": [
-          "service"
+          "RoadmapLearningLoopService"
+        ],
+        "boundClasses": [
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "RoadmapLearningLoopService",
+          "Set"
+        ],
+        "boundMethods": [
+          "nodeQuizStatusTool",
+          "of",
+          "ownerId",
+          "quiz",
+          "read",
+          "text"
         ],
         "registrationLine": 157,
         "inputProperties": {
@@ -1080,7 +1581,28 @@
         "timeoutMillis": 15000,
         "beanMethod": "quizTool",
         "handlerServices": [
-          "service"
+          "QuizService"
+        ],
+        "boundClasses": [
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "QuizBundle",
+          "QuizResponse",
+          "QuizService",
+          "Set"
+        ],
+        "boundMethods": [
+          "from",
+          "get",
+          "of",
+          "ownerId",
+          "questions",
+          "quiz",
+          "quizTool",
+          "read",
+          "text"
         ],
         "registrationLine": 165,
         "inputProperties": {
@@ -1113,7 +1635,31 @@
         "timeoutMillis": 120000,
         "beanMethod": "wrongQuestionReviewWriteTool",
         "handlerServices": [
-          "service"
+          "WrongQuestionReviewService"
+        ],
+        "boundClasses": [
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "CreateWrongQuestionReviewRequest",
+          "ExecutionType",
+          "LOW",
+          "Map",
+          "ObjectMapper",
+          "QUIZ_GENERATION",
+          "Set",
+          "WrongQuestionReviewService"
+        ],
+        "boundMethods": [
+          "create",
+          "of",
+          "operationIdempotencyKey",
+          "optionalText",
+          "ownerId",
+          "requireValid",
+          "write",
+          "wrongQuestionReviewWriteTool"
         ],
         "registrationLine": 150,
         "inputProperties": {
@@ -1141,7 +1687,29 @@
         "timeoutMillis": 15000,
         "beanMethod": "wrongQuestionsTool",
         "handlerServices": [
-          "service"
+          "WrongQuestionService"
+        ],
+        "boundClasses": [
+          "ACTIVE",
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WrongQuestionService",
+          "WrongQuestionStatus"
+        ],
+        "boundMethods": [
+          "asInt",
+          "get",
+          "hasNonNull",
+          "list",
+          "of",
+          "ownerId",
+          "read",
+          "text",
+          "valueOf",
+          "wrongQuestionsTool"
         ],
         "registrationLine": 200,
         "inputProperties": {
@@ -1189,7 +1757,22 @@
         "timeoutMillis": 15000,
         "beanMethod": "wrongQuestionSummaryTool",
         "handlerServices": [
-          "service"
+          "WrongQuestionService"
+        ],
+        "boundClasses": [
+          "ASSESSMENT",
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WrongQuestionService"
+        ],
+        "boundMethods": [
+          "of",
+          "ownerId",
+          "read",
+          "summary",
+          "wrongQuestionSummaryTool"
         ],
         "registrationLine": 193,
         "inputProperties": {},
@@ -1214,7 +1797,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "automationRulesTool",
         "handlerServices": [
-          "service"
+          "AssistantAutomationService"
+        ],
+        "boundClasses": [
+          "AUTOMATION",
+          "AgentToolHandler",
+          "AssistantAutomationService",
+          "AutomationRuleResponse",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "automationRulesTool",
+          "list",
+          "map",
+          "of",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 303,
         "inputProperties": {},
@@ -1244,7 +1846,24 @@
         "timeoutMillis": 15000,
         "beanMethod": "automationSettingsTool",
         "handlerServices": [
-          "service"
+          "AssistantAutomationService"
+        ],
+        "boundClasses": [
+          "AUTOMATION",
+          "AgentToolHandler",
+          "AssistantAutomationService",
+          "AutomationSettingsResponse",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "automationSettingsTool",
+          "from",
+          "of",
+          "ownerId",
+          "read",
+          "settings"
         ],
         "registrationLine": 294,
         "inputProperties": {},
@@ -1267,7 +1886,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerCodeSearchTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerCodeSearchTool",
+          "of",
+          "ownerId",
+          "read",
+          "searchCode",
+          "text"
         ],
         "registrationLine": 358,
         "inputProperties": {
@@ -1297,7 +1932,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerFileReadTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerFileReadTool",
+          "of",
+          "ownerId",
+          "read",
+          "readFile",
+          "text"
         ],
         "registrationLine": 345,
         "inputProperties": {
@@ -1329,7 +1980,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerFileTreeTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerFileTreeTool",
+          "getFileTree",
+          "of",
+          "ownerId",
+          "read",
+          "text"
         ],
         "registrationLine": 334,
         "inputProperties": {
@@ -1357,7 +2024,31 @@
         "timeoutMillis": 120000,
         "beanMethod": "developerGitCommitTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "DEVELOPER",
+          "DEVELOPER_MANAGEMENT",
+          "ExecutionType",
+          "GIT_COMMIT",
+          "Git",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "commitConfirmed",
+          "developerGitCommitTool",
+          "gitCommitRequest",
+          "of",
+          "ownerId",
+          "text",
+          "validateGitCommit",
+          "writeValidated"
         ],
         "registrationLine": 393,
         "inputProperties": {
@@ -1395,7 +2086,24 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerGitCommitPreviewTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerGitCommitPreviewTool",
+          "of",
+          "ownerId",
+          "previewGitCommit",
+          "read",
+          "stringList",
+          "text"
         ],
         "registrationLine": 431,
         "inputProperties": {
@@ -1430,7 +2138,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerGitDiffTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerGitDiffTool",
+          "getGitDiff",
+          "of",
+          "ownerId",
+          "read",
+          "text"
         ],
         "registrationLine": 382,
         "inputProperties": {
@@ -1458,7 +2182,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerGitLogTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "asInt",
+          "developerGitLogTool",
+          "get",
+          "getGitLog",
+          "hasNonNull",
+          "of",
+          "ownerId",
+          "read",
+          "text"
         ],
         "registrationLine": 393,
         "inputProperties": {
@@ -1487,7 +2230,31 @@
         "timeoutMillis": 120000,
         "beanMethod": "developerGitPushTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "DEVELOPER",
+          "DEVELOPER_MANAGEMENT",
+          "ExecutionType",
+          "GIT_PUSH",
+          "Git",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerGitPushTool",
+          "gitPushRequest",
+          "of",
+          "ownerId",
+          "pushConfirmed",
+          "text",
+          "validateGitPush",
+          "writeValidated"
         ],
         "registrationLine": 410,
         "inputProperties": {
@@ -1531,7 +2298,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerGitPushPreviewTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerGitPushPreviewTool",
+          "of",
+          "ownerId",
+          "previewGitPush",
+          "read",
+          "text"
         ],
         "registrationLine": 444,
         "inputProperties": {
@@ -1565,7 +2348,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerGitStatusTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerGitStatusTool",
+          "getGitStatus",
+          "of",
+          "ownerId",
+          "read",
+          "text"
         ],
         "registrationLine": 371,
         "inputProperties": {
@@ -1597,7 +2396,31 @@
         "timeoutMillis": 120000,
         "beanMethod": "developerInterfaceFallbackExecuteTool",
         "handlerServices": [
-          "service"
+          "LocalInterfaceFallbackService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "DEVELOPER",
+          "DEVELOPER_MANAGEMENT",
+          "ExecutionType",
+          "HIGH",
+          "LOCAL_INTERFACE_AUTOMATION",
+          "LocalInterfaceFallbackService",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "asBoolean",
+          "developerInterfaceFallbackExecuteTool",
+          "execute",
+          "of",
+          "ownerId",
+          "path",
+          "text",
+          "validate",
+          "writeValidated"
         ],
         "registrationLine": 456,
         "inputProperties": {
@@ -1638,7 +2461,24 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerInterfaceFallbackPreviewTool",
         "handlerServices": [
-          "policy"
+          "InterfaceFallbackPolicy"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "InterfaceFallbackPolicy",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "asBoolean",
+          "developerInterfaceFallbackPreviewTool",
+          "of",
+          "path",
+          "preview",
+          "read",
+          "text"
         ],
         "registrationLine": 455,
         "inputProperties": {
@@ -1674,7 +2514,31 @@
         "timeoutMillis": 120000,
         "beanMethod": "developerPatchApplyTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "CODE_PATCH_APPLICATION",
+          "DEVELOPER",
+          "DEVELOPER_MANAGEMENT",
+          "ExecutionType",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "applyConfirmedPatch",
+          "developerPatchApplyTool",
+          "of",
+          "ownerId",
+          "patchRequest",
+          "text",
+          "validatePatchRequest",
+          "writeValidated"
         ],
         "registrationLine": 376,
         "inputProperties": {
@@ -1715,7 +2579,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerPatchPreviewTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerPatchPreviewTool",
+          "of",
+          "ownerId",
+          "previewPatch",
+          "read",
+          "text"
         ],
         "registrationLine": 405,
         "inputProperties": {
@@ -1753,7 +2633,24 @@
         "timeoutMillis": 15000,
         "beanMethod": "developerTestsRecommendTool",
         "handlerServices": [
-          "service"
+          "WorkspaceDeveloperService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "DEVELOPER",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "WorkspaceDeveloperService"
+        ],
+        "boundMethods": [
+          "developerTestsRecommendTool",
+          "of",
+          "ownerId",
+          "read",
+          "recommendTests",
+          "stringList",
+          "text"
         ],
         "registrationLine": 418,
         "inputProperties": {
@@ -1787,7 +2684,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "auditLogsTool",
         "handlerServices": [
-          "service"
+          "AgentGovernanceService"
+        ],
+        "boundClasses": [
+          "AgentGovernanceService",
+          "AgentToolHandler",
+          "AuditLogResponse",
+          "GOVERNANCE",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "auditLogsTool",
+          "listAuditLogs",
+          "map",
+          "of",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 245,
         "inputProperties": {},
@@ -1814,7 +2730,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "executionsTool",
         "handlerServices": [
-          "service"
+          "AgentGovernanceService"
+        ],
+        "boundClasses": [
+          "AgentExecutionResponse",
+          "AgentGovernanceService",
+          "AgentToolHandler",
+          "GOVERNANCE",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "executionsTool",
+          "listExecutions",
+          "map",
+          "of",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 238,
         "inputProperties": {},
@@ -1851,7 +2786,22 @@
         "timeoutMillis": 15000,
         "beanMethod": "assistantHealthTool",
         "handlerServices": [
-          "service"
+          "AssistantHealthService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AssistantHealthService",
+          "GOVERNANCE",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "assistantHealthTool",
+          "of",
+          "ownerId",
+          "read",
+          "summarize"
         ],
         "registrationLine": 47,
         "inputProperties": {},
@@ -1884,7 +2834,22 @@
         "timeoutMillis": 15000,
         "beanMethod": "learningContextTool",
         "handlerServices": [
-          "service"
+          "AgentLearningContextService"
+        ],
+        "boundClasses": [
+          "AgentLearningContextService",
+          "AgentToolHandler",
+          "CONTEXT",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "get",
+          "learningContextTool",
+          "of",
+          "ownerId",
+          "read"
         ],
         "registrationLine": 55,
         "inputProperties": {},
@@ -1913,7 +2878,40 @@
         "timeoutMillis": 120000,
         "beanMethod": "learningGoalCreateTool",
         "handlerServices": [
-          "service"
+          "CreateLearningGoalService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "CreateLearningGoalRequest",
+          "CreateLearningGoalService",
+          "ExecutionType",
+          "LEARNING",
+          "LEARNING_GOAL_CHANGE",
+          "LEARNING_MANAGEMENT",
+          "LOW",
+          "LearningGoalResponse",
+          "LocalDate",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "asInt",
+          "create",
+          "from",
+          "get",
+          "learningGoalCreateTool",
+          "of",
+          "ownerId",
+          "parse",
+          "requireValid",
+          "targetDate",
+          "text",
+          "title",
+          "weeklyStudyHours",
+          "write"
         ],
         "registrationLine": 80,
         "inputProperties": {
@@ -1947,7 +2945,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "learningGoalsTool",
         "handlerServices": [
-          "service"
+          "CreateLearningGoalService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "CreateLearningGoalService",
+          "LEARNING",
+          "LearningGoalResponse",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "learningGoalsTool",
+          "list",
+          "map",
+          "of",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 61,
         "inputProperties": {},
@@ -1973,7 +2990,34 @@
         "timeoutMillis": 120000,
         "beanMethod": "learningPlanCreateTool",
         "handlerServices": [
-          "service"
+          "LearningPlanService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "CreateLearningPlanRequest",
+          "ExecutionType",
+          "LEARNING",
+          "LOW",
+          "LearningPlanResponse",
+          "LearningPlanService",
+          "LocalDate",
+          "Map",
+          "ObjectMapper",
+          "PLAN_GENERATION",
+          "Set"
+        ],
+        "boundMethods": [
+          "create",
+          "from",
+          "learningPlanCreateTool",
+          "of",
+          "ownerId",
+          "parse",
+          "requireValid",
+          "text",
+          "write"
         ],
         "registrationLine": 102,
         "inputProperties": {
@@ -2011,7 +3055,25 @@
         "timeoutMillis": 15000,
         "beanMethod": "learningPlanTool",
         "handlerServices": [
-          "service"
+          "LearningPlanService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "LEARNING",
+          "LearningPlanResponse",
+          "LearningPlanService",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "from",
+          "learningPlanTool",
+          "of",
+          "ownerId",
+          "read",
+          "requireOwnedPlan",
+          "text"
         ],
         "registrationLine": 75,
         "inputProperties": {
@@ -2043,7 +3105,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "learningPlansTool",
         "handlerServices": [
-          "service"
+          "LearningPlanService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "LEARNING",
+          "LearningPlanResponse",
+          "LearningPlanService",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "learningPlansTool",
+          "list",
+          "map",
+          "of",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 68,
         "inputProperties": {},
@@ -2071,7 +3152,43 @@
         "timeoutMillis": 120000,
         "beanMethod": "taskStatusWriteTool",
         "handlerServices": [
-          "service"
+          "LearningTaskService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "HIGH",
+          "InternalChangeTaskStatusRequest",
+          "LEARNING",
+          "LearningTaskResponse",
+          "LearningTaskService",
+          "LearningTaskStatus",
+          "Map",
+          "ObjectMapper",
+          "Set",
+          "TASK_MANAGEMENT",
+          "TASK_STATUS_CHANGE"
+        ],
+        "boundMethods": [
+          "asInt",
+          "asText",
+          "changeStatusIdempotently",
+          "from",
+          "get",
+          "of",
+          "operationIdempotencyKey",
+          "optionalDate",
+          "optionalInt",
+          "optionalText",
+          "ownerId",
+          "path",
+          "requireValid",
+          "taskStatusWriteTool",
+          "text",
+          "valueOf",
+          "write"
         ],
         "registrationLine": 129,
         "inputProperties": {
@@ -2115,7 +3232,27 @@
         "timeoutMillis": 15000,
         "beanMethod": "learningTasksTool",
         "handlerServices": [
-          "service"
+          "LearningTaskService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "LEARNING",
+          "LearningTaskResponse",
+          "LearningTaskService",
+          "Map",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "learningTasksTool",
+          "list",
+          "map",
+          "of",
+          "optionalDate",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 83,
         "inputProperties": {
@@ -2150,7 +3287,25 @@
         "timeoutMillis": 15000,
         "beanMethod": "materialTool",
         "handlerServices": [
-          "service"
+          "MaterialService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "MATERIAL",
+          "Map",
+          "MaterialResponse",
+          "MaterialService",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "from",
+          "get",
+          "materialTool",
+          "of",
+          "ownerId",
+          "read",
+          "text"
         ],
         "registrationLine": 223,
         "inputProperties": {
@@ -2191,7 +3346,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "materialsTool",
         "handlerServices": [
-          "service"
+          "MaterialService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "MATERIAL",
+          "Map",
+          "MaterialResponse",
+          "MaterialService",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "list",
+          "map",
+          "materialsTool",
+          "of",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 216,
         "inputProperties": {},
@@ -2228,7 +3402,35 @@
         "timeoutMillis": 120000,
         "beanMethod": "textMaterialImportWriteTool",
         "handlerServices": [
-          "service"
+          "MaterialService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "CreateTextMaterialRequest",
+          "ExecutionType",
+          "LOW",
+          "MATERIAL",
+          "MATERIAL_PROCESSING",
+          "Map",
+          "MaterialCategory",
+          "MaterialResponse",
+          "MaterialService",
+          "ObjectMapper",
+          "PrivacyLevel",
+          "Set"
+        ],
+        "boundMethods": [
+          "createText",
+          "from",
+          "of",
+          "ownerId",
+          "requireValid",
+          "text",
+          "textMaterialImportWriteTool",
+          "valueOf",
+          "write"
         ],
         "registrationLine": 270,
         "inputProperties": {
@@ -2275,7 +3477,35 @@
         "timeoutMillis": 120000,
         "beanMethod": "webMaterialImportWriteTool",
         "handlerServices": [
-          "service"
+          "MaterialService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "CreateWebMaterialRequest",
+          "ExecutionType",
+          "LOW",
+          "MATERIAL",
+          "MATERIAL_PROCESSING",
+          "Map",
+          "MaterialCategory",
+          "MaterialResponse",
+          "MaterialService",
+          "ObjectMapper",
+          "PrivacyLevel",
+          "Set"
+        ],
+        "boundMethods": [
+          "createWeb",
+          "from",
+          "of",
+          "ownerId",
+          "requireValid",
+          "text",
+          "valueOf",
+          "webMaterialImportWriteTool",
+          "write"
         ],
         "registrationLine": 287,
         "inputProperties": {
@@ -2322,7 +3552,26 @@
         "timeoutMillis": 15000,
         "beanMethod": "notificationsTool",
         "handlerServices": [
-          "service"
+          "NotificationService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "NOTIFICATION",
+          "NotificationResponse",
+          "NotificationService",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "list",
+          "map",
+          "notificationsTool",
+          "of",
+          "ownerId",
+          "read",
+          "stream",
+          "toList"
         ],
         "registrationLine": 231,
         "inputProperties": {},
@@ -2350,7 +3599,30 @@
         "timeoutMillis": 120000,
         "beanMethod": "notificationMarkReadTool",
         "handlerServices": [
-          "service"
+          "NotificationService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "LOW",
+          "Map",
+          "NOTIFICATION",
+          "NOTIFICATION_CHANGE",
+          "NOTIFICATION_MANAGEMENT",
+          "NotificationResponse",
+          "NotificationService",
+          "ObjectMapper",
+          "Set"
+        ],
+        "boundMethods": [
+          "from",
+          "markRead",
+          "notificationMarkReadTool",
+          "of",
+          "ownerId",
+          "text",
+          "write"
         ],
         "registrationLine": 194,
         "inputProperties": {
@@ -2382,7 +3654,25 @@
         "timeoutMillis": 15000,
         "beanMethod": "roadmapCurrentTool",
         "handlerServices": [
-          "service"
+          "RoadmapQueryService"
+        ],
+        "boundClasses": [
+          "AgentRoadmapMapResponse",
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "ROADMAP",
+          "RoadmapQueryService",
+          "Set"
+        ],
+        "boundMethods": [
+          "currentMapIfPresent",
+          "map",
+          "of",
+          "orElse",
+          "ownerId",
+          "read",
+          "roadmapCurrentTool"
         ],
         "registrationLine": 92,
         "inputProperties": {},
@@ -2410,7 +3700,32 @@
         "timeoutMillis": 120000,
         "beanMethod": "roadmapEnrollTool",
         "handlerServices": [
-          "service"
+          "RoadmapEnrollmentService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "ROADMAP",
+          "ROADMAP_CHANGE",
+          "ROADMAP_MANAGEMENT",
+          "RoadmapEnrollmentService",
+          "Set",
+          "V"
+        ],
+        "boundMethods": [
+          "asInt",
+          "enroll",
+          "get",
+          "of",
+          "ownerId",
+          "path",
+          "roadmapEnrollTool",
+          "text",
+          "write"
         ],
         "registrationLine": 54,
         "inputProperties": {
@@ -2443,7 +3758,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "roadmapModuleTool",
         "handlerServices": [
-          "service"
+          "RoadmapQueryService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "ROADMAP",
+          "RoadmapQueryService",
+          "Set"
+        ],
+        "boundMethods": [
+          "currentModule",
+          "of",
+          "ownerId",
+          "read",
+          "roadmapModuleTool",
+          "text"
         ],
         "registrationLine": 107,
         "inputProperties": {
@@ -2479,7 +3810,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "roadmapNodeTool",
         "handlerServices": [
-          "service"
+          "RoadmapQueryService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "ROADMAP",
+          "RoadmapQueryService",
+          "Set"
+        ],
+        "boundMethods": [
+          "currentNode",
+          "of",
+          "ownerId",
+          "read",
+          "roadmapNodeTool",
+          "text"
         ],
         "registrationLine": 115,
         "inputProperties": {
@@ -2526,7 +3873,23 @@
         "timeoutMillis": 15000,
         "beanMethod": "roadmapStageTool",
         "handlerServices": [
-          "service"
+          "RoadmapQueryService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "ROADMAP",
+          "RoadmapQueryService",
+          "Set"
+        ],
+        "boundMethods": [
+          "currentStage",
+          "of",
+          "ownerId",
+          "read",
+          "roadmapStageTool",
+          "text"
         ],
         "registrationLine": 99,
         "inputProperties": {
@@ -2561,7 +3924,28 @@
         "timeoutMillis": 120000,
         "beanMethod": "roadmapUpgradeTool",
         "handlerServices": [
-          "service"
+          "RoadmapUpgradeService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "ROADMAP",
+          "ROADMAP_CHANGE",
+          "ROADMAP_MANAGEMENT",
+          "RoadmapUpgradeService",
+          "Set"
+        ],
+        "boundMethods": [
+          "confirm",
+          "of",
+          "ownerId",
+          "roadmapUpgradeTool",
+          "text",
+          "write"
         ],
         "registrationLine": 67,
         "inputProperties": {
@@ -2597,7 +3981,34 @@
         "timeoutMillis": 120000,
         "beanMethod": "runnerCheckRunTool",
         "handlerServices": [
-          "service"
+          "RunnerGovernanceService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "LOW",
+          "Map",
+          "ObjectMapper",
+          "RUNNER",
+          "RUNNER_EXECUTION",
+          "RUNNER_MANAGEMENT",
+          "RunnerExecutionRequest",
+          "RunnerGovernanceService",
+          "RunnerTemplateType",
+          "Set"
+        ],
+        "boundMethods": [
+          "of",
+          "optionalText",
+          "ownerId",
+          "requireRunnerSuccess",
+          "runnerCheckRunTool",
+          "runnerIdempotencyKey",
+          "submitExecution",
+          "text",
+          "valueOf",
+          "write"
         ],
         "registrationLine": 306,
         "inputProperties": {
@@ -2638,7 +4049,34 @@
         "timeoutMillis": 120000,
         "beanMethod": "runnerDependenciesPrepareTool",
         "handlerServices": [
-          "service"
+          "RunnerGovernanceService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "RUNNER",
+          "RUNNER_EXECUTION",
+          "RUNNER_MANAGEMENT",
+          "RunnerExecutionRequest",
+          "RunnerGovernanceService",
+          "RunnerTemplateType",
+          "Set"
+        ],
+        "boundMethods": [
+          "of",
+          "optionalText",
+          "ownerId",
+          "requireRunnerSuccess",
+          "runnerDependenciesPrepareTool",
+          "runnerIdempotencyKey",
+          "submitExecution",
+          "text",
+          "valueOf",
+          "write"
         ],
         "registrationLine": 329,
         "inputProperties": {
@@ -2679,7 +4117,27 @@
         "timeoutMillis": 15000,
         "beanMethod": "runnerExecutionPreviewTool",
         "handlerServices": [
-          "service"
+          "RunnerGovernanceService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "RUNNER",
+          "RunnerExecutionRequest",
+          "RunnerGovernanceService",
+          "RunnerTemplateType",
+          "Set"
+        ],
+        "boundMethods": [
+          "of",
+          "optionalText",
+          "ownerId",
+          "preview",
+          "read",
+          "runnerExecutionPreviewTool",
+          "text",
+          "valueOf"
         ],
         "registrationLine": 314,
         "inputProperties": {
@@ -2721,7 +4179,30 @@
         "timeoutMillis": 120000,
         "beanMethod": "scheduleRefreshTool",
         "handlerServices": [
-          "service"
+          "RoadmapScheduleService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRiskLevel",
+          "ExecutionType",
+          "LOW",
+          "LocalDate",
+          "Map",
+          "ObjectMapper",
+          "PLAN_ADJUSTMENT",
+          "RoadmapScheduleService",
+          "SCHEDULE",
+          "SMALL_PLAN_ADJUSTMENT",
+          "Set"
+        ],
+        "boundMethods": [
+          "of",
+          "ownerId",
+          "parse",
+          "refresh",
+          "scheduleRefreshTool",
+          "text",
+          "write"
         ],
         "registrationLine": 116,
         "inputProperties": {
@@ -2753,7 +4234,25 @@
         "timeoutMillis": 15000,
         "beanMethod": "todayScheduleTool",
         "handlerServices": [
-          "service"
+          "RoadmapScheduleService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "LocalDate",
+          "Map",
+          "ObjectMapper",
+          "RoadmapScheduleService",
+          "SCHEDULE",
+          "Set"
+        ],
+        "boundMethods": [
+          "getOrCreate",
+          "of",
+          "ownerId",
+          "parse",
+          "read",
+          "text",
+          "todayScheduleTool"
         ],
         "registrationLine": 123,
         "inputProperties": {
@@ -2783,7 +4282,38 @@
         "timeoutMillis": 15000,
         "beanMethod": "unfinishedScheduleTool",
         "handlerServices": [
-          "service"
+          "RoadmapScheduleService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "COMPLETED",
+          "LocalDate",
+          "Map",
+          "ObjectMapper",
+          "RoadmapScheduleItemStatus",
+          "RoadmapScheduleService",
+          "SCHEDULE",
+          "Set"
+        ],
+        "boundMethods": [
+          "date",
+          "days",
+          "filter",
+          "flatMap",
+          "getOrCreate",
+          "items",
+          "map",
+          "nodeId",
+          "of",
+          "ownerId",
+          "parse",
+          "read",
+          "status",
+          "stream",
+          "text",
+          "title",
+          "toList",
+          "unfinishedScheduleTool"
         ],
         "registrationLine": 133,
         "inputProperties": {
@@ -2814,7 +4344,22 @@
         "timeoutMillis": 15000,
         "beanMethod": "aiSettingsStatusTool",
         "handlerServices": [
-          "service"
+          "AiCredentialService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AiCredentialService",
+          "Map",
+          "ObjectMapper",
+          "SETTINGS",
+          "Set"
+        ],
+        "boundMethods": [
+          "aiSettingsStatusTool",
+          "of",
+          "ownerId",
+          "read",
+          "settings"
         ],
         "registrationLine": 286,
         "inputProperties": {},
@@ -2844,7 +4389,24 @@
         "timeoutMillis": 15000,
         "beanMethod": "learningSettingsTool",
         "handlerServices": [
-          "service"
+          "UserSettingsService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "SETTINGS",
+          "Set",
+          "UserSettingsResponse",
+          "UserSettingsService"
+        ],
+        "boundMethods": [
+          "from",
+          "get",
+          "learningSettingsTool",
+          "of",
+          "ownerId",
+          "read"
         ],
         "registrationLine": 280,
         "inputProperties": {},
@@ -2870,7 +4432,46 @@
         "timeoutMillis": 120000,
         "beanMethod": "learningSettingsUpdateTool",
         "handlerServices": [
-          "service"
+          "UserSettingsService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "AvailabilitySlotRequest",
+          "ExecutionType",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "SETTINGS",
+          "SETTINGS_MANAGEMENT",
+          "Set",
+          "USER_SETTINGS_CHANGE",
+          "UpdateUserSettingsRequest",
+          "UserSettingsResponse",
+          "UserSettingsService"
+        ],
+        "boundMethods": [
+          "asInt",
+          "from",
+          "get",
+          "getDayOfWeek",
+          "getDefaultPrivacyLevel",
+          "getEndTime",
+          "getStartTime",
+          "getTimeZone",
+          "getWeekendPreference",
+          "getWeeklyAvailability",
+          "learningSettingsUpdateTool",
+          "map",
+          "of",
+          "ownerId",
+          "path",
+          "requireValid",
+          "save",
+          "stream",
+          "toList",
+          "write"
         ],
         "registrationLine": 208,
         "inputProperties": {
@@ -2900,7 +4501,22 @@
         "timeoutMillis": 15000,
         "beanMethod": "workspacesTool",
         "handlerServices": [
-          "service"
+          "RoadmapArtifactService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "Map",
+          "ObjectMapper",
+          "RoadmapArtifactService",
+          "Set",
+          "WORKSPACE"
+        ],
+        "boundMethods": [
+          "of",
+          "ownerId",
+          "read",
+          "workspaces",
+          "workspacesTool"
         ],
         "registrationLine": 252,
         "inputProperties": {},
@@ -2926,7 +4542,31 @@
         "timeoutMillis": 120000,
         "beanMethod": "workspaceRegisterTool",
         "handlerServices": [
-          "service"
+          "RoadmapArtifactService"
+        ],
+        "boundClasses": [
+          "AgentToolHandler",
+          "AgentToolRequestValidator",
+          "AgentToolRiskLevel",
+          "CreateProjectWorkspaceRequest",
+          "ExecutionType",
+          "HIGH",
+          "Map",
+          "ObjectMapper",
+          "RoadmapArtifactService",
+          "Set",
+          "WORKSPACE",
+          "WORKSPACE_MANAGEMENT",
+          "WORKSPACE_REGISTRATION"
+        ],
+        "boundMethods": [
+          "createWorkspace",
+          "of",
+          "ownerId",
+          "requireValid",
+          "text",
+          "workspaceRegisterTool",
+          "write"
         ],
         "registrationLine": 234,
         "inputProperties": {
@@ -2950,7 +4590,7 @@
     ]
   },
   "defectOverrides": {
-    "note": "本端在真实 handler 代码中核实到的基线缺陷。这些工具已注册并实现，但当前无法满足其声明契约，因此不满足 shared 中 allowed 的“实现条件”，必须以 pending 暴露并写明原因，而不是按 READ 一律 allowed。缺陷属 Java 侧实现/契约不一致，修复归 Java Owner，本端只登记事实与证据。",
+    "note": "本端在真实 handler 与校验代码中静态推导出的基线契约缺陷：尚未运行 Java 行为复现，也没有启动后端、数据库或模型。因此这些工具按 pending 暴露并写明推导依据，而不是宣称已实测失败。缺陷属 Java 侧实现/契约不一致，修复归 Java Owner。",
     "items": [
       {
         "tool": "schedule.today.get",
@@ -2959,7 +4599,7 @@
         "reasonMustContain": [
           "连续七天"
         ],
-        "evidence": "AgentReadToolConfiguration.java#L123-L128 以 getOrCreate(ownerId, date, date) 调用，start==end；RoadmapScheduleService.validateWindow L317-L320 要求 end == start+6，故恒定抛 IllegalArgumentException(\"路线日程必须是包含首尾日期的连续七天\")。且 getOrCreate 为 @Transactional，成功路径会惰性创建/刷新排期行，不是纯只读。"
+        "evidence": "（静态推导，未经运行期复现）AgentReadToolConfiguration.java#L123-L128 以 getOrCreate(ownerId, date, date) 调用，start==end；RoadmapScheduleService.validateWindow L317-L320 要求 end == start+6，故按代码路径推导必然抛 IllegalArgumentException(\"路线日程必须是包含首尾日期的连续七天\")。且 getOrCreate 为 @Transactional，成功路径会惰性创建/刷新排期行，不是纯只读。"
       },
       {
         "tool": "assessment.wrong_questions.list",
@@ -2968,7 +4608,7 @@
         "reasonMustContain": [
           "WrongQuestionPageResponse"
         ],
-        "evidence": "AgentToolOutputSchemas.java#L379 登记为 array(WRONG_QUESTION)，但 WrongQuestionService.list L143 返回 WrongQuestionPageResponse{items,totalElements,page,size}（record 定义 L5-L10）。AgentToolRegistry.invoke L82 在调用边界强校验输出，数组期望与对象实际不一致 → 恒定失败。"
+        "evidence": "（静态推导，未经运行期复现）AgentToolOutputSchemas.java#L379 登记为 array(WRONG_QUESTION)，但 WrongQuestionService.list L143 返回 WrongQuestionPageResponse{items,totalElements,page,size}（record 定义 L5-L10）。AgentToolRegistry.invoke L82 在调用边界强校验输出，数组期望与对象实际不一致 → 按代码路径推导必然失败。"
       },
       {
         "tool": "governance.health.get",
@@ -2977,7 +4617,7 @@
         "reasonMustContain": [
           "AssistantHealthResponse"
         ],
-        "evidence": "AgentToolOutputSchemas.java#L132-L137 登记 HEALTH 共 12 个字段且闭合；AssistantHealthService.summarize L47 返回 AssistantHealthResponse，含 modelCalls/failedModelCalls/modelFailureRate/model*Tokens/unknownPriceCalls/usageEstimatedCost/currency/priceStatus/priceVersion 等约 29 个组件。AgentToolOutputValidator L83-L89 对未声明字段抛“存在未声明的输出字段” → 恒定失败。"
+        "evidence": "（静态推导，未经运行期复现）AgentToolOutputSchemas.java#L132-L137 登记 HEALTH 共 12 个字段且闭合；AssistantHealthService.summarize L47 返回 AssistantHealthResponse，含 modelCalls/failedModelCalls/modelFailureRate/model*Tokens/unknownPriceCalls/usageEstimatedCost/currency/priceStatus/priceVersion 等约 29 个组件。AgentToolOutputValidator L83-L89 对未声明字段抛“存在未声明的输出字段” → 按代码路径推导必然失败。"
       },
       {
         "tool": "artifacts.evaluate",
@@ -2986,8 +4626,9 @@
         "reasonMustContain": [
           "Rubric"
         ],
-        "evidence": "RoadmapArtifactService.evaluate L278-L283 在属主校验后无条件抛 ConflictException(\"真实 DeepSeek Rubric 评审尚未接入…\")，agent 路径无法返回结果，也不调用模型。真实 AI Rubric 在 REST 侧 ArtifactReviewService，Agent 工具触达不到。"
+        "evidence": "（静态推导，未经运行期复现）RoadmapArtifactService.evaluate L278-L283 在属主校验后无条件抛 ConflictException(\"真实 DeepSeek Rubric 评审尚未接入…\")，agent 路径无法返回结果，也不调用模型。真实 AI Rubric 在 REST 侧 ArtifactReviewService，Agent 工具触达不到。"
       }
-    ]
+    ],
+    "evidence_level": "static_source_derivation"
   }
 }

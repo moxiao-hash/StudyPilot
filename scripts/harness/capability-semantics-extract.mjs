@@ -107,24 +107,79 @@ function parseStringSet(block, call) {
   return [...inner.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
 }
 
-/** The bean method that declares a registration, for handler provenance. */
+/** Source text of the brace-balanced body starting at the first `{` after `from`. */
+function methodBody(text, from) {
+  const open = text.indexOf('{', from);
+  if (open < 0) return '';
+  let depth = 0;
+  let inString = false;
+  let inChar = false;
+  let inLineComment = false;
+  for (let index = open; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+    if (inLineComment) {
+      if (char === '\n') inLineComment = false;
+      continue;
+    }
+    if (inString) {
+      if (char === '\\') index += 1;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (inChar) {
+      if (char === '\\') index += 1;
+      else if (char === "'") inChar = false;
+      continue;
+    }
+    if (char === '/' && next === '/') { inLineComment = true; index += 1; continue; }
+    if (char === '"') { inString = true; continue; }
+    if (char === "'") { inChar = true; continue; }
+    if (char === '{') depth += 1;
+    else if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return text.slice(open, index + 1);
+    }
+  }
+  return text.slice(open);
+}
+
+/**
+ * The bean method that declares a registration, its injected service types, and
+ * the symbols actually visible in that method. The symbol sets are what a
+ * declared handler binding is checked against: a class or method that appears
+ * nowhere in the tool's own registration context cannot be its real binding.
+ */
 function enclosingBeanMethod(text, offset) {
   const before = text.slice(0, offset);
   const match = /AgentToolHandler\s+([A-Za-z0-9_]+)\s*\(([^)]*)\)/g;
   let found = null;
   let candidate;
   while ((candidate = match.exec(before)) !== null) found = candidate;
-  if (!found) return { beanMethod: null, handlerServices: [] };
+  if (!found) return { beanMethod: null, handlerServices: [], boundClasses: [], boundMethods: [] };
   const handlerServices = found[2]
     .split(',')
     .map((part) => part.trim())
     .map((part) => part.replace(/\s+/g, ' '))
     .filter((part) => part && !/ObjectMapper|AgentToolRequestValidator|AgentToolTimeoutGuard/.test(part))
     .map((part) => {
-      const tokens = part.split(' ');
-      return tokens[tokens.length - 1];
+      // The injected TYPE (not the parameter variable name) is the binding
+      // evidence, e.g. "com...AssistantHealthService service" -> AssistantHealthService.
+      const tokens = part.split(' ').filter(Boolean);
+      const type = tokens.length >= 2 ? tokens[tokens.length - 2] : tokens[tokens.length - 1];
+      return type.replace(/<.*>$/, '').split('.').pop();
     });
-  return { beanMethod: found[1], handlerServices };
+  // `match` is the RegExp object here, not a match result: use found.index.
+  // (Using match.index would be undefined -> NaN -> indexOf('{', NaN) === 0 and
+  // the "body" would silently span the whole file.)
+  const body = methodBody(text, found.index + found[0].length);
+  const context = `${found[0]} ${body}`;
+  const boundClasses = [...new Set([...context.matchAll(/\b([A-Z][A-Za-z0-9_]*)\b/g)].map((m) => m[1]))].sort();
+  const boundMethods = [...new Set([
+    found[1],
+    ...[...context.matchAll(/\b([a-z][A-Za-z0-9_]*)\s*\(/g)].map((m) => m[1]),
+  ])].sort();
+  return { beanMethod: found[1], handlerServices, boundClasses, boundMethods };
 }
 
 function scanRegistrations(text, kind) {
@@ -138,12 +193,15 @@ function scanRegistrations(text, kind) {
     const strings = [...block.matchAll(/"([^"]+)"/g)].map((entry) => entry[1]);
     const name = strings[0];
     const category = strings[1];
-    const { beanMethod, handlerServices } = enclosingBeanMethod(text, match.index);
+    const { beanMethod, handlerServices, boundClasses, boundMethods } =
+      enclosingBeanMethod(text, match.index);
     const entry = {
       name,
       category,
       beanMethod,
       handlerServices,
+      boundClasses,
+      boundMethods,
       registrationLine: lineAt(text, match.index),
       inputProperties: parseStringMap(block, 'Map.of'),
       inputRequired: parseStringSet(block, 'Set.of'),
@@ -190,6 +248,10 @@ function scanNavigation(text) {
     inputProperties: { routeKey: 'string', params: 'object' },
     inputRequired: ['routeKey'],
     routes,
+    // Binding symbols for the navigation tool come from its own source file:
+    // the descriptor is built in the constructor and invoke() is the entry point.
+    boundClasses: [...new Set([...text.matchAll(/\b([A-Z][A-Za-z0-9_]*)\b/g)].map((m) => m[1]))].sort(),
+    boundMethods: [...new Set([...text.matchAll(/\b([a-z][A-Za-z0-9_]*)\s*\(/g)].map((m) => m[1]))].sort(),
     registrationLine: lineAt(text, text.indexOf('new AgentToolDescriptor(')),
   };
 }
