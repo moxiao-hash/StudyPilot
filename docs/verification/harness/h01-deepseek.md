@@ -643,7 +643,7 @@ node --test scripts/harness/baseline-inventory.test.mjs
 | 分支 | `codex/harness-h01-deepseek-baseline`（原分支，未切换） |
 | 基线（快照 commit） | `f7311079a83b84c5e7f3a9076ce4efccb3044c86` |
 | 一轮交付提交 | `b63184b56336804de588571f43fd20722724457c`（一轮 Codex HEAD 记为 `61e097f5…`） |
-| 二轮交付提交 | `ad039d35ea6bb2d7ac682bb4d9216ab3599a8440`（含下列 6 个文件，本地提交，无 push/merge/deploy）；本文档该行 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
+| 二轮交付提交 | `ad039d35ea6bb2d7ac682bb4d9216ab3599a8440`（R4 主体：摘要锁 + 投影）+ `b05e280f493b06a8e8b9667518f5ce9deadfff38`（词表来源可追溯与跨树独立性守护），均含同一组 6 个 Owner 文件，本地提交，无 push/merge/deploy；最终 HEAD 见回执 |
 | 测试 | fixtures **66/66**；inventory **34/34**；`--check` 无漂移；R4 独立反例 **10/10** 符合预期（含一轮被误接受的 2 例现被拒） |
 | 证据层级 | mock/offline（无真实模型、无服务、无 DB、未运行桌面 Harness 测试或构建） |
 | 未覆盖项 | 见第 11 节（含 UNVERIFIED 清单） |
@@ -694,4 +694,4 @@ node scripts/harness/baseline-inventory.mjs --lock          # 复核冻结摘要
 
 未触碰：原 Harness（桌面）源码、原 Task33 工作树、其他 H01 工作树、公共 schema `contracts/agent-runtime/runtime.schema.json`、共享计划/交接/Obsidian、模型配置与密钥。未 push / merge / deploy / 重启服务 / 真实模型评测。
 
-**二轮提交**：交付提交 `ad039d35ea6bb2d7ac682bb4d9216ab3599a8440`（含上述 6 个文件）；该行 hash 回填的 md-only 提交为最终 HEAD，见回执。
+**二轮提交**：`ad039d35ea6bb2d7ac682bb4d9216ab3599a8440` 与 `b05e280f493b06a8e8b9667518f5ce9deadfff38`，均只含上述 6 个 Owner 文件；本轮最终 HEAD 见回执。
