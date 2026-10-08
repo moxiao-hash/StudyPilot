@@ -88,11 +88,22 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
             version: 1,
             category: 'GENERAL',
             description: `Tool ${name}`,
+            when_to_use: [`When user asks for ${name}`],
             side_effect: { effect: isWrite ? 'WRITE' : 'READ', risk_level: 'LOW' },
+            confirmation: { mode: isWrite ? 'always_user_confirmation' : 'none' },
             exposure: { state: isDisabled ? 'disabled' : 'allowed', reason: 'baseline' },
             source_provenance: {
-              handler: 'MockService.handle'
-            }
+              handler: 'AgentLearningContextService.get'
+            },
+            examples: [
+              {
+                name: 'default_example',
+                input: {},
+                expect: 'default expect',
+                outcome: 'ok',
+                output: {}
+              }
+            ]
           };
         })
       };
@@ -123,6 +134,7 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
           version: 1,
           category: 'TEST',
           description: `Tool ${name}`,
+          when_to_use: [`When user requests ${name}`],
           side_effect: {
             effect: WRITE_TOOLS.has(name) ? 'WRITE' : 'READ',
             risk_level: WRITE_TOOLS.has(name) ? 'HIGH' : 'LOW'
@@ -135,16 +147,19 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
             reason: 'mock reason'
           },
           source_provenance: {
-            handler: 'MockService.handle'
+            handler: 'AgentLearningContextService.get'
           },
           authoritative_facts: name === 'roadmap.current.get' ? [{ fact: 'overall_progress', meaning: 'pct' }] : [],
-          output_schema: name === 'roadmap.current.get' ? { type: 'object', properties: { overall_progress: { type: 'number' } } } : { type: 'object', properties: {} },
+          output_schema: name === 'roadmap.current.get'
+            ? { type: 'object', properties: { overall_progress: { type: 'number' } } }
+            : { type: 'object', properties: {} as Record<string, { type?: string }> },
           examples: [
             {
               name: 'default_example',
               input: {},
               expect: 'default expect',
-              outcome: 'ok'
+              outcome: 'ok',
+              output: {}
             }
           ]
         }))
@@ -171,6 +186,7 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
         version: 1,
         category: 'FAKE',
         description: 'fake tool',
+        when_to_use: ['user asks for magic'],
         side_effect: { effect: 'READ', risk_level: 'LOW' },
         exposure: { state: 'allowed', reason: 'fake' }
       });
@@ -213,6 +229,7 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
         version: 1,
         category: 'ASSESSMENT',
         description: 'user only',
+        when_to_use: ['user submits quiz'],
         side_effect: { effect: 'WRITE', risk_level: 'HIGH' },
         exposure: { state: 'allowed', reason: 'illegal' }
       });

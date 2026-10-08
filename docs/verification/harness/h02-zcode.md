@@ -126,26 +126,31 @@
 
 ---
 
-## 5. Codex 独立跨端探针 (12/12) 实测结果
+## 5. Codex 独立跨端探针 (17/17) 实测结果
 
-直接针对 Codex 第一轮验收构造的 12 项跨端输入探针（涵盖合法基线与 11 项变异坏输入）进行独立实测：
+针对 Codex 在 `/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round2-probes.mjs` 中定义的全部 17 项跨端探针进行实测：
 
 | 探针编号 | 探针名称 | 注入破坏操作 | 预期行为 | 实测行为 | 退出状态 | 判定 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **0** | `valid-baseline` | 合法正本 Manifest 与 Metadata | `accept` | `accept` | `exit: 0` | **PASS** |
-| **1** | `missing-description` | 剔除工具 0 的 `description` 字段 | `reject` | `reject` | `exit: 1` | **PASS** |
-| **2** | `unknown-tool-field` | 注入未知工具字段 `unrecognized: 42` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **3** | `invalid-output-instance`| 示例输出设为数值 `output: 42`（预期 object） | `reject` | `reject` | `exit: 1` | **PASS** |
-| **4** | `nested-owner-in-output`| 示例输出注入深层嵌套 `{ nested: { ownerId: ... } }` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **5** | `arbitrary-fabricated-fact`| 工具 0 注入未声明事实 `made_up_metric_893` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **6** | `fictional-handler` | 绑定虚构处理类 `UnregisteredClass.noSuchMethod` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **7** | `schema-not-json` | Schema 文件注入非 JSON 字符串 `not-json` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **8** | `metadata-not-yaml` | Metadata 文件注入损坏 YAML `[ malformed` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **9** | `coverage-fictional-route`| 覆盖表注入虚构路由 `fictionalRoute` (`/not-registered`) | `reject` | `reject` | `exit: 1` | **PASS** |
-| **10** | `stale-source-hash` | Manifest 注入全零来源哈希 `'0'.repeat(64)` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **11** | `missing-upstream` | 外部依赖路径传入不存在的 `missing-metadata` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **0** | `aligned immutable baseline` | 合法正本 Manifest 与 Metadata | `accept` | `accept` | `exit: 0` | **PASS** |
+| **1** | `old sentinel fictional handler` | 绑定虚构处理类 `UnregisteredClass.noSuchMethod` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **2** | `renamed fictional handler` | 绑定更名虚构类 `ImaginaryLearningService.computeEverything` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **3** | `nonzero mismatched metadata hash` | Manifest 注入非零不匹配来源哈希 `'1'.repeat(64)` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **4** | `valid JSON wrong schema` | Schema 传入合法 JSON 但内容为 `{ type: 'null' }` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **5** | `valid YAML empty metadata` | Metadata 传入合法 YAML 但 `tools: []` 空列表 | `reject` | `reject` | `exit: 1` | **PASS** |
+| **6** | `missing when_to_use` | 剔除工具 0 的 `when_to_use` 用途说明 | `reject` | `reject` | `exit: 1` | **PASS** |
+| **7** | `unknown nested cost field` | `cost_hint` 注入未声明属性 `undocumented: true` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **8** | `empty examples` | 工具 0 的 `examples` 清空为空数组 | `reject` | `reject` | `exit: 1` | **PASS** |
+| **9** | `missing successful output` | 成功用例 `outcome: ok` 缺少 `output` 字段 | `reject` | `reject` | `exit: 1` | **PASS** |
+| **10** | `missing output required property` | 成功用例输出缺少 `output_schema.required` 必填字段 | `reject` | `reject` | `exit: 1` | **PASS** |
+| **11** | `wrong nested output type` | 成功用例输出字段类型不符（integer 设为 string） | `reject` | `reject` | `exit: 1` | **PASS** |
+| **12** | `duplicate real route replacing another`| 覆盖表重复添加已有路由并替换另一真实路由 (30/31) | `reject` | `reject` | `exit: 1` | **PASS** |
+| **13** | `renamed wrong route path` | 真实路由被篡改为非法路径 `/another-unregistered-path` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **14** | `fictional registered audit name` | 工具审计表中注入虚构工具 `invented.business.operation` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **15** | `invalid governance confirmation` | HIGH 风险工具 confirmation.mode 设为无效枚举 | `reject` | `reject` | `exit: 1` | **PASS** |
+| **16** | `root unknown field` | Manifest 顶层注入未声明字段 `unspecified: 123` | `reject` | `reject` | `exit: 1` | **PASS** |
 
-**实测结果**：12/12 项探针全部达到预期（1 项合法通过，11 项坏输入全部被非零退出拦截），零假阳性，零漏判。
+**实测结果**：**17/17 项探针全部达到预期**（合法基线退出码 0，16 项变异坏输入全部被非零退出拦截），零假阳性，零漏判。
 
 ---
 
