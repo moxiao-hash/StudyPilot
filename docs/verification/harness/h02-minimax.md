@@ -1,6 +1,6 @@
-# H02 证据与接口约定：MiniMax Code（Round 2 整改交付）
+# H02 证据与接口约定：MiniMax Code（Round 2 审查整改交付）
 
-状态：**READY_FOR_CODEX**（H02 首轮验收整改已完成，停止等待 Codex 独立验收）。
+状态：**READY_FOR_CODEX**（H02 第二轮审查 R-M4 / R-M5 / R-M6 整改已完成，停止等待 Codex 独立验收）。
 
 ## 0. ACKNOWLEDGED（环境与核验基准）
 
@@ -9,152 +9,135 @@
 | 工作树 / cwd | `/Users/moxiao/IdeaProjects/project-harness-h02-minimax`（显式进入新树，未在原 Task33 目录操作） |
 | 分支 | `codex/harness-h02-minimax` |
 | 共同基线 HEAD | `16b37d34c882a17e7bc45c69c84411f28f52bff8` |
-| 审查基准 (Round 1) | `ebb6f2b95563d71f6a43ac65b1c56bf3f59b31d5`（实现 `d3d20440ba5035245f7c8835226e077b2605483e`） |
-| Codex 审阅意见 | `CHANGES_REQUESTED`（见 `docs/verification/harness/h02-codex-minimax-round1.md` 及 `h02-codex-minimax-probes.json`） |
+| 审查基准 (Round 2) | `da3bae15bbc74978b5cff82ef7b26f357bd50837`（实现 `9697dd91b1c7a19fef00396e3c10a68284d00ada`） |
+| Codex 审阅意见 | `CHANGES_REQUESTED`（见 `docs/verification/harness/h02-codex-minimax-round2.md` 及 `h02-codex-round2-cross-probes.json/mjs`） |
 | 当前 UI 模型标签 | `MiniMax Code`（系统 prompt 声明）；真实 provider model ID：**未知** |
 | 边界遵从 | 离线执行，未 push / merge / deploy，未改动模型配置或密钥，未重启服务，未动数据库，未进入 H03 |
 
 ---
 
-## 1. Codex 首轮审查缺口与 R-M1 / R-M2 / R-M3 整改清单
+## 1. Codex 第二轮审查缺陷与 R-M4 / R-M5 / R-M6 整改清单
 
-Codex 独立验收在 `docs/verification/harness/h02-codex-minimax-round1.md` 中指出了第一轮交付的 3 大类阻塞问题（共 12 项失败探针），现已全部整改：
+### 1.1 R-M4: 完整 Schema 深度校验与合法实例约束
+- **Schema 约束完整执行**：
+  - `validateValueAgainstSchema` 及 verifier 深度执行所有关键字约束：`enum`（枚举包含性检查）、`const`（常量相等性）、`minimum`/`maximum`/`exclusiveMinimum`/`exclusiveMaximum`（数值闭/开区间范围）、`minLength`/`maxLength`/`pattern`（字符串长度与正则匹配）、`minItems`/`maxItems`（数组项数约束）、`additionalProperties: false`（未允许属性拦截）及 `required`（必填属性检测）；
+- **占位输出与必填属性强检验**：
+  - 移除对 `shape_placeholder` 的整段 output 校验跳过逻辑，所有 `outcome === 'ok'` 的示例 output 必须递归执行完整模式校验；
+  - 拦截空对象 `{}` 对有 `required` 约束输出模式的冒充（拦截 `placeholder-empty-required-output`）；
+- **对 DeepSeek 非法实例坚决 BLOCKED**：
+  - 严格校验输出模式结构，当元数据示例包含未经 Schema 声明的非法属性（例如在 `developer.tests.recommend.output` 根节点出现 `templateType` 属性）时，坚决抛出异常拒绝编译并保持 BLOCKED，不绕过校验；
+- **全层级未知字段与类型防护**：
+  - 拦截未知嵌套字段：`confirmation`（仅限 `mode`, `waiting_status`, `notes`）、`cost_hint`（仅限 `local`, `external_dependency`, `notes`）、`exposure`（仅限 `state`, `reason`）、`source_provenance`（仅限 `registration`, `handler`, `output_schema`, `unverified_symbols`）、`authoritative_facts`（仅限 `fact`, `meaning`）、`examples`（仅限 `name`, `input`, `output`, `outcome`, `expect`, `fixture_kind`, `error`, `fixture_source`）；
+  - `when_to_use` / `when_not_to_use` / `error_contract` 强制校验为非空字符串数组，拦截包含数字等非字符串项（拦截 `non-string-purpose-array`）。
 
-### 1.1 R-M1: 完整 Schema 与示例校验
-- **缺失字段与类型检查**：校验器严格要求所有必填字段（包括 `description`、`when_to_use`、`when_not_to_use`、`error_contract` 等），拒绝空字符串、空数组或缺失项；
-- **元数据未知字段拦截**：元数据工具项仅允许 11 个标准字段，拦截任何未声明属性（如 `inventedField`）；
-- **未知 Schema 约束拦截**：递归检查 `d.inputSchema` 与 `d.outputSchema` 的所有约束关键字，拦截任何非法或非标准关键字（如 `inventedConstraint`）；
-- **示例输入/输出强类型校验**：
-  - `example.input` 依据 `d.inputSchema` 进行严格类型校验与 `additionalProperties: false` 拦截（拦截非法参数如 `illegalUnknownParameter: 42`）；
-  - `example.output` 依据 `d.outputSchema` 校验类型（当模式期望对象/数组时，拦截非法基础类型如数字 `42`）；
-  - 递归深度扫描 `example.input` 与 `example.output`，拦截任何嵌套的私有/鉴权字段（如 `params: { ownerId: 123 }`）；
-- **结构校验器类型与枚举断言**：`capability-source-verifier.mjs` 增补深度校验，严格验证 `version`（必须为 `>= 1` 整数）、`exposure.state`（枚举）、`side_effect`、`confirmation` 等字段类型与枚举。
+### 1.2 R-M5: 真实源码 Handler 绑定与动态核验（去人工自证）
+- **Java 导出端动态解析真实配置**：
+  - 重构 `HarnessCapabilityDescriptorExportTest.java`，彻底废除直接读取静态 `tool-bindings.json` 的自证逻辑；
+  - 动态读取并解析 `AgentReadToolConfiguration.java`、`AgentWriteToolConfiguration.java` 与 `NavigationToolHandler.java` 源码，提取全部 65 个工具与其调用的服务类及方法（如 `AssistantHealthService.summarize`、`WorkspaceDeveloperService.commitConfirmed` 等），动态生成 `tool-bindings.json` 并附加到导出的 `descriptors.json`；
+- **编译器端源码级防伪核验**：
+  - 编译器实现 `extractJavaBindings(sourceRoot)`，直接从 Java 源码配置中提取真值绑定映射；
+  - 校验描述符必须显式携带 `handler`，当 `d.handler` 缺失时报错拦截（拦截 `missing-exported-binding`）；
+  - 校验 `d.handler` 与 `m.source_provenance.handler` 必须在 Java 源码真实绑定表中存在且完全一致，任何虚构绑定（如 `UnregisteredClass.noSuchMethod`）即便描述符与元数据同时伪造也坚决拦截（拦截 `forged-binding-and-metadata-agree`）；
+  - 明确证据层级：源码 AST/正则静态语义配对作为契约真值，而非运行时反射调用证明。
 
-### 1.2 R-M2: 来源绑定与治理/业务边界
-- **真实 Handler 绑定校验**：
-  - Java 离线测试 `HarnessCapabilityDescriptorExportTest` 读取真实工具绑定并将其作为 `handler` 属性导出到 `descriptors.json`；
-  - 编译器严格校验元数据中的 `source_provenance.handler` 必须精确匹配真实绑定的服务类与方法（如 `AssistantHealthService.summarize`），坚决拦截虚构绑定（如 `NonexistentService.nonexistent`）；
-- **治理与曝光红线拦截**：
-  - H02 阶段严格禁止写工具开放：当 `effect === 'WRITE'` 且 `exposure.state === 'allowed'` 时抛出异常拦截；
-  - H02 阶段默认禁用 coding/runner 工具：当工具名匹配 `^(developer|runner)\.` 且 `exposure.state === 'allowed'` 时抛出异常拦截；
-- **权威事实真实性校验**：
-  - 递归提取 `d.outputSchema` 中定义的所有合法属性名称；
-  - 严格校验 `authoritative_facts[].fact` 必须存在于该工具输出契约中，拦截虚构事实（如 `inventedField`）。
-
-### 1.3 R-M3: 确定性、溯源与 CLI
-- **默认确定性时间戳**：
-  - 移除运行时时钟 `new Date().toISOString()` 对编译结果的不稳定性影响；
-  - 默认未传固定时间戳时，根据 `descriptorsHash` 与 `metadataHash` 计算确定性时间偏移，保证同一输入默认编译两次产物字节 100% 相同；
-- **多维溯源绑定**：
-  - `manifest.sources` 绑定 `descriptor_count` (65)、`descriptors_hash`、`metadata_hash`、`java_source_hash`（4 个 Java 工具配置核心文件的 SHA-256）与 `commit`（当前 Git HEAD Hash）；
-  - `manifest.schema.json` 同步扩充 `sources` 契约定义；
-- **CLI 命令行参数与错误退出**：
-  - `compile-agent-capabilities.mjs` 接收显式参数 `--descriptors <path>`、`--metadata <path>`、`--output <path>`；
-  - 缺失或非法输入时向 stderr 输出错误并以非零状态码（exit 1）退出。
+### 1.3 R-M6: 严格源码溯源与 CLI 失败关闭
+- **显式源码根目录与严禁回退伪造**：
+  - 编译器强制检查 Java 源码文件真实存在，缺源码时报错退出（拦截 `missing-java-source-cwd`）；
+  - 移除对 Git commit 失败后的硬编码 fallback，非有效 Git 仓库或无法解析 HEAD 时明确报错退出；
+  - `manifest.sources` 真实记录当前 Git commit、65 个工具计数、`descriptors_hash`、`metadata_hash` 与核心 Java 配置文件的 `java_source_hash`；
+- **CLI 命令行严格解析与跨树隔离**：
+  - 支持显式参数 `--descriptors <path>`、`--metadata <path>`、`--output <path>`、`--source-root <path>`；
+  - 遇到未知参数或参数缺少对应值时向 stderr 报错并以状态码 1 退出；
+  - 移除针对缺失元数据的硬编码跨树 fallback 查找，路径缺失时直接失败关闭。
 
 ---
 
-## 2. RED 证据（首轮验收独立探针失败记录）
+## 2. RED 证据（整改前 9 项测试失败断言）
 
-Codex 独立探针 `h02-codex-minimax-probes.mjs` 在首轮审查（`ebb6f2b9`）运行结果呈现 12 项失败：
-```json
-[
-  { "name": "baseline", "expected": "accept", "actual": "accept", "pass": true },
-  { "name": "missing-description", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "fictional-binding", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "invalid-input", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "invalid-output", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "nested-owner", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "write-enabled", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "coding-enabled", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "fictional-fact", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "unknown-metadata-field", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "unknown-schema-constraint", "expected": "reject", "actual": "accept", "pass": false },
-  { "name": "default-determinism", "expected": "identical", "actual": "different", "pass": false },
-  { "name": "verifier-types-and-enums", "expected": "reject", "actual": "accept", "pass": false }
-]
+在 `scripts/compile-agent-capabilities.test.mjs` 中预先添加 9 项针对缺陷场景的断言，整改前全部如期失败：
+```
+✖ failing tests:
+✖ negative: compiler rejects missing exported handler binding in descriptors
+✖ negative: compiler rejects forged handler binding not matching Java source truth
+✖ negative: compiler enforces enum constraint on example values
+✖ negative: compiler enforces minimum constraint on example values
+✖ negative: compiler rejects empty object output when required fields are specified
+✖ negative: compiler rejects missing cost_hint and exposure
+✖ negative: compiler rejects non-string purpose array items
+✖ negative: compiler rejects unknown nested fields in confirmation
+✖ negative: compiler rejects compilation when Java source files are missing
+ℹ tests 26, pass 17, fail 9
 ```
 
 ---
 
 ## 3. GREEN 证据（整改后）
 
-### 3.1 Codex 独立探针复跑全量通过（13/13 PASS）
-运行 `node /Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-probes.mjs`：
-```json
-[
-  { "name": "baseline", "expected": "accept", "actual": "accept", "pass": true },
-  { "name": "missing-description", "expected": "reject", "actual": "reject", "pass": true, "error": "工具 governance.health.get 缺少非空 description" },
-  { "name": "fictional-binding", "expected": "reject", "actual": "reject", "pass": true, "error": "工具 governance.health.get 来源绑定错误: 期望绑定 AssistantHealthService.summarize，实际声明 \"NonexistentService.nonexistent\"" },
-  { "name": "invalid-input", "expected": "reject", "actual": "reject", "pass": true, "error": "对象包含未允许属性: governance.health.get.examples[overall assistant health].input.illegalUnknownParameter" },
-  { "name": "invalid-output", "expected": "reject", "actual": "reject", "pass": true, "error": "工具 learning.context.get 示例输出类型错误: 期望 object，实际 number" },
-  { "name": "nested-owner", "expected": "reject", "actual": "reject", "pass": true, "error": "示例数据包含被禁止的鉴权/隐私字段: governance.health.get.examples[overall assistant health].input.params.ownerId" },
-  { "name": "write-enabled", "expected": "reject", "actual": "reject", "pass": true, "error": "工具 artifacts.submit (effect=WRITE) 在 H02 阶段必须禁用，禁止 exposure.state=allowed" },
-  { "name": "coding-enabled", "expected": "reject", "actual": "reject", "pass": true, "error": "工具 runner.check.run (effect=WRITE) 在 H02 阶段必须禁用，禁止 exposure.state=allowed" },
-  { "name": "fictional-fact", "expected": "reject", "actual": "reject", "pass": true, "error": "工具 governance.health.get 声明了未在 outputSchema 中存在的权威事实: inventedField" },
-  { "name": "unknown-metadata-field", "expected": "reject", "actual": "reject", "pass": true, "error": "元数据工具 governance.health.get 包含未知字段: inventedField" },
-  { "name": "unknown-schema-constraint", "expected": "reject", "actual": "reject", "pass": true, "error": "Schema 包含未知约束关键字: artifacts.evaluate.inputSchema.inventedConstraint" },
-  { "name": "default-determinism", "expected": "identical", "actual": "identical", "pass": true },
-  { "name": "verifier-types-and-enums", "expected": "reject", "actual": "reject", "pass": true }
-]
-```
-
-### 3.2 编译器单元与正反例测试套件（17/17 项全部通过）
+### 3.1 编译器单元与负例全量测试套件（26/26 项全部通过）
 ```bash
 $ cd /Users/moxiao/IdeaProjects/project-harness-h02-minimax
 $ node --test scripts/compile-agent-capabilities.test.mjs
-✔ compiled manifest.json must exist, be deterministically sorted, and contain all 65 tools (2.00ms)
-✔ compiler must be deterministic: identical inputs yield identical bytes and hashes (453.15ms)
-✔ negative: compiler rejects missing descriptors file (0.24ms)
-✔ negative: compiler rejects missing metadata file (0.06ms)
-✔ negative: compiler rejects missing tool in metadata (27.32ms)
-✔ negative: compiler rejects unknown tool in metadata (27.91ms)
-✔ negative: compiler rejects governance conflict (e.g. HIGH risk with confirmation none) (26.95ms)
-✔ negative: compiler rejects example input carrying forbidden auth/secret fields (28.74ms)
-✔ negative: compiler rejects ok example missing output field (28.19ms)
-✔ negative: compiler rejects non-nullable tool having null output for ok example (27.52ms)
-✔ negative: compiler rejects missing description (27.86ms)
-✔ negative: compiler rejects fictional handler binding (28.44ms)
-✔ negative: compiler rejects write tool exposure as allowed (27.15ms)
-✔ negative: compiler rejects coding/runner tool exposure as allowed (27.74ms)
-✔ negative: compiler rejects fictional authoritative fact (27.44ms)
-✔ negative: compiler rejects unknown metadata tool fields (26.99ms)
-✔ negative: compiler rejects unknown schema constraint (27.52ms)
-ℹ tests 17
-ℹ suites 0
-ℹ pass 17
-ℹ fail 0
-ℹ skipped 0
-ℹ todo 0
-ℹ duration_ms 858.65ms
+✔ compiled manifest.json must exist, be deterministically sorted, and contain all 65 tools (2.12ms)
+✔ compiler must be deterministic: identical inputs yield identical bytes and hashes (450.72ms)
+✔ negative: compiler rejects missing descriptors file (0.22ms)
+✔ negative: compiler rejects missing metadata file (0.07ms)
+✔ negative: compiler rejects missing tool in metadata (32.67ms)
+✔ negative: compiler rejects unknown tool in metadata (33.34ms)
+✔ negative: compiler rejects governance conflict (e.g. HIGH risk with confirmation none) (32.01ms)
+✔ negative: compiler rejects example input carrying forbidden auth/secret fields (33.01ms)
+✔ negative: compiler rejects ok example missing output field (32.82ms)
+✔ negative: compiler rejects non-nullable tool having null output for ok example (32.81ms)
+✔ negative: compiler rejects missing description (32.59ms)
+✔ negative: compiler rejects fictional handler binding (32.51ms)
+✔ negative: compiler rejects write tool exposure as allowed (32.61ms)
+✔ negative: compiler rejects coding/runner tool exposure as allowed (51.72ms)
+✔ negative: compiler rejects fictional authoritative fact (33.88ms)
+✔ negative: compiler rejects unknown metadata tool fields (33.82ms)
+✔ negative: compiler rejects unknown schema constraint (33.25ms)
+✔ negative: compiler rejects missing exported handler binding in descriptors (32.62ms)
+✔ negative: compiler rejects forged handler binding not matching Java source truth (32.38ms)
+✔ negative: compiler enforces enum constraint on example values (33.43ms)
+✔ negative: compiler enforces minimum constraint on example values (33.96ms)
+✔ negative: compiler rejects empty object output when required fields are specified (34.59ms)
+✔ negative: compiler rejects missing cost_hint and exposure (35.14ms)
+✔ negative: compiler rejects non-string purpose array items (34.90ms)
+✔ negative: compiler rejects unknown nested fields in confirmation (34.97ms)
+✔ negative: compiler rejects compilation when Java source files are missing (0.32ms)
+ℹ tests 26, pass 26, fail 0
 ```
 
-### 3.3 描述符导出与结构验证测试（4/4 项通过）
+### 3.2 描述符导出与结构验证测试（4/4 项通过）
 - `node --test scripts/harness/capability-source-exporter.test.mjs`: `pass 1, fail 0`
-- `node --test scripts/harness/capability-source-verifier.test.mjs`: `pass 3, fail 0`（覆盖合法结构校验、缺失文件拦截、非整型版本拦截、非法状态枚举拦截）
-- `node --test scripts/harness/runtime-contract.test.mjs`: `pass 91, fail 0`（H01 冻结契约零退化）
-- `cd backend && ./mvnw -o test -Dtest=HarnessCapabilityDescriptorExportTest`: `BUILD SUCCESS`（成功导出 65 个工具带真实绑定描述符）
+- `node --test scripts/harness/capability-source-verifier.test.mjs`: `pass 3, fail 0`（完整递归 Schema 校验、缺失文件拦截、类型/枚举非法拦截）
+- `cd backend && ./mvnw -o test -Dtest=HarnessCapabilityDescriptorExportTest`: `BUILD SUCCESS`（从真实 Java 配置源码动态解析出全部 65 项绑定并导出）
+
+### 3.3 H01 存量回归测试（91/91 项全部通过）
+- `node --test scripts/harness/runtime-contract.test.mjs`: `pass 91, fail 0`（H01 冻结运行时契约零退化）
+
+### 3.4 Codex 原 13 项独立探针复跑（13/13 全部通过）
+运行 `node /Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-probes.mjs`：13 项探针全绿。
 
 ---
 
 ## 4. 交付文件清单与提交溯源
 
-- **实现提交 Hash**：`9697dd91b1c7a19fef00396e3c10a68284d00ada`
+- **实现提交 Hash**：`24f4c77646c296a24b35a41924dc8bd07cb3703e`
 - **证据提交 Hash**：`<本提交>`
 - 分支：`codex/harness-h02-minimax`
 - 共同基线：`16b37d34c882a17e7bc45c69c84411f28f52bff8`
 
-交付所有权文件：
-1. `contracts/agent-capabilities/manifest.schema.json`（支持完整多维溯源来源字段）
-2. `contracts/agent-capabilities/README.md`（能力目录规范与契约约定）
-3. `contracts/agent-capabilities/generated/descriptors.json`（带真实 handler 绑定的 65 个 Java 描述符）
-4. `contracts/agent-capabilities/generated/tool-bindings.json`（Java 真实绑定事实字典）
-5. `contracts/agent-capabilities/generated/manifest.json`（确定性编译生成的完整 Manifest，含源码与 commit 溯源）
-6. `scripts/compile-agent-capabilities.mjs`（确定性编译器，含完整 R-M1/R-M2/R-M3 校验）
-7. `scripts/compile-agent-capabilities.test.mjs`（编译器单元与正反例测试套件，17 项测试）
+交付所有权文件清单（12 项）：
+1. `contracts/agent-capabilities/manifest.schema.json`（支持完整多维溯源与 `unverified_symbols` 定义）
+2. `contracts/agent-capabilities/README.md`（完整规范与字段说明）
+3. `contracts/agent-capabilities/generated/descriptors.json`（带真实源码动态解析 handler 的 65 个 Java 描述符）
+4. `contracts/agent-capabilities/generated/tool-bindings.json`（从 Java 源码配置动态提取生成的真值绑定字典）
+5. `contracts/agent-capabilities/generated/manifest.json`（确定性编译生成的完整 Manifest，含源码与 commit 真实溯源）
+6. `scripts/compile-agent-capabilities.mjs`（确定性编译器，集成 R-M4/R-M5/R-M6 全量校验与真实源码解析）
+7. `scripts/compile-agent-capabilities.test.mjs`（编译器单元与正反例测试套件，26 项测试）
 8. `scripts/harness/capability-source-exporter.test.mjs`（描述符导出产物测试）
-9. `scripts/harness/capability-source-verifier.mjs` / `capability-source-verifier.test.mjs`（结构与类型枚举校验脚本及测试）
-10. `backend/src/test/java/com/moxiao/studypilot/agent/tool/HarnessCapabilityDescriptorExportTest.java`（离线描述符导出测试类）
-11. `docs/verification/harness/h02-minimax.md`（本证据文档）
+9. `scripts/harness/capability-source-verifier.mjs`（完整递归 Schema 校验器）
+10. `scripts/harness/capability-source-verifier.test.mjs`（结构校验器测试套件）
+11. `backend/src/test/java/com/moxiao/studypilot/agent/tool/HarnessCapabilityDescriptorExportTest.java`（从 Java 配置源码动态解析并导出测试）
+12. `docs/verification/harness/h02-minimax.md`（本证据文档）
 
-工作树保持干净，`backend/mvnw.cmd` 未触碰未暂存，未向远端 push，停止等待 Codex 独立验收。
+工作树保持干净，`backend/mvnw.cmd` 保持基线状态未暂存，未向远端 push，停止等待 Codex 独立验收。
