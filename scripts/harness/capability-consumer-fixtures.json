@@ -1,0 +1,224 @@
+{
+  "version": "1.0.0",
+  "task": "H02",
+  "generated_at": "2026-10-08T16:50:00Z",
+  "description": "StudyPilot H02 Capability Consumer Positive & Negative Test Fixtures (ZCode Owner)",
+  "positive_controls": [
+    {
+      "name": "valid_read_tool",
+      "tool": {
+        "name": "roadmap.current.get",
+        "version": 1,
+        "category": "ROADMAP",
+        "description": "Returns current roadmap enrollment and stage progress for the authenticated learner.",
+        "when_to_use": ["The user asks for their learning progress, current stage, or overall roadmap completion."],
+        "when_not_to_use": ["When the user has not enrolled in any roadmap."],
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {},
+          "required": []
+        },
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enrolled": { "type": "boolean" },
+            "overall_progress": { "type": "number" },
+            "stage_progress": { "type": "array" }
+          },
+          "required": ["enrolled"]
+        },
+        "side_effect": {
+          "effect": "READ",
+          "risk_level": "LOW",
+          "mutates_business_data": false
+        },
+        "permission": {
+          "required_scope": null
+        },
+        "confirmation": {
+          "mode": "none",
+          "waiting_status": null,
+          "notes": "Read-only operations do not require confirmation."
+        },
+        "idempotency": {
+          "required": false
+        },
+        "timeout_ms": 15000,
+        "error_contract": ["Returns enrolled: false if no roadmap exists."],
+        "cost_hint": {
+          "local": true,
+          "external_dependency": null,
+          "notes": "Local DB query only."
+        },
+        "exposure": {
+          "state": "allowed",
+          "reason": "Safe read-only roadmap progress query."
+        },
+        "authoritative_facts": [
+          { "fact": "enrolled", "meaning": "Whether learner is enrolled" },
+          { "fact": "overall_progress", "meaning": "Calculated completion percentage" }
+        ],
+        "examples": [
+          {
+            "name": "get_current_roadmap",
+            "input": {},
+            "expect": "Current roadmap status",
+            "outcome": "ok",
+            "output": { "enrolled": true, "overall_progress": 42.5, "stage_progress": [] }
+          }
+        ],
+        "source_provenance": {
+          "registration": "AgentReadToolConfiguration.java",
+          "handler": "RoadmapService.getCurrentRoadmap",
+          "output_schema": "AgentToolOutputSchemas.java"
+        }
+      }
+    },
+    {
+      "name": "valid_disabled_write_tool",
+      "tool": {
+        "name": "roadmap.enroll",
+        "version": 1,
+        "category": "ROADMAP",
+        "description": "Enrolls learner into the Java roadmap.",
+        "when_to_use": ["Learner explicitly requests roadmap enrollment."],
+        "when_not_to_use": ["When already enrolled."],
+        "input_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "roadmapId": { "type": "string" }
+          },
+          "required": ["roadmapId"]
+        },
+        "output_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enrolled": { "type": "boolean" },
+            "roadmapId": { "type": "string" }
+          },
+          "required": ["enrolled", "roadmapId"]
+        },
+        "side_effect": {
+          "effect": "WRITE",
+          "risk_level": "HIGH",
+          "mutates_business_data": true
+        },
+        "permission": {
+          "required_scope": "study:roadmap:write"
+        },
+        "confirmation": {
+          "mode": "always_user_confirmation",
+          "waiting_status": "WAITING_CONFIRMATION",
+          "notes": "High risk enrollment requires confirmation."
+        },
+        "idempotency": {
+          "required": true
+        },
+        "timeout_ms": 15000,
+        "error_contract": ["Conflict if already enrolled."],
+        "cost_hint": {
+          "local": true,
+          "external_dependency": null,
+          "notes": "Database write."
+        },
+        "exposure": {
+          "state": "disabled",
+          "reason": "All 21 write operations frozen until Task H11."
+        },
+        "authoritative_facts": [],
+        "examples": [
+          {
+            "name": "enroll_roadmap",
+            "input": { "roadmapId": "java-backend" },
+            "expect": "Enrollment completed",
+            "outcome": "ok",
+            "output": { "enrolled": true, "roadmapId": "java-backend" }
+          }
+        ],
+        "source_provenance": {
+          "registration": "AgentWriteToolConfiguration.java",
+          "handler": "RoadmapEnrollmentService.enroll",
+          "output_schema": "AgentToolOutputSchemas.java"
+        }
+      }
+    }
+  ],
+  "negative_controls": [
+    {
+      "id": "NEG-01-MISSING-TOOL",
+      "name": "missing registered tool coverage",
+      "description": "Manifest tool count is 64 instead of 65 (omits roadmap.current.get)",
+      "type": "OMISSION",
+      "expected_error_code": "ERR_MISSING_REGISTERED_TOOL",
+      "expected_error_contains": "Missing required registered tool: roadmap.current.get"
+    },
+    {
+      "id": "NEG-02-DUPLICATE-WIRE-NAME",
+      "name": "duplicate tool wire name in manifest",
+      "description": "Manifest contains duplicate tool entries with the same wire name",
+      "type": "DUPLICATION",
+      "expected_error_code": "ERR_DUPLICATE_WIRE_NAME",
+      "expected_error_contains": "Duplicate tool wire name detected: roadmap.current.get"
+    },
+    {
+      "id": "NEG-03-FICTIONAL-TARGET",
+      "name": "fictional tool execution target",
+      "description": "Manifest declares a tool binding to a non-existent service or invent a synthetic wire name studypilot.magic.solve",
+      "type": "FABRICATION",
+      "expected_error_code": "ERR_FICTIONAL_TOOL_TARGET",
+      "expected_error_contains": "Fictional tool wire name not in Java registry: studypilot.magic.solve"
+    },
+    {
+      "id": "NEG-04-GOVERNANCE-CONFLICT",
+      "name": "governance risk and confirmation conflict",
+      "description": "HIGH risk write tool incorrectly declares confirmation mode 'none'",
+      "type": "GOVERNANCE_MISMATCH",
+      "expected_error_code": "ERR_GOVERNANCE_CONFLICT",
+      "expected_error_contains": "Governance conflict: HIGH risk tool cannot have confirmation mode 'none'"
+    },
+    {
+      "id": "NEG-05-WRITE-ENABLED-PRE-H11",
+      "name": "write tool exposed as allowed before H11",
+      "description": "WRITE tool roadmap.enroll marked exposure: allowed violating H02 frozen write boundary",
+      "type": "UNAUTHORIZED_EXPOSURE",
+      "expected_error_code": "ERR_WRITE_TOOL_EXPOSED",
+      "expected_error_contains": "WRITE tool roadmap.enroll must be disabled prior to Task H11"
+    },
+    {
+      "id": "NEG-06-ILLEGAL-EXAMPLE-OWNER",
+      "name": "example leaks or injects ownerId",
+      "description": "Tool example input contains prohibited ownerId field",
+      "type": "SECURITY_VIOLATION",
+      "expected_error_code": "ERR_ILLEGAL_EXAMPLE_OWNER",
+      "expected_error_contains": "Security violation: Example input contains forbidden 'ownerId' parameter"
+    },
+    {
+      "id": "NEG-07-USER-EXCLUSIVE-EXPOSED",
+      "name": "user exclusive operation exposed as agent tool",
+      "description": "Manifest attempts to expose assessment.quiz.submit as an agent-callable tool",
+      "type": "BOUNDARY_BREACH",
+      "expected_error_code": "ERR_USER_EXCLUSIVE_EXPOSED",
+      "expected_error_contains": "Boundary breach: User-exclusive operation QUIZ_SUBMISSION cannot be exposed as an agent tool"
+    },
+    {
+      "id": "NEG-08-CODING-RUNNER-ENABLED",
+      "name": "developer or runner tool incorrectly allowed",
+      "description": "Tool developer.code.search is marked exposure: allowed violating coding automation boundary",
+      "type": "UNAUTHORIZED_EXPOSURE",
+      "expected_error_code": "ERR_CODING_RUNNER_EXPOSED",
+      "expected_error_contains": "Security violation: Coding/Developer tool developer.code.search must be disabled by default"
+    },
+    {
+      "id": "NEG-09-AUTHORITATIVE-FACT-NO-SOURCE",
+      "name": "authoritative metric without registered Java source",
+      "description": "Tool declares authoritative fact fabricated_ai_score without backend backing",
+      "type": "ANTI_HALLUCINATION_FAILURE",
+      "expected_error_code": "ERR_UNVERIFIED_AUTHORITATIVE_FACT",
+      "expected_error_contains": "Unverified authoritative fact 'fabricated_ai_score' has no registered Java source"
+    }
+  ]
+}

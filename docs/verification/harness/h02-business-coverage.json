@@ -1,0 +1,2431 @@
+{
+  "version": "1.0.0",
+  "task": "H02",
+  "agent": "ZCode",
+  "generated_at": "2026-10-08T16:40:00Z",
+  "baseline_commit": "16b37d34c882a17e7bc45c69c84411f28f52bff8",
+  "cross_contract_provenance": {
+    "minimax": {
+      "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-minimax",
+      "head_commit": "ebb6f2b95563d71f6a43ac65b1c56bf3f59b31d5",
+      "schema_path": "contracts/agent-capabilities/manifest.schema.json",
+      "schema_sha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
+      "manifest_path": "contracts/agent-capabilities/generated/manifest.json",
+      "manifest_sha256": "f59fbad509ccb5c0abf04d5bfa83ea261eb6a7d3e6906563a4ba9dcf84e4528b"
+    },
+    "deepseek": {
+      "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-deepseek",
+      "head_commit": "e92fc157c85f340f6464bc13b0e1c5c7e2207f03",
+      "metadata_path": "contracts/agent-capabilities/metadata.yaml",
+      "metadata_sha256": "8d4460c681833ffccf8485ce901d71029ec72460cd6ea35ad4ebaa37cd62eaf6",
+      "semantics_path": "agent-service/tests/fixtures/capability-semantics.json",
+      "semantics_sha256": "7be70154260f45a7a810d1df3cbf7738d74dad293564fd98ebc06334f5baad11"
+    }
+  },
+  "coverage_summary": {
+    "total_frontend_routes": 31,
+    "total_backend_registered_tools": 65,
+    "allowed_tools_count": 28,
+    "disabled_tools_count": 33,
+    "pending_tools_count": 4,
+    "user_exclusive_operations_count": 6,
+    "authoritative_facts_sources_count": 7
+  },
+  "frontend_route_coverage": [
+    {
+      "routeName": "login",
+      "path": "/login",
+      "component": "LoginView.vue",
+      "category": "AUTHENTICATION",
+      "requiresAuth": false,
+      "mappedBackendControllers": [
+        "AuthenticationController"
+      ],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [
+        "AUTH_LOGIN"
+      ],
+      "unregisteredCapabilities": [
+        "POST /api/auth/login"
+      ],
+      "notes": "用户交互登录界面，由用户本人输入凭据登录，不暴露任何 Agent 工具。"
+    },
+    {
+      "routeName": "register",
+      "path": "/register",
+      "component": "RegisterView.vue",
+      "category": "AUTHENTICATION",
+      "requiresAuth": false,
+      "mappedBackendControllers": [
+        "AuthenticationController"
+      ],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [
+        "AUTH_REGISTER"
+      ],
+      "unregisteredCapabilities": [
+        "POST /api/auth/register"
+      ],
+      "notes": "用户自主注册界面，严禁 Agent 代理创建用户。"
+    },
+    {
+      "routeName": "not-found",
+      "path": "/:pathMatch(.*)*",
+      "component": "NotFoundView.vue",
+      "category": "PORTAL",
+      "requiresAuth": false,
+      "mappedBackendControllers": [],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "前端 404 兜底路由。"
+    },
+    {
+      "routeName": "assistant",
+      "path": "/",
+      "component": "AssistantView.vue",
+      "category": "PORTAL",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "UnifiedAssistantFacadeController",
+        "InternalAgentExecutionController"
+      ],
+      "associatedRegisteredTools": [
+        "navigation.resolve",
+        "governance.health.get",
+        "governance.executions.list",
+        "governance.audit.list"
+      ],
+      "allowedTools": [
+        "navigation.resolve",
+        "governance.executions.list",
+        "governance.audit.list"
+      ],
+      "disabledTools": [],
+      "pendingTools": [
+        "governance.health.get"
+      ],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "现有主会话入口。H07 悬浮球就绪后保留或退役。"
+    },
+    {
+      "routeName": "dashboard",
+      "path": "/dashboard",
+      "component": "DashboardView.vue",
+      "category": "PORTAL",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "DashboardController"
+      ],
+      "associatedRegisteredTools": [
+        "learning.context.get",
+        "schedule.today.get",
+        "schedule.unfinished.get"
+      ],
+      "allowedTools": [
+        "learning.context.get",
+        "schedule.unfinished.get"
+      ],
+      "disabledTools": [],
+      "pendingTools": [
+        "schedule.today.get"
+      ],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "学习者主工作台，展示今日核心概览与阶段任务。"
+    },
+    {
+      "routeName": "roadmap",
+      "path": "/roadmap",
+      "component": "RoadmapView.vue",
+      "category": "LEARNING_CORE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "RoadmapController",
+        "RoadmapUpgradeController"
+      ],
+      "associatedRegisteredTools": [
+        "roadmap.current.get",
+        "roadmap.enroll",
+        "roadmap.upgrade"
+      ],
+      "allowedTools": [
+        "roadmap.current.get"
+      ],
+      "disabledTools": [
+        "roadmap.enroll",
+        "roadmap.upgrade"
+      ],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "路线图总览。enroll 与 upgrade 为 HIGH 风险写操作，H02 阶段严格禁用。"
+    },
+    {
+      "routeName": "roadmap-stage",
+      "path": "/roadmap/stages/:id",
+      "component": "StageView.vue",
+      "category": "LEARNING_CORE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "RoadmapController"
+      ],
+      "associatedRegisteredTools": [
+        "roadmap.stage.get"
+      ],
+      "allowedTools": [
+        "roadmap.stage.get"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "路线阶段详情页，支持只读阶段查询。"
+    },
+    {
+      "routeName": "roadmap-module",
+      "path": "/roadmap/modules/:id",
+      "component": "ModuleView.vue",
+      "category": "LEARNING_CORE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "RoadmapController"
+      ],
+      "associatedRegisteredTools": [
+        "roadmap.module.get"
+      ],
+      "allowedTools": [
+        "roadmap.module.get"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "路线模块详情页，支持模块层级只读查询。"
+    },
+    {
+      "routeName": "roadmap-node",
+      "path": "/roadmap/nodes/:id",
+      "component": "NodeView.vue",
+      "category": "LEARNING_CORE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "RoadmapController",
+        "RoadmapLearningLoopController"
+      ],
+      "associatedRegisteredTools": [
+        "roadmap.node.get",
+        "assessment.node_quiz_status.get",
+        "assessment.node_quiz.generate",
+        "assessment.node_quiz.retry"
+      ],
+      "allowedTools": [
+        "roadmap.node.get",
+        "assessment.node_quiz_status.get"
+      ],
+      "disabledTools": [
+        "assessment.node_quiz.generate",
+        "assessment.node_quiz.retry"
+      ],
+      "pendingTools": [],
+      "userExclusiveActions": [
+        "CHECKIN_SUMMARY_SUBMIT"
+      ],
+      "unregisteredCapabilities": [
+        "POST /api/roadmap/nodes/{id}/checkin"
+      ],
+      "notes": "节点学习闭环页。打卡总结提交必须由用户本人完成（assertAuthenticityGuards 拦截）。"
+    },
+    {
+      "routeName": "goals",
+      "path": "/goals",
+      "component": "GoalsView.vue",
+      "category": "LEARNING_CORE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "LearningGoalController"
+      ],
+      "associatedRegisteredTools": [
+        "learning.goals.list",
+        "learning.goal.create"
+      ],
+      "allowedTools": [
+        "learning.goals.list"
+      ],
+      "disabledTools": [
+        "learning.goal.create"
+      ],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "学习目标列表与新建。目标创建为写操作，H02 禁用。"
+    },
+    {
+      "routeName": "plans",
+      "path": "/plans",
+      "component": "PlansView.vue",
+      "category": "LEARNING_CORE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "LearningPlanController"
+      ],
+      "associatedRegisteredTools": [
+        "learning.plans.list",
+        "learning.plan.create"
+      ],
+      "allowedTools": [
+        "learning.plans.list"
+      ],
+      "disabledTools": [
+        "learning.plan.create"
+      ],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "学习计划列表。计划生成与保存写操作禁用。"
+    },
+    {
+      "routeName": "plan-detail",
+      "path": "/plans/:id",
+      "component": "PlanDetailView.vue",
+      "category": "LEARNING_CORE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "LearningPlanController"
+      ],
+      "associatedRegisteredTools": [
+        "learning.plan.get"
+      ],
+      "allowedTools": [
+        "learning.plan.get"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "单计划详情与甘特图只读查询。"
+    },
+    {
+      "routeName": "today",
+      "path": "/today",
+      "component": "TodayView.vue",
+      "category": "LEARNING_CORE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "LearningTaskController",
+        "RoadmapScheduleController"
+      ],
+      "associatedRegisteredTools": [
+        "schedule.today.get",
+        "schedule.unfinished.get",
+        "schedule.refresh",
+        "learning.tasks.list",
+        "learning.task.update"
+      ],
+      "allowedTools": [
+        "schedule.unfinished.get",
+        "learning.tasks.list"
+      ],
+      "disabledTools": [
+        "schedule.refresh",
+        "learning.task.update"
+      ],
+      "pendingTools": [
+        "schedule.today.get"
+      ],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "今日任务清单。任务状态更新与调度刷新为写工具，当前禁用。"
+    },
+    {
+      "routeName": "materials",
+      "path": "/materials",
+      "component": "MaterialsView.vue",
+      "category": "MATERIALS",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "MaterialController"
+      ],
+      "associatedRegisteredTools": [
+        "materials.list",
+        "materials.text.import",
+        "materials.web.import"
+      ],
+      "allowedTools": [
+        "materials.list"
+      ],
+      "disabledTools": [
+        "materials.text.import",
+        "materials.web.import"
+      ],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "资料库列表。外部文本与网页导入为写工具，当前禁用。"
+    },
+    {
+      "routeName": "material-detail",
+      "path": "/materials/:id",
+      "component": "MaterialDetailView.vue",
+      "category": "MATERIALS",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "MaterialController"
+      ],
+      "associatedRegisteredTools": [
+        "materials.get"
+      ],
+      "allowedTools": [
+        "materials.get"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "单项资料详情与正文只读读取。"
+    },
+    {
+      "routeName": "quiz",
+      "path": "/quizzes/:id",
+      "component": "QuizView.vue",
+      "category": "ASSESSMENT",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "QuizController"
+      ],
+      "associatedRegisteredTools": [
+        "assessment.quiz.get"
+      ],
+      "allowedTools": [
+        "assessment.quiz.get"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [
+        "QUIZ_SUBMISSION"
+      ],
+      "unregisteredCapabilities": [
+        "POST /api/quizzes/{id}/submit"
+      ],
+      "notes": "在线测验答题界面。测验题目提交严禁 Agent 替代用户完成（assertAuthenticityGuards 拦截）。"
+    },
+    {
+      "routeName": "attempt",
+      "path": "/attempts/:id",
+      "component": "AttemptView.vue",
+      "category": "ASSESSMENT",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "QuizAttemptController"
+      ],
+      "associatedRegisteredTools": [
+        "assessment.attempt.get"
+      ],
+      "allowedTools": [
+        "assessment.attempt.get"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "测验作答记录复盘，支持只读查询作答事实。"
+    },
+    {
+      "routeName": "wrong-questions",
+      "path": "/wrong-questions",
+      "component": "WrongQuestionsView.vue",
+      "category": "ASSESSMENT",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "WrongQuestionController",
+        "WrongQuestionReviewController"
+      ],
+      "associatedRegisteredTools": [
+        "assessment.wrong_questions.list",
+        "assessment.wrong_questions.summary",
+        "assessment.wrong_question_review.create"
+      ],
+      "allowedTools": [
+        "assessment.wrong_questions.summary"
+      ],
+      "disabledTools": [
+        "assessment.wrong_question_review.create"
+      ],
+      "pendingTools": [
+        "assessment.wrong_questions.list"
+      ],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "错题集复习看板。错题列表存在输出契约缺陷标记为 pending，批次创建为写工具禁用。"
+    },
+    {
+      "routeName": "mastery",
+      "path": "/mastery",
+      "component": "MasteryView.vue",
+      "category": "ASSESSMENT",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "MasteryController"
+      ],
+      "associatedRegisteredTools": [
+        "assessment.mastery.list"
+      ],
+      "allowedTools": [
+        "assessment.mastery.list"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "知识点掌握度雷达图与薄弱点。掌握度事实唯一来源为后端计算数据，禁止模型虚构。"
+    },
+    {
+      "routeName": "courses",
+      "path": "/courses",
+      "component": "CourseCatalogView.vue",
+      "category": "LEGACY",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "CourseController"
+      ],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [
+        "GET /api/courses"
+      ],
+      "notes": "历史课程目录，无注册 Agent 工具。"
+    },
+    {
+      "routeName": "course-detail",
+      "path": "/courses/:slug",
+      "component": "CourseDetailView.vue",
+      "category": "LEGACY",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "CourseController"
+      ],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [
+        "GET /api/courses/{slug}"
+      ],
+      "notes": "历史课程详情，无注册 Agent 工具。"
+    },
+    {
+      "routeName": "lesson",
+      "path": "/lessons/:lessonId",
+      "component": "LessonView.vue",
+      "category": "LEGACY",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "CourseController",
+        "InternalLessonContextController"
+      ],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [
+        "GET /api/lessons/{lessonId}"
+      ],
+      "notes": "历史课时播放页，无注册 Agent 工具。"
+    },
+    {
+      "routeName": "knowledge",
+      "path": "/knowledge",
+      "component": "KnowledgeView.vue",
+      "category": "MOCK",
+      "requiresAuth": true,
+      "mappedBackendControllers": [],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "前端 Mock 问答入口，无后端控制器与 Agent 工具。"
+    },
+    {
+      "routeName": "agent-plan",
+      "path": "/agent/plan",
+      "component": "PlanChatView.vue",
+      "category": "MOCK",
+      "requiresAuth": true,
+      "mappedBackendControllers": [],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "前端 Mock 对话计划生成页，无对应注册 Agent 工具。"
+    },
+    {
+      "routeName": "agent-tasks",
+      "path": "/agent/tasks",
+      "component": "TaskAgentView.vue",
+      "category": "MOCK",
+      "requiresAuth": true,
+      "mappedBackendControllers": [],
+      "associatedRegisteredTools": [],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "前端 Mock 任务 Agent 页面，无对应注册 Agent 工具。"
+    },
+    {
+      "routeName": "activity",
+      "path": "/activity",
+      "component": "ActivityView.vue",
+      "category": "GOVERNANCE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "AuditLogController",
+        "AgentExecutionController"
+      ],
+      "associatedRegisteredTools": [
+        "governance.executions.list",
+        "governance.audit.list"
+      ],
+      "allowedTools": [
+        "governance.executions.list",
+        "governance.audit.list"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [
+        "GOVERNANCE_GRANT_APPROVAL"
+      ],
+      "unregisteredCapabilities": [
+        "POST /api/agent/grants"
+      ],
+      "notes": "Agent 审计台账与治理记录。权限审批授权由用户手动确认。"
+    },
+    {
+      "routeName": "assistant-health",
+      "path": "/assistant/health",
+      "component": "AssistantHealthView.vue",
+      "category": "GOVERNANCE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "AssistantHealthController",
+        "InternalAssistantUsageController"
+      ],
+      "associatedRegisteredTools": [
+        "governance.health.get"
+      ],
+      "allowedTools": [],
+      "disabledTools": [],
+      "pendingTools": [
+        "governance.health.get"
+      ],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "模型用量与健康监控。所对应工具存在输出字段未声明缺陷，标记为 pending。"
+    },
+    {
+      "routeName": "notifications",
+      "path": "/notifications",
+      "component": "NotificationsView.vue",
+      "category": "SETTINGS",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "NotificationController"
+      ],
+      "associatedRegisteredTools": [
+        "notifications.list",
+        "notifications.mark_read"
+      ],
+      "allowedTools": [
+        "notifications.list"
+      ],
+      "disabledTools": [
+        "notifications.mark_read"
+      ],
+      "pendingTools": [],
+      "userExclusiveActions": [],
+      "unregisteredCapabilities": [],
+      "notes": "站内通知与治理提醒列表。已读标记为写操作禁用。"
+    },
+    {
+      "routeName": "settings",
+      "path": "/settings",
+      "component": "SettingsView.vue",
+      "category": "SETTINGS",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "UserSettingsController",
+        "AssistantAutomationController"
+      ],
+      "associatedRegisteredTools": [
+        "settings.learning.get",
+        "settings.learning.update",
+        "automation.settings.get",
+        "automation.rules.list"
+      ],
+      "allowedTools": [
+        "settings.learning.get",
+        "automation.settings.get",
+        "automation.rules.list"
+      ],
+      "disabledTools": [
+        "settings.learning.update"
+      ],
+      "pendingTools": [],
+      "userExclusiveActions": [
+        "USER_SETTINGS_UPDATE"
+      ],
+      "unregisteredCapabilities": [
+        "PUT /api/user/settings"
+      ],
+      "notes": "学习偏好与自动化配置。学习设置更新为 HIGH 风险写工具禁用。"
+    },
+    {
+      "routeName": "settings-ai",
+      "path": "/settings/ai",
+      "component": "AiSettingsView.vue",
+      "category": "SETTINGS",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "AiCredentialController"
+      ],
+      "associatedRegisteredTools": [
+        "settings.ai_status.get"
+      ],
+      "allowedTools": [
+        "settings.ai_status.get"
+      ],
+      "disabledTools": [],
+      "pendingTools": [],
+      "userExclusiveActions": [
+        "AI_CREDENTIAL_CONFIG"
+      ],
+      "unregisteredCapabilities": [
+        "POST /api/ai-credentials"
+      ],
+      "notes": "AI 凭据配置界面。密钥录入为用户专属行为，严禁 Agent 接触用户原始 API Key。"
+    },
+    {
+      "routeName": "workspace-artifacts",
+      "path": "/workspaces",
+      "component": "WorkspaceArtifactsView.vue",
+      "category": "WORKSPACE",
+      "requiresAuth": true,
+      "mappedBackendControllers": [
+        "ProjectWorkspaceController",
+        "RoadmapArtifactController",
+        "WorkspaceDeveloperController",
+        "RunnerController"
+      ],
+      "associatedRegisteredTools": [
+        "workspaces.list",
+        "workspaces.register",
+        "artifacts.list",
+        "artifacts.get",
+        "artifacts.evaluate",
+        "artifacts.submit",
+        "runner.execution.preview",
+        "runner.check.run",
+        "runner.dependencies.prepare",
+        "developer.file_tree.get",
+        "developer.file.read",
+        "developer.code.search",
+        "developer.git.status",
+        "developer.git.diff",
+        "developer.git.log",
+        "developer.patch.preview",
+        "developer.patch.apply",
+        "developer.tests.recommend",
+        "developer.git.commit.preview",
+        "developer.git.commit",
+        "developer.git.push.preview",
+        "developer.git.push",
+        "developer.interface_fallback.preview",
+        "developer.interface_fallback.execute"
+      ],
+      "allowedTools": [
+        "workspaces.list",
+        "artifacts.list",
+        "artifacts.get"
+      ],
+      "disabledTools": [
+        "workspaces.register",
+        "artifacts.submit",
+        "runner.check.run",
+        "runner.dependencies.prepare",
+        "developer.patch.apply",
+        "developer.git.commit",
+        "developer.git.push",
+        "developer.interface_fallback.execute",
+        "runner.execution.preview",
+        "developer.file_tree.get",
+        "developer.file.read",
+        "developer.code.search",
+        "developer.git.status",
+        "developer.git.diff",
+        "developer.git.log",
+        "developer.patch.preview",
+        "developer.tests.recommend",
+        "developer.git.commit.preview",
+        "developer.git.push.preview",
+        "developer.interface_fallback.preview"
+      ],
+      "pendingTools": [
+        "artifacts.evaluate"
+      ],
+      "userExclusiveActions": [
+        "ACCEPT_ARTIFACT_SUBMISSION"
+      ],
+      "unregisteredCapabilities": [
+        "POST /api/roadmap-artifacts/{id}/accept"
+      ],
+      "notes": "实战项目与成果物评估工作台。成果物最终接受必须由用户在前端确认（assertAuthenticityGuards 拦截）；runner与developer本地代码自动化默认禁用。"
+    }
+  ],
+  "registered_tool_catalog_audit": [
+    {
+      "name": "artifacts.evaluate",
+      "version": 1,
+      "category": "WORKSPACE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "pending",
+      "exposureReason": "D4 静态推导的契约缺陷（未运行 Java 复现）：（静态推导，未经运行期复现）RoadmapArtifactService.evaluate L278-L283 在属主校验后无条件抛 ConflictException(\"真实 DeepSeek Rubric 评审尚未接入…\")，agent 路径无法返回结果，也不调用模型。真实 AI Rubric 在 REST 侧 ArtifactReviewService，Agent 工具触达不到。 在缺陷修复前不进入候选目录。",
+      "sourceHandler": {
+        "class": "RoadmapArtifactService.evaluate — bean artifactEvaluateTool calls service.evaluate with the injected caller identity and the artifactId argument",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L256-L262"
+      },
+      "authoritativeFacts": [
+        "status",
+        "rubricScore",
+        "rubricFeedback",
+        "reviewHistory"
+      ]
+    },
+    {
+      "name": "artifacts.get",
+      "version": 1,
+      "category": "WORKSPACE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only ownership-checked artifact lookup; acceptance remains a user-only decision in the product UI.",
+      "sourceHandler": {
+        "class": "RoadmapArtifactService.artifact — bean artifactTool calls service.artifact with the injected caller identity and the artifactId argument",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L264-L270"
+      },
+      "authoritativeFacts": [
+        "status",
+        "evaluationMode",
+        "reviewHistory",
+        "rubricScore"
+      ]
+    },
+    {
+      "name": "artifacts.list",
+      "version": 1,
+      "category": "WORKSPACE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped listing of submitted artifacts; it cannot submit, evaluate or accept anything.",
+      "sourceHandler": {
+        "class": "RoadmapArtifactService.artifacts — bean artifactsTool calls service.artifacts with the injected caller identity",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L272-L276"
+      },
+      "authoritativeFacts": [
+        "status",
+        "relativePath",
+        "submissionVersion",
+        "id"
+      ]
+    },
+    {
+      "name": "artifacts.submit",
+      "version": 1,
+      "category": "WORKSPACE",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "ARTIFACT_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "RoadmapArtifactService.submit(the Java-injected caller identity, validated CreateRoadmapArtifactRequest) via the GovernedFunctionalAgentToolHandler bean artifactSubmitTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L243-L264"
+      },
+      "authoritativeFacts": [
+        "status",
+        "submissionVersion",
+        "sensitiveScanPassed",
+        "rubricScore",
+        "acceptedAt",
+        "reviewHistory"
+      ]
+    },
+    {
+      "name": "assessment.attempt.get",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped result lookup intended for post-submission explanation; it cannot create or resubmit an attempt.",
+      "sourceHandler": {
+        "class": "QuizService.getAttempt — bean quizAttemptTool calls service.getAttempt with the injected caller identity and the attemptId argument",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L174-L180"
+      },
+      "authoritativeFacts": [
+        "score",
+        "status",
+        "results",
+        "warning"
+      ]
+    },
+    {
+      "name": "assessment.mastery.list",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped mastery query; it neither records nor adjusts scores.",
+      "sourceHandler": {
+        "class": "QuizService.listMastery — bean masteryTool maps service.listMastery through MasteryResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L182-L187"
+      },
+      "authoritativeFacts": [
+        "knowledgePoint",
+        "score",
+        "evidenceCount",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "assessment.node_quiz.generate",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "QUIZ_GENERATION",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "RoadmapLearningLoopService.retryQuiz(the Java-injected caller identity, nodeId, validated RetryRoadmapQuizRequest) via the GovernedFunctionalAgentToolHandler bean roadmapQuizGenerateWriteTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L175-L188"
+      },
+      "authoritativeFacts": [
+        "nodeId",
+        "status",
+        "quizId",
+        "latestAttemptId"
+      ]
+    },
+    {
+      "name": "assessment.node_quiz.retry",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "QUIZ_GENERATION",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "RoadmapLearningLoopService.retryQuiz(the Java-injected caller identity, nodeId, validated RetryRoadmapQuizRequest) via the GovernedFunctionalAgentToolHandler bean roadmapQuizRetryWriteTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L160-L173"
+      },
+      "authoritativeFacts": [
+        "nodeId",
+        "status",
+        "quizId",
+        "generation"
+      ]
+    },
+    {
+      "name": "assessment.node_quiz_status.get",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only status query over the caller's own node quiz state; generation and retry remain separate governed actions.",
+      "sourceHandler": {
+        "class": "RoadmapLearningLoopService.quiz — bean nodeQuizStatusTool calls service.quiz with the injected caller identity and the nodeId argument",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L153-L161"
+      },
+      "authoritativeFacts": [
+        "status",
+        "quizId",
+        "latestAttemptId",
+        "generation"
+      ]
+    },
+    {
+      "name": "assessment.quiz.get",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped question retrieval whose payload excludes the answer key, so exposing it cannot leak grading truth.",
+      "sourceHandler": {
+        "class": "QuizService.get — bean quizTool calls service.get and projects the bundle through QuizResponse.from(quiz, questions)",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L163-L172"
+      },
+      "authoritativeFacts": [
+        "id",
+        "kind",
+        "questions",
+        "modelName"
+      ]
+    },
+    {
+      "name": "assessment.wrong_question_review.create",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "QUIZ_GENERATION",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "WrongQuestionReviewService.create(the Java-injected caller identity, validated CreateWrongQuestionReviewRequest) via the GovernedFunctionalAgentToolHandler bean wrongQuestionReviewWriteTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L145-L158"
+      },
+      "authoritativeFacts": [
+        "id",
+        "quizId",
+        "status",
+        "questionCount",
+        "remainingCount"
+      ]
+    },
+    {
+      "name": "assessment.wrong_questions.list",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "pending",
+      "exposureReason": "D2 静态推导的契约缺陷（未运行 Java 复现）：（静态推导，未经运行期复现）AgentToolOutputSchemas.java#L379 登记为 array(WRONG_QUESTION)，但 WrongQuestionService.list L143 返回 WrongQuestionPageResponse{items,totalElements,page,size}（record 定义 L5-L10）。AgentToolRegistry.invoke L82 在调用边界强校验输出，数组期望与对象实际不一致 → 按代码路径推导必然失败。 在缺陷修复前不进入候选目录。",
+      "sourceHandler": {
+        "class": "WrongQuestionService.list — bean wrongQuestionsTool calls service.list with the injected caller identity, status defaulting to ACTIVE, optional chapter key, page defaulting to 0 and size defaulting to 20",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L198-L212"
+      },
+      "authoritativeFacts": [
+        "id",
+        "status",
+        "correctAnswers",
+        "wrongCount"
+      ]
+    },
+    {
+      "name": "assessment.wrong_questions.summary",
+      "version": 1,
+      "category": "ASSESSMENT",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped statistics; it cannot create a review batch or change entry status.",
+      "sourceHandler": {
+        "class": "WrongQuestionService.summary — bean wrongQuestionSummaryTool calls service.summary with the injected caller identity",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L189-L196"
+      },
+      "authoritativeFacts": [
+        "activeCount",
+        "masteredCount",
+        "chapters",
+        "currentReview"
+      ]
+    },
+    {
+      "name": "automation.rules.list",
+      "version": 1,
+      "category": "AUTOMATION",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped configuration listing; creating, updating or deleting rules stays in the governed write path.",
+      "sourceHandler": {
+        "class": "AssistantAutomationService.list — bean automationRulesTool maps service.list through AutomationRuleResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L299-L306"
+      },
+      "authoritativeFacts": [
+        "type",
+        "status",
+        "localTime",
+        "id"
+      ]
+    },
+    {
+      "name": "automation.settings.get",
+      "version": 1,
+      "category": "AUTOMATION",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped switch state; toggling it is a separate governed action.",
+      "sourceHandler": {
+        "class": "AssistantAutomationService.settings — bean automationSettingsTool calls service.settings with the injected caller identity, projected through AutomationSettingsResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L290-L297"
+      },
+      "authoritativeFacts": [
+        "paused",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "developer.code.search",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.searchCode(the Java-injected caller identity, workspaceId, q) via the FunctionalAgentToolHandler bean developerCodeSearchTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L353-L364"
+      },
+      "authoritativeFacts": [
+        "query",
+        "matches",
+        "workspaceId"
+      ]
+    },
+    {
+      "name": "developer.file.read",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.readFile(the Java-injected caller identity, workspaceId, path) via the FunctionalAgentToolHandler bean developerFileReadTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L340-L351"
+      },
+      "authoritativeFacts": [
+        "relativePath",
+        "content",
+        "sizeBytes",
+        "truncated"
+      ]
+    },
+    {
+      "name": "developer.file_tree.get",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled, and catalog registration does not mean the agent may call it.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.getFileTree(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerFileTreeTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L329-L338"
+      },
+      "authoritativeFacts": [
+        "rootPath",
+        "entries",
+        "workspaceId"
+      ]
+    },
+    {
+      "name": "developer.git.commit",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "DEVELOPER_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.validateGitCommit as preflight, then WorkspaceDeveloperService.commitConfirmed on confirmation, via the GovernedFunctionalAgentToolHandler bean developerGitCommitTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L388-L403"
+      },
+      "authoritativeFacts": [
+        "commitId",
+        "message",
+        "paths",
+        "committedAt"
+      ]
+    },
+    {
+      "name": "developer.git.commit.preview",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.previewGitCommit(the Java-injected caller identity, workspaceId, paths, message) via the FunctionalAgentToolHandler bean developerGitCommitPreviewTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L426-L437"
+      },
+      "authoritativeFacts": [
+        "expectedHead",
+        "changeFingerprint",
+        "branch",
+        "paths",
+        "message"
+      ]
+    },
+    {
+      "name": "developer.git.diff",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.getGitDiff(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitDiffTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L377-L386"
+      },
+      "authoritativeFacts": [
+        "content",
+        "truncated",
+        "workspaceId"
+      ]
+    },
+    {
+      "name": "developer.git.log",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.getGitLog(the Java-injected caller identity, workspaceId, limit) via the FunctionalAgentToolHandler bean developerGitLogTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L388-L398"
+      },
+      "authoritativeFacts": [
+        "content",
+        "truncated",
+        "workspaceId"
+      ]
+    },
+    {
+      "name": "developer.git.push",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "DEVELOPER_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.validateGitPush as preflight, then WorkspaceDeveloperService.pushConfirmed on confirmation, via the GovernedFunctionalAgentToolHandler bean developerGitPushTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L405-L423"
+      },
+      "authoritativeFacts": [
+        "pushedCommit",
+        "remoteName",
+        "branch",
+        "pushedAt"
+      ]
+    },
+    {
+      "name": "developer.git.push.preview",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.previewGitPush(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitPushPreviewTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L439-L448"
+      },
+      "authoritativeFacts": [
+        "remoteName",
+        "remoteUrlDigest",
+        "aheadCount",
+        "expectedRemoteRef",
+        "expectedRemoteRefCommit",
+        "timeoutSeconds"
+      ]
+    },
+    {
+      "name": "developer.git.status",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.getGitStatus(the Java-injected caller identity, workspaceId) via the FunctionalAgentToolHandler bean developerGitStatusTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L366-L375"
+      },
+      "authoritativeFacts": [
+        "gitRepository",
+        "clean",
+        "branch",
+        "currentCommit",
+        "modifiedFiles",
+        "untrackedFiles"
+      ]
+    },
+    {
+      "name": "developer.interface_fallback.execute",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "DEVELOPER_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; local-automation and developer platform tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "LocalInterfaceFallbackService.validate as preflight, then LocalInterfaceFallbackService.execute on confirmation; those two are the direct binding to this tool, and they in turn use InterfaceFallbackPolicy.preview and LocalAutomationClient.invoke (declared as unverified deeper collaborators), via the GovernedFunctionalAgentToolHandler bean developerInterfaceFallbackExecuteTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L445-L473"
+      },
+      "authoritativeFacts": [
+        "receiptStatus",
+        "localAdapterInvoked",
+        "targetDigest",
+        "actionKey",
+        "targetKey"
+      ]
+    },
+    {
+      "name": "developer.interface_fallback.preview",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; local-automation and developer platform tools are disabled.",
+      "sourceHandler": {
+        "class": "InterfaceFallbackPolicy.preview(businessApiAvailable, channel, actionKey, targetKey) via the FunctionalAgentToolHandler bean developerInterfaceFallbackPreviewTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L450-L463"
+      },
+      "authoritativeFacts": [
+        "fallbackRequired",
+        "reason",
+        "channel",
+        "actionKey",
+        "targetKey"
+      ]
+    },
+    {
+      "name": "developer.patch.apply",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "DEVELOPER_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled until H11, and registration does not mean the product agent may call it.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.validatePatchRequest as preflight, then WorkspaceDeveloperService.applyConfirmedPatch on confirmation, via the GovernedFunctionalAgentToolHandler bean developerPatchApplyTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L370-L386"
+      },
+      "authoritativeFacts": [
+        "safeToApply",
+        "conflict",
+        "conflictReason",
+        "resultSha256",
+        "affectedLines"
+      ]
+    },
+    {
+      "name": "developer.patch.preview",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.previewPatch(the Java-injected caller identity, workspaceId, targetFile, diff) via the FunctionalAgentToolHandler bean developerPatchPreviewTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L400-L411"
+      },
+      "authoritativeFacts": [
+        "safeToApply",
+        "conflict",
+        "conflictReason",
+        "expectedSha256",
+        "resultSha256",
+        "affectedLines"
+      ]
+    },
+    {
+      "name": "developer.tests.recommend",
+      "version": 1,
+      "category": "DEVELOPER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; developer and coding platform tools are disabled.",
+      "sourceHandler": {
+        "class": "WorkspaceDeveloperService.recommendTests(the Java-injected caller identity, workspaceId, changedFiles) via the FunctionalAgentToolHandler bean developerTestsRecommendTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L413-L424"
+      },
+      "authoritativeFacts": [
+        "templates",
+        "reasons",
+        "requiresDependencyPreparation",
+        "executions"
+      ]
+    },
+    {
+      "name": "governance.audit.list",
+      "version": 1,
+      "category": "GOVERNANCE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped audit trail supporting accountability; it cannot alter or delete any record.",
+      "sourceHandler": {
+        "class": "AgentGovernanceService.listAuditLogs — bean auditLogsTool maps service.listAuditLogs through AuditLogResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L243-L248"
+      },
+      "authoritativeFacts": [
+        "action",
+        "targetType",
+        "targetId",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "governance.executions.list",
+      "version": 1,
+      "category": "GOVERNANCE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped execution history that supports transparency and confirmation review; it cannot approve, reject or modify an execution.",
+      "sourceHandler": {
+        "class": "AgentGovernanceService.listExecutions — bean executionsTool maps service.listExecutions through AgentExecutionResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L236-L241"
+      },
+      "authoritativeFacts": [
+        "status",
+        "executionType",
+        "estimatedCost",
+        "errorMessage"
+      ]
+    },
+    {
+      "name": "governance.health.get",
+      "version": 1,
+      "category": "GOVERNANCE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "pending",
+      "exposureReason": "D3 静态推导的契约缺陷（未运行 Java 复现）：（静态推导，未经运行期复现）AgentToolOutputSchemas.java#L132-L137 登记 HEALTH 共 12 个字段且闭合；AssistantHealthService.summarize L47 返回 AssistantHealthResponse，含 modelCalls/failedModelCalls/modelFailureRate/model*Tokens/unknownPriceCalls/usageEstimatedCost/currency/priceStatus/priceVersion 等约 29 个组件。AgentToolOutputValidator L83-L89 对未声明字段抛“存在未声明的输出字段” → 按代码路径推导必然失败。 在缺陷修复前不进入候选目录。",
+      "sourceHandler": {
+        "class": "AssistantHealthService.summarize — bean assistantHealthTool calls service.summarize with the caller identity injected by Java",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L44-L49"
+      },
+      "authoritativeFacts": [
+        "totalExecutions",
+        "failedExecutions",
+        "successRate",
+        "estimatedCost"
+      ]
+    },
+    {
+      "name": "learning.context.get",
+      "version": 1,
+      "category": "CONTEXT",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only, caller-scoped aggregate that only composes existing business reads; it is the agent's primary context source and mutates nothing.",
+      "sourceHandler": {
+        "class": "AgentLearningContextService.get — bean learningContextTool calls service.get with the caller identity injected by Java",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L51-L57"
+      },
+      "authoritativeFacts": [
+        "generatedAt",
+        "roadmap",
+        "pendingConfirmationCount",
+        "warnings"
+      ]
+    },
+    {
+      "name": "learning.goal.create",
+      "version": 1,
+      "category": "LEARNING",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "LEARNING_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "CreateLearningGoalService.create(the Java-injected caller identity, title, targetDate, weeklyStudyHours) wrapped by AgentToolRequestValidator.requireValid, via the GovernedFunctionalAgentToolHandler bean learningGoalCreateTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L75-L95"
+      },
+      "authoritativeFacts": [
+        "id",
+        "targetDate",
+        "weeklyStudyHours",
+        "status"
+      ]
+    },
+    {
+      "name": "learning.goals.list",
+      "version": 1,
+      "category": "LEARNING",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped query over that caller's own learning goals; no mutation and no cross-user exposure.",
+      "sourceHandler": {
+        "class": "CreateLearningGoalService.list — bean learningGoalsTool maps service.list through LearningGoalResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L59-L64"
+      },
+      "authoritativeFacts": [
+        "id",
+        "status",
+        "targetDate",
+        "weeklyStudyHours"
+      ]
+    },
+    {
+      "name": "learning.plan.create",
+      "version": 1,
+      "category": "LEARNING",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "PLAN_GENERATION",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "LearningPlanService.create(the Java-injected caller identity, validated CreateLearningPlanRequest) via the GovernedFunctionalAgentToolHandler bean learningPlanCreateTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L97-L112"
+      },
+      "authoritativeFacts": [
+        "id",
+        "goalId",
+        "startDate",
+        "endDate",
+        "version"
+      ]
+    },
+    {
+      "name": "learning.plan.get",
+      "version": 1,
+      "category": "LEARNING",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only ownership-checked lookup; a foreign plan id yields not-found rather than data.",
+      "sourceHandler": {
+        "class": "LearningPlanService.requireOwnedPlan — bean learningPlanTool calls service.requireOwnedPlan with the caller identity and the planId argument, projected through LearningPlanResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L73-L79"
+      },
+      "authoritativeFacts": [
+        "id",
+        "goalId",
+        "startDate",
+        "endDate"
+      ]
+    },
+    {
+      "name": "learning.plans.list",
+      "version": 1,
+      "category": "LEARNING",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped query of that caller's own plans; exposes no other user's data and writes nothing.",
+      "sourceHandler": {
+        "class": "LearningPlanService.list — bean learningPlansTool maps service.list through LearningPlanResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L66-L71"
+      },
+      "authoritativeFacts": [
+        "id",
+        "goalId",
+        "status",
+        "version"
+      ]
+    },
+    {
+      "name": "learning.task.update",
+      "version": 1,
+      "category": "LEARNING",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "TASK_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "LearningTaskService.changeStatusIdempotently(taskId, validated InternalChangeTaskStatusRequest) via the GovernedFunctionalAgentToolHandler bean taskStatusWriteTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L125-L143"
+      },
+      "authoritativeFacts": [
+        "status",
+        "version",
+        "completedAt",
+        "actualMinutes",
+        "scheduledDate"
+      ]
+    },
+    {
+      "name": "learning.tasks.list",
+      "version": 1,
+      "category": "LEARNING",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped task query; it cannot complete, move or create tasks.",
+      "sourceHandler": {
+        "class": "LearningTaskService.list — bean learningTasksTool calls service.list with the injected caller identity and a date parsed from the optional date argument (null when absent)",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L81-L88"
+      },
+      "authoritativeFacts": [
+        "scheduledDate",
+        "status",
+        "actualMinutes",
+        "taskKind"
+      ]
+    },
+    {
+      "name": "materials.get",
+      "version": 1,
+      "category": "MATERIAL",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only ownership-checked lookup; foreign ids produce not-found rather than data.",
+      "sourceHandler": {
+        "class": "MaterialService.get — bean materialTool calls service.get with the injected caller identity and the materialId argument, projected through MaterialResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L221-L227"
+      },
+      "authoritativeFacts": [
+        "summary",
+        "processingStatus",
+        "failureReason",
+        "id"
+      ]
+    },
+    {
+      "name": "materials.list",
+      "version": 1,
+      "category": "MATERIAL",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped listing of the caller's own materials; it neither imports nor reprocesses anything.",
+      "sourceHandler": {
+        "class": "MaterialService.list — bean materialsTool maps service.list through MaterialResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L214-L219"
+      },
+      "authoritativeFacts": [
+        "processingStatus",
+        "privacyLevel",
+        "tags",
+        "id"
+      ]
+    },
+    {
+      "name": "materials.text.import",
+      "version": 1,
+      "category": "MATERIAL",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "MATERIAL_PROCESSING",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "MaterialService.createText(the Java-injected caller identity, validated CreateTextMaterialRequest) via the GovernedFunctionalAgentToolHandler bean textMaterialImportWriteTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L266-L281"
+      },
+      "authoritativeFacts": [
+        "id",
+        "materialType",
+        "processingStatus",
+        "failureReason",
+        "knowledgePoints"
+      ]
+    },
+    {
+      "name": "materials.web.import",
+      "version": 1,
+      "category": "MATERIAL",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "MATERIAL_PROCESSING",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "MaterialService.createWeb(the Java-injected caller identity, validated CreateWebMaterialRequest) via the GovernedFunctionalAgentToolHandler bean webMaterialImportWriteTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L283-L298"
+      },
+      "authoritativeFacts": [
+        "id",
+        "sourceUrl",
+        "materialType",
+        "processingStatus",
+        "failureReason"
+      ]
+    },
+    {
+      "name": "navigation.resolve",
+      "version": 1,
+      "category": "NAVIGATION",
+      "effect": "NAVIGATE",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "H02 shared boundary; navigation is read-only routing, so it stays allowed while all writes and platform automation tools are disabled.",
+      "sourceHandler": {
+        "class": "NavigationToolHandler.invoke, which uses the in-place ROUTES table and the SAFE_IDENTIFIER regex and returns NavigationTarget.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/NavigationToolHandler.java#L11-L56"
+      },
+      "authoritativeFacts": [
+        "routeKey",
+        "params"
+      ]
+    },
+    {
+      "name": "notifications.list",
+      "version": 1,
+      "category": "NOTIFICATION",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped notification listing; it cannot change read state.",
+      "sourceHandler": {
+        "class": "NotificationService.list — bean notificationsTool maps service.list through NotificationResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L229-L234"
+      },
+      "authoritativeFacts": [
+        "type",
+        "read",
+        "createdAt",
+        "content"
+      ]
+    },
+    {
+      "name": "notifications.mark_read",
+      "version": 1,
+      "category": "NOTIFICATION",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "NOTIFICATION_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "NotificationService.markRead(the Java-injected caller identity, notificationId) via the GovernedFunctionalAgentToolHandler bean notificationMarkReadTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L190-L201"
+      },
+      "authoritativeFacts": [
+        "read",
+        "readAt",
+        "type",
+        "id"
+      ]
+    },
+    {
+      "name": "roadmap.current.get",
+      "version": 1,
+      "category": "ROADMAP",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped projection of that caller's own enrollment; it can never enroll, upgrade or otherwise change the roadmap.",
+      "sourceHandler": {
+        "class": "RoadmapQueryService.currentMapIfPresent — bean roadmapCurrentTool maps the Optional through AgentRoadmapMapResponse::from, or else null",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L90-L95"
+      },
+      "authoritativeFacts": [
+        "roadmapCode",
+        "completedRequiredNodes",
+        "totalRequiredNodes",
+        "stages"
+      ]
+    },
+    {
+      "name": "roadmap.enroll",
+      "version": 1,
+      "category": "ROADMAP",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "ROADMAP_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; all WRITE tools stay disabled at the manifest level until H11 opens governed business writes.",
+      "sourceHandler": {
+        "class": "RoadmapEnrollmentService.enroll(the Java-injected caller identity, roadmapCode, templateVersion) via the GovernedFunctionalAgentToolHandler bean roadmapEnrollTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L52-L63"
+      },
+      "authoritativeFacts": [
+        "status",
+        "roadmapCode",
+        "templateVersion",
+        "enrolledAt"
+      ]
+    },
+    {
+      "name": "roadmap.module.get",
+      "version": 1,
+      "category": "ROADMAP",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only, enrollment-scoped module lookup; no mutation and no cross-caller access.",
+      "sourceHandler": {
+        "class": "RoadmapQueryService.currentModule — bean roadmapModuleTool calls service.currentModule with the injected caller identity and the moduleId argument",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L105-L111"
+      },
+      "authoritativeFacts": [
+        "displayStatus",
+        "milestoneNode",
+        "nodes",
+        "completedRequiredNodes"
+      ]
+    },
+    {
+      "name": "roadmap.node.get",
+      "version": 1,
+      "category": "ROADMAP",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only lookup of catalog content joined with the caller's own node state; it cannot alter progress.",
+      "sourceHandler": {
+        "class": "RoadmapQueryService.currentNode — bean roadmapNodeTool calls service.currentNode with the injected caller identity and the nodeId argument",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L113-L119"
+      },
+      "authoritativeFacts": [
+        "objectives",
+        "prerequisiteCodes",
+        "quizStatus",
+        "displayStatus"
+      ]
+    },
+    {
+      "name": "roadmap.stage.get",
+      "version": 1,
+      "category": "ROADMAP",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only query restricted to the caller's enrolled template; it exposes no other user's roadmap and writes nothing.",
+      "sourceHandler": {
+        "class": "RoadmapQueryService.currentStage — bean roadmapStageTool calls service.currentStage with the injected caller identity and the stageId argument",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L97-L103"
+      },
+      "authoritativeFacts": [
+        "id",
+        "completedRequiredNodes",
+        "modules",
+        "nodes"
+      ]
+    },
+    {
+      "name": "roadmap.upgrade",
+      "version": 1,
+      "category": "ROADMAP",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "ROADMAP_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "RoadmapUpgradeService.confirm(the Java-injected caller identity, upgradeId) via the GovernedFunctionalAgentToolHandler bean roadmapUpgradeTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L65-L73"
+      },
+      "authoritativeFacts": [
+        "sourceVersion",
+        "targetVersion",
+        "status",
+        "manualReviewNodeCodes",
+        "addedModuleCount"
+      ]
+    },
+    {
+      "name": "runner.check.run",
+      "version": 1,
+      "category": "RUNNER",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "RUNNER_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; runner, coding and local-automation platform tools are disabled and writes stay disabled until H11, and catalog registration does not mean the product agent has this tool enabled.",
+      "sourceHandler": {
+        "class": "RunnerGovernanceService.submitExecution(the Java-injected caller identity, RunnerExecutionRequest) wrapped by requireRunnerSuccess and runnerIdempotencyKey, via the GovernedFunctionalAgentToolHandler bean runnerCheckRunTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L301-L322"
+      },
+      "authoritativeFacts": [
+        "success",
+        "status",
+        "exitCode",
+        "commandTokens",
+        "governanceExecutionId",
+        "stderrSummary"
+      ]
+    },
+    {
+      "name": "runner.dependencies.prepare",
+      "version": 1,
+      "category": "RUNNER",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "RUNNER_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; runner and local-automation platform tools are disabled until H11, and catalog registration is not product-agent enablement.",
+      "sourceHandler": {
+        "class": "RunnerGovernanceService.submitExecution(the Java-injected caller identity, RunnerExecutionRequest) wrapped by requireRunnerSuccess, via the GovernedFunctionalAgentToolHandler bean runnerDependenciesPrepareTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L324-L345"
+      },
+      "authoritativeFacts": [
+        "success",
+        "status",
+        "exitCode",
+        "commandTokens",
+        "durationMillis"
+      ]
+    },
+    {
+      "name": "runner.execution.preview",
+      "version": 1,
+      "category": "RUNNER",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; runner and coding platform tools are disabled, and catalog registration does not equal product-agent enablement.",
+      "sourceHandler": {
+        "class": "RunnerGovernanceService.preview(the Java-injected caller identity, RunnerExecutionRequest) via the FunctionalAgentToolHandler bean runnerExecutionPreviewTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L309-L328"
+      },
+      "authoritativeFacts": [
+        "commandTokens",
+        "renderedCommand",
+        "confirmationRequired",
+        "riskLevel",
+        "workingDirectory",
+        "timeoutSeconds"
+      ]
+    },
+    {
+      "name": "schedule.refresh",
+      "version": 1,
+      "category": "SCHEDULE",
+      "effect": "WRITE",
+      "riskLevel": "LOW",
+      "requiredScope": "SMALL_PLAN_ADJUSTMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "RoadmapScheduleService.refresh(the Java-injected caller identity, LocalDate from, LocalDate to) via the GovernedFunctionalAgentToolHandler bean scheduleRefreshTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L114-L123"
+      },
+      "authoritativeFacts": [
+        "scheduleId",
+        "timeZone",
+        "dailyCapacityMinutes",
+        "days"
+      ]
+    },
+    {
+      "name": "schedule.today.get",
+      "version": 1,
+      "category": "SCHEDULE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "pending",
+      "exposureReason": "D1 静态推导的契约缺陷（未运行 Java 复现）：（静态推导，未经运行期复现）AgentReadToolConfiguration.java#L123-L128 以 getOrCreate(ownerId, date, date) 调用，start==end；RoadmapScheduleService.validateWindow L317-L320 要求 end == start+6，故按代码路径推导必然抛 IllegalArgumentException(\"路线日程必须是包含首尾日期的连续七天\")。且 getOrCreate 为 @Transactional，成功路径会惰性创建/刷新排期行，不是纯只读。 在缺陷修复前不进入候选目录。",
+      "sourceHandler": {
+        "class": "RoadmapScheduleService.getOrCreate — bean todayScheduleTool calls service.getOrCreate with the injected caller identity and the same parsed date as both window bounds",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L121-L129"
+      },
+      "authoritativeFacts": [
+        "scheduleId",
+        "dailyCapacityMinutes",
+        "weekendsEnabled",
+        "days"
+      ]
+    },
+    {
+      "name": "schedule.unfinished.get",
+      "version": 1,
+      "category": "SCHEDULE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only projection over the caller's own schedule items; it cannot mark items done or move them.",
+      "sourceHandler": {
+        "class": "RoadmapScheduleService.getOrCreate — bean unfinishedScheduleTool then applies an in-config stream filter that drops COMPLETED items",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L131-L151"
+      },
+      "authoritativeFacts": [
+        "status",
+        "date",
+        "nodeId"
+      ]
+    },
+    {
+      "name": "settings.ai_status.get",
+      "version": 1,
+      "category": "SETTINGS",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only, caller-scoped status report that is desensitized by construction; credential entry and deletion remain user-only actions with no agent write tool.",
+      "sourceHandler": {
+        "class": "AiCredentialService.settings — bean aiSettingsStatusTool calls service.settings with the injected caller identity; internally uses DefaultCredentialStatusClient over HTTP and AiCredentialCipher to derive the masked suffix",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L284-L288"
+      },
+      "authoritativeFacts": [
+        "deepseekConfigured",
+        "deepseekMaskedSuffix",
+        "tavilyConfigured",
+        "warning"
+      ]
+    },
+    {
+      "name": "settings.learning.get",
+      "version": 1,
+      "category": "SETTINGS",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped settings read; changes go through the separate high-risk update tool requiring confirmation.",
+      "sourceHandler": {
+        "class": "UserSettingsService.get — bean learningSettingsTool calls service.get with the injected caller identity, projected through UserSettingsResponse::from",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L278-L282"
+      },
+      "authoritativeFacts": [
+        "timeZone",
+        "dailyStudyLimitMinutes",
+        "weeklyAvailability",
+        "defaultPrivacyLevel"
+      ]
+    },
+    {
+      "name": "settings.learning.update",
+      "version": 1,
+      "category": "SETTINGS",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "SETTINGS_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "UserSettingsService.get then UserSettingsService.save(the Java-injected caller identity, validated UpdateUserSettingsRequest) via the GovernedFunctionalAgentToolHandler bean learningSettingsUpdateTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L203-L227"
+      },
+      "authoritativeFacts": [
+        "dailyStudyLimitMinutes",
+        "timeZone",
+        "weeklyAvailability",
+        "defaultPrivacyLevel"
+      ]
+    },
+    {
+      "name": "workspaces.list",
+      "version": 1,
+      "category": "WORKSPACE",
+      "effect": "READ",
+      "riskLevel": "NONE",
+      "requiredScope": null,
+      "idempotencyRequired": false,
+      "timeoutMillis": 15000,
+      "exposureState": "allowed",
+      "exposureReason": "Read-only caller-scoped listing of registered workspaces; registration itself stays a separate governed action requiring confirmation.",
+      "sourceHandler": {
+        "class": "RoadmapArtifactService.workspaces — bean workspacesTool calls service.workspaces with the injected caller identity",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L250-L254"
+      },
+      "authoritativeFacts": [
+        "id",
+        "name",
+        "rootPath",
+        "status"
+      ]
+    },
+    {
+      "name": "workspaces.register",
+      "version": 1,
+      "category": "WORKSPACE",
+      "effect": "WRITE",
+      "riskLevel": "HIGH",
+      "requiredScope": "WORKSPACE_MANAGEMENT",
+      "idempotencyRequired": true,
+      "timeoutMillis": 120000,
+      "exposureState": "disabled",
+      "exposureReason": "H02 shared boundary; WRITE tools are disabled until H11.",
+      "sourceHandler": {
+        "class": "RoadmapArtifactService.createWorkspace(the Java-injected caller identity, validated CreateProjectWorkspaceRequest) via the GovernedFunctionalAgentToolHandler bean workspaceRegisterTool.",
+        "registrationFile": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L229-L241"
+      },
+      "authoritativeFacts": [
+        "id",
+        "rootPath",
+        "status",
+        "createdAt"
+      ]
+    }
+  ],
+  "user_exclusive_operations": [
+    {
+      "action": "QUIZ_SUBMISSION",
+      "endpoint": "POST /api/quizzes/{id}/submit",
+      "controller": "QuizController.submitQuiz",
+      "description": "提交测验作答答案并结算分数",
+      "defenseMechanism": "前端 uiActionDispatcher.ts 的 assertAuthenticityGuards 直接拦截；无对应 Agent 工具，防止 Agent 代替用户应试刷分。",
+      "isAgentCallable": false
+    },
+    {
+      "action": "CHECKIN_SUMMARY_SUBMIT",
+      "endpoint": "POST /api/roadmap/nodes/{id}/checkin",
+      "controller": "RoadmapLearningLoopController.submitCheckin",
+      "description": "提交每日节点学习总结与打卡",
+      "defenseMechanism": "前端 uiActionDispatcher.ts 的 assertAuthenticityGuards 直接拦截；必须由学习者本人真实验收与记录。",
+      "isAgentCallable": false
+    },
+    {
+      "action": "ACCEPT_ARTIFACT_SUBMISSION",
+      "endpoint": "POST /api/roadmap-artifacts/{id}/accept",
+      "controller": "RoadmapArtifactController.acceptArtifact",
+      "description": "确认接受并归档实战成果物评测结果",
+      "defenseMechanism": "前端 uiActionDispatcher.ts 的 assertAuthenticityGuards 直接拦截；成果物验收属于用户专属主权动作。",
+      "isAgentCallable": false
+    },
+    {
+      "action": "AUTH_LOGIN",
+      "endpoint": "POST /api/auth/login",
+      "controller": "AuthenticationController.login",
+      "description": "用户凭据密码登录认证",
+      "defenseMechanism": "用户专属安全行为，无对应 Agent 工具。路由守卫拦截未认证请求至 /login。",
+      "isAgentCallable": false
+    },
+    {
+      "action": "AUTH_REGISTER",
+      "endpoint": "POST /api/auth/register",
+      "controller": "AuthenticationController.register",
+      "description": "用户自主注册账户",
+      "defenseMechanism": "用户专属行为，无对应 Agent 工具。",
+      "isAgentCallable": false
+    },
+    {
+      "action": "GOVERNANCE_GRANT_APPROVAL",
+      "endpoint": "POST /api/agent/grants",
+      "controller": "AgentGrantController.approveGrant",
+      "description": "高风险或跨范围操作授权审批",
+      "defenseMechanism": "后端状态机严格要求 WAITING_CONFIRMATION / WAITING_AUTHORIZATION 仅能由用户主动授权，Agent 无法自授。",
+      "isAgentCallable": false
+    }
+  ],
+  "authoritative_facts_sources": [
+    {
+      "metric": "roadmap_progress",
+      "authoritativeTool": "roadmap.current.get",
+      "javaService": "RoadmapService.getCurrentRoadmap",
+      "endpoint": "GET /api/roadmap/current",
+      "keyFields": [
+        "enrolled",
+        "stage_progress",
+        "overall_progress",
+        "stages"
+      ],
+      "policy": "权威进度真值唯一源于数据库持久化事实；禁止模型自行推演或编造百分比。"
+    },
+    {
+      "metric": "learning_context",
+      "authoritativeTool": "learning.context.get",
+      "javaService": "AgentLearningContextService.get",
+      "endpoint": "GET /api/learning/context",
+      "keyFields": [
+        "active_goal",
+        "current_plan",
+        "recent_quiz_summary",
+        "today_tasks",
+        "stage_focus"
+      ],
+      "policy": "只读注水事实；模型在规划时必须参考该上下文，严禁宣称无路线或无计划。"
+    },
+    {
+      "metric": "today_schedule",
+      "authoritativeTool": "schedule.today.get",
+      "javaService": "RoadmapScheduleService.getTodaySchedule",
+      "endpoint": "GET /api/schedule/today",
+      "keyFields": [
+        "tasks",
+        "focus_nodes",
+        "estimated_minutes"
+      ],
+      "policy": "今日待办权威集合由服务端计算并锁定；模型不得伪造任务完成状态。"
+    },
+    {
+      "metric": "learning_tasks",
+      "authoritativeTool": "learning.tasks.list",
+      "javaService": "LearningTaskService.list",
+      "endpoint": "GET /api/learning/tasks",
+      "keyFields": [
+        "id",
+        "title",
+        "status",
+        "date"
+      ],
+      "policy": "真实任务状态列表。"
+    },
+    {
+      "metric": "assessment_mastery",
+      "authoritativeTool": "assessment.mastery.list",
+      "javaService": "MasteryService.getMastery",
+      "endpoint": "GET /api/mastery",
+      "keyFields": [
+        "radar_dimensions",
+        "mastery_levels",
+        "weak_spots",
+        "calculated_at"
+      ],
+      "policy": "知识掌握度与薄弱点由后端算法生成；禁止模型伪造雷达指标。"
+    },
+    {
+      "metric": "wrong_questions_summary",
+      "authoritativeTool": "assessment.wrong_questions.summary",
+      "javaService": "WrongQuestionService.getSummary",
+      "endpoint": "GET /api/wrong-questions/summary",
+      "keyFields": [
+        "total_count",
+        "unreviewed_count",
+        "category_breakdown"
+      ],
+      "policy": "错题统计权威真值来源。"
+    },
+    {
+      "metric": "governance_health",
+      "authoritativeTool": "governance.health.get",
+      "javaService": "AssistantHealthService.summarize",
+      "endpoint": "GET /api/assistant/health",
+      "keyFields": [
+        "totalExecutions",
+        "failedExecutions",
+        "successRate",
+        "estimatedCost"
+      ],
+      "policy": "健康与用量真值来源。"
+    }
+  ],
+  "unregistered_business_capabilities": [
+    {
+      "category": "LEGACY_COURSE",
+      "routes": [
+        "courses",
+        "course-detail",
+        "lesson"
+      ],
+      "endpoints": [
+        "GET /api/courses",
+        "GET /api/courses/{slug}",
+        "GET /api/lessons/{id}"
+      ],
+      "reason": "旧版视频课程浏览体系；无 Agent 工具注册，不伪造可调用工具。"
+    },
+    {
+      "category": "FRONTEND_MOCKS",
+      "routes": [
+        "knowledge",
+        "agent-plan",
+        "agent-tasks"
+      ],
+      "endpoints": [],
+      "reason": "历史单轮问答与对话规划前端原型；未对接真实后端工具。"
+    },
+    {
+      "category": "USER_IDENTITY",
+      "routes": [
+        "login",
+        "register"
+      ],
+      "endpoints": [
+        "POST /api/auth/login",
+        "POST /api/auth/register",
+        "POST /api/auth/logout"
+      ],
+      "reason": "学习者账号与凭据管理；严格用户专属操作，禁止 Agent 代理。"
+    }
+  ]
+}
