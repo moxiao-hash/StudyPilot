@@ -57,6 +57,64 @@ const FABRICATED_SCORE_KEYS = [
 ];
 const MEASUREMENT_KEYS = ['mode', 'modelRuns', 'pairedResult'];
 
+// The necessary core mechanism / composition / preset digests the frozen
+// baseline must pin. A missing entry means the mechanism lock is incomplete.
+const REQUIRED_MECHANISM_IDS = [
+  'loop-main',
+  'loop-tool-calls',
+  'loop-inbox',
+  'agent-registry',
+  'agent-runtime-types',
+  'agent-dispatch',
+  'tools-registry',
+  'tools-json-schema',
+  'tools-schema-dsl',
+  'system-prompt',
+  'compaction-basic',
+  'session-persistence-jsonl',
+  'session-checkpoint-policy',
+  'llm-service',
+  'token-meter',
+  'user-approval',
+  'user-questions',
+  'subagent',
+  'agent-presets',
+  'sdk-server-impl',
+  'bundle-base',
+  'bundle-web-app',
+  'bundle-sdk-app',
+  'bundle-sdk-minimal',
+  'preset-standard',
+];
+// The adopted profile layers the baseline must pin.
+const REQUIRED_PROFILE_IDS = ['profile-web-patch', 'profile-desktop-patch', 'profile-web-package'];
+// The public Runtime contract projection this fixture declares.
+const PUBLIC_EVENT_TYPES = [
+  'SESSION_OPENED',
+  'SESSION_CLOSED',
+  'TURN_STARTED',
+  'TURN_FINISHED',
+  'CALL_STARTED',
+  'CALL_FINISHED',
+  'ASSISTANT_DELTA',
+  'ASSISTANT_MESSAGE',
+  'INTERACTION_REQUIRED',
+  'USAGE_REPORTED',
+  'ERROR',
+];
+const PUBLIC_END_REASONS = [
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
+  'BUDGET_EXHAUSTED',
+  'MAX_TOKENS',
+  'CAPABILITY_DENIED',
+];
+// A secret must never be copied into this fixture; only digests may be frozen.
+const SECRET_KEY_PATTERN = /^(apikey|api_key|apisecret|secret|secretvalue|secrettext|password|passwd|token|accesstoken|refreshtoken|clientsecret|credential|credentials|privatekey)$/i;
+
+const IS_SHA256 = /^[0-9a-f]{64}$/;
+
 class CheckError extends Error {}
 
 function fail(message) {
@@ -366,6 +424,50 @@ const ASSERTION_RESOLVERS = {
     const invoked = toolCallNames(ctx.scenario).filter((name) => writeTools.has(name));
     if (invoked.length > 0) fail(`a write tool was invoked: ${invoked.join(', ')}`);
   },
+
+  /** The cancel scenario must project onto the public CANCELLED endReason. */
+  cancel_maps_to_cancelled(ctx) {
+    const p = ctx.doc.publicContractProjection;
+    const projection = p.outcomeKindToPublic?.[ctx.scenario.expectedOutcome?.kind];
+    if (!projection) fail('the cancel scenario has no public contract projection');
+    if (projection.terminal !== true) fail('cancel must project a terminal outcome');
+    if (projection.ok !== false) fail('cancel must project ok=false');
+    const tr = ctx.scenario.expectedOutcome?.terminationReason;
+    const projected = p.terminationReasonToEndReason?.[tr];
+    if (projected !== 'CANCELLED') {
+      fail(`cancel must project terminationReason "${tr}" to CANCELLED, got ${projected}`);
+    }
+    if (!(projection.events ?? []).includes('TURN_FINISHED')) {
+      fail('cancel must project a TURN_FINISHED event');
+    }
+    if ((projection.events ?? []).includes('ASSISTANT_MESSAGE')) {
+      fail('cancel must not project a completed assistant message');
+    }
+  },
+
+  /** steer (interject) must never be conflated with cancel. */
+  steer_not_cancel(ctx) {
+    const p = ctx.doc.publicContractProjection;
+    const kind = ctx.scenario.expectedOutcome?.kind;
+    const projection = p.outcomeKindToPublic?.[kind];
+    if (!projection) fail(`steer scenario kind "${kind}" has no public contract projection`);
+    if (kind === 'cancelled') fail('steer must not be projected as a cancelled turn');
+    const tr = ctx.scenario.expectedOutcome?.terminationReason;
+    const projected = tr === undefined || tr === null ? projection.defaultEndReason : p.terminationReasonToEndReason?.[tr];
+    if (projected === 'CANCELLED') fail(`steer must not project the CANCELLED endReason (got ${projected})`);
+    if (p.steerVsCancel?.interject?.steerIsTerminal !== false) {
+      fail('the projection must declare that steer itself is not terminal');
+    }
+    if (p.steerVsCancel?.interject?.mustNotEndReason !== 'CANCELLED') {
+      fail('the projection must forbid CANCELLED as the steer end reason');
+    }
+    if (p.steerVsCancel?.cancel?.endReason !== 'CANCELLED') {
+      fail('the projection must declare cancel as CANCELLED');
+    }
+    if ((ctx.doc.terminationReasons?.allowed ?? []).includes('steer')) {
+      fail('steer must not appear in the termination-reason vocabulary');
+    }
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -395,7 +497,7 @@ function checkBaselineLock(doc) {
   if (!isNonEmptyString(b.harnessSourcePath)) fail('baseline.harnessSourcePath is missing');
   if (!/^[0-9a-f]{40}$/.test(b.harnessHead ?? '')) fail('baseline.harnessHead is not a full 40-char commit hash');
   for (const [file, hash] of Object.entries(b.lockedHashes ?? {})) {
-    if (!/^[0-9a-f]{64}$/.test(hash)) fail(`baseline.lockedHashes.${file} is not a sha256 digest`);
+    if (!IS_SHA256.test(hash)) fail(`baseline.lockedHashes.${file} is not a sha256 digest`);
   }
   for (const required of ['pnpm-lock.yaml', 'pnpm-workspace.yaml', 'package.json']) {
     if (!b.lockedHashes?.[required]) fail(`baseline.lockedHashes.${required} is missing`);
@@ -408,6 +510,176 @@ function checkBaselineLock(doc) {
   }
   if (!isNonEmptyString(label.realProviderModelId)) {
     fail('baseline.uiModelLabel.realProviderModelId must be recorded, even as "unknown"');
+  }
+  checkFrozenDigestBlock(b.extensionPoints, 'baseline.extensionPoints', REQUIRED_MECHANISM_IDS, 'mechanism');
+  checkFrozenDigestBlock(b.profileFiles, 'baseline.profileFiles', REQUIRED_PROFILE_IDS, 'profile layer');
+  if (!isNonEmptyString(b.mechanismLockNote)) {
+    fail('baseline.mechanismLockNote is missing: the digest-only (no secret) intent must be stated');
+  }
+  if (/\b(?:secret|apikey|api[_ ]?key|password|token)\b/i.test(b.mechanismLockNote)
+    && !/不保存|不含|never|no secret/i.test(b.mechanismLockNote)) {
+    fail('baseline.mechanismLockNote must state that no secret content is stored');
+  }
+}
+
+/** A frozen digest block: id -> sha256, with a required minimum coverage set. */
+function checkFrozenDigestBlock(block, label, requiredIds, kind) {
+  if (!isPlainObject(block) || Object.keys(block).length === 0) {
+    fail(`${label} is missing or empty: the ${kind} lock is UNVERIFIED`);
+  }
+  for (const [id, hash] of Object.entries(block)) {
+    if (!IS_SHA256.test(hash)) fail(`${label}.${id} is not a sha256 digest`);
+  }
+  for (const id of requiredIds) {
+    if (!(id in block)) fail(`${label} does not pin required ${kind} "${id}"`);
+  }
+}
+
+/** Reject any key or value that would copy secret material into the fixture. */
+function checkNoSecretMaterial(value, path = '$') {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => checkNoSecretMaterial(item, `${path}[${index}]`));
+    return;
+  }
+  if (!isPlainObject(value)) return;
+  for (const [key, child] of Object.entries(value)) {
+    if (SECRET_KEY_PATTERN.test(key)) {
+      fail(`${path}.${key} looks like a secret field; the fixture may freeze digests only, never secret material`);
+    }
+    checkNoSecretMaterial(child, `${path}.${key}`);
+  }
+}
+
+/**
+ * The fixture's scenario vocabulary must project onto the public Runtime
+ * contract: every outcome kind and termination reason needs a declared
+ * projection, `ok` must agree with the projected endReason, interaction
+ * outcomes must not claim completion, and steer must not be conflated with
+ * cancel.
+ */
+function checkPublicProjection(doc) {
+  const p = doc.publicContractProjection;
+  if (!isPlainObject(p)) fail('publicContractProjection block is missing');
+  if (!isNonEmptyString(p.publicSchemaRef)) fail('publicContractProjection.publicSchemaRef is missing');
+  const events = p.eventTypes ?? [];
+  for (const type of PUBLIC_EVENT_TYPES) {
+    if (!events.includes(type)) fail(`publicContractProjection.eventTypes is missing "${type}"`);
+  }
+  const reasons = p.endReasonVocabulary ?? [];
+  for (const reason of PUBLIC_END_REASONS) {
+    if (!reasons.includes(reason)) fail(`publicContractProjection.endReasonVocabulary is missing "${reason}"`);
+  }
+  if (p.successEndReason !== 'COMPLETED') fail('publicContractProjection.successEndReason must be COMPLETED');
+  if (!isPlainObject(p.outcomeKindToPublic)) fail('publicContractProjection.outcomeKindToPublic is missing');
+  if (!isPlainObject(p.terminationReasonToEndReason)) {
+    fail('publicContractProjection.terminationReasonToEndReason is missing');
+  }
+  if (!isPlainObject(p.interactionStates)) fail('publicContractProjection.interactionStates is missing');
+  if (!isPlainObject(p.steerVsCancel)) fail('publicContractProjection.steerVsCancel is missing');
+  if (p.steerVsCancel.cancel?.turnTerminal !== true || p.steerVsCancel.cancel?.endReason !== 'CANCELLED') {
+    fail('publicContractProjection.steerVsCancel.cancel must be terminal with endReason CANCELLED');
+  }
+  if (p.steerVsCancel.interject?.steerIsTerminal !== false) {
+    fail('publicContractProjection.steerVsCancel.interject must declare steerIsTerminal=false (steer != cancel)');
+  }
+  if (p.steerVsCancel.interject?.mustNotEndReason !== 'CANCELLED') {
+    fail('publicContractProjection.steerVsCancel.interject must forbid the CANCELLED endReason');
+  }
+  for (const forbidden of ['steer', 'interject']) {
+    if ((doc.terminationReasons?.allowed ?? []).includes(forbidden)) {
+      fail(`terminationReasons must not list "${forbidden}": steer is not an end reason`);
+    }
+  }
+
+  const reasonMap = p.terminationReasonToEndReason;
+  for (const scenario of doc.scenarios) {
+    const kind = scenario.expectedOutcome?.kind;
+    const coverage = scenario.coverage ?? [];
+    const tr = scenario.expectedOutcome?.terminationReason;
+    const projection = p.outcomeKindToPublic[kind];
+    if (!projection) {
+      fail(`${scenario.id}: outcome kind "${kind}" has no public contract projection`);
+    }
+    for (const event of projection.events ?? []) {
+      if (!events.includes(event)) {
+        fail(`${scenario.id}: projected event "${event}" is not in the public event vocabulary`);
+      }
+    }
+    if (projection.terminal) {
+      if (projection.defaultEndReason && !reasons.includes(projection.defaultEndReason)) {
+        fail(`${scenario.id}: projected endReason "${projection.defaultEndReason}" is outside the public vocabulary`);
+      }
+    } else if (projection.defaultEndReason !== null) {
+      fail(`${scenario.id}: non-terminal kind "${kind}" must not declare an endReason`);
+    }
+
+    // --- semantic rules that hold regardless of an explicit termination reason
+    // Interaction (awaiting) outcomes must never read as completed.
+    if (kind === 'clarify' || kind === 'pending_confirmation') {
+      if (projection.terminal || projection.ok === true) {
+        fail(`${scenario.id}: awaiting-interaction outcome "${kind}" must not be terminal or ok`);
+      }
+      if (!(projection.events ?? []).includes('INTERACTION_REQUIRED')) {
+        fail(`${scenario.id}: awaiting-interaction outcome "${kind}" must project INTERACTION_REQUIRED`);
+      }
+    }
+
+    // steer must never be projected as cancel. Steer itself does not terminate
+    // the turn, so the scenario may still end with a normal completion — but it
+    // must never project CANCELLED, and steer is never an end reason.
+    if (coverage.includes('interject')) {
+      if (kind === 'cancelled') fail(`${scenario.id}: a steer (interject) scenario must not end cancelled`);
+      const projected = tr === undefined || tr === null ? projection.defaultEndReason : reasonMap[tr];
+      if (projected === 'CANCELLED') {
+        fail(`${scenario.id}: a steer (interject) scenario must not project CANCELLED`);
+      }
+      if (!(projection.events ?? []).includes('TURN_STARTED')) {
+        fail(`${scenario.id}: a steer scenario must still be a live turn`);
+      }
+    }
+
+    // cancel must be terminal CANCELLED with ok=false.
+    if (coverage.includes('cancel')) {
+      if (kind !== 'cancelled') fail(`${scenario.id}: the cancel scenario must project kind cancelled`);
+      if (tr !== 'cancelled') fail(`${scenario.id}: the cancel scenario must declare terminationReason cancelled`);
+      if (reasonMap[tr] !== 'CANCELLED') {
+        fail(`${scenario.id}: the cancel scenario must project endReason CANCELLED, got ${reasonMap[tr]}`);
+      }
+      if (projection.ok !== false) fail(`${scenario.id}: the cancel scenario must project ok=false`);
+      if (projection.terminal !== true) fail(`${scenario.id}: the cancel scenario must be terminal`);
+    }
+
+    // --- ok / endReason agreement -------------------------------------------
+    if (tr === undefined || tr === null) {
+      if (projection.terminal && !projection.defaultEndReason) {
+        fail(`${scenario.id}: terminal kind "${kind}" has no endReason to project`);
+      }
+      if (projection.terminal) {
+        const completes = projection.defaultEndReason === p.successEndReason;
+        if (completes !== (projection.ok === true)) {
+          fail(
+            `${scenario.id}: ok/endReason disagree — kind "${kind}" sets ok=${projection.ok} but projects ${projection.defaultEndReason}`,
+          );
+        }
+      }
+      continue;
+    }
+    if (!(tr in reasonMap)) {
+      fail(`${scenario.id}: terminationReason "${tr}" has no public endReason projection`);
+    }
+    const projectedReason = reasonMap[tr];
+    const isCompletion = projectedReason === p.successEndReason;
+    if (projection.terminal && projectedReason === null) {
+      fail(`${scenario.id}: terminal kind "${kind}" projects terminationReason "${tr}" to no endReason`);
+    }
+    if (!projection.terminal && projectedReason !== null) {
+      fail(`${scenario.id}: non-terminal kind "${kind}" must not project endReason "${projectedReason}"`);
+    }
+    if (isCompletion !== (projection.ok === true)) {
+      fail(
+        `${scenario.id}: ok/endReason disagree — kind "${kind}" sets ok=${projection.ok} but terminationReason "${tr}" projects ${projectedReason}`,
+      );
+    }
   }
 }
 
@@ -538,9 +810,13 @@ function runAssertions(doc, scenario) {
 
 export function validateFixtures(doc) {
   checkDocumentShape(doc);
+  checkNoSecretMaterial(doc);
   checkBaselineLock(doc);
   if (!isPlainObject(doc.evaluationProtocol)) fail('evaluationProtocol is missing');
   checkNoFabricatedScores(doc);
+  // The projection is validated before the per-scenario assertions so a
+  // structural projection gap reports its own cause.
+  checkPublicProjection(doc);
 
   // Scenario identity, count and per-scenario contract are checked before
   // coverage, so a missing or malformed scenario reports its own cause rather

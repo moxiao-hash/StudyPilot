@@ -203,48 +203,162 @@ function summarize(inventory) {
   return lines.join('\n');
 }
 
-/** Compare the live tree against the lock frozen in the fixture. */
+/**
+ * The lock subset that `checkAgainstFixture` compares: repository lockfile
+ * digests, the necessary core-mechanism / composition / preset digests, and the
+ * adopted profile-layer digests. Digests only — never file contents, so no
+ * secret material can enter the frozen baseline.
+ */
+export function collectLock(inventory) {
+  const extensionPoints = {};
+  for (const entry of inventory.extensionPoints ?? []) {
+    if (entry.present && entry.sha256) extensionPoints[entry.id] = entry.sha256;
+  }
+  const profileFiles = {};
+  for (const entry of inventory.profileFiles ?? []) {
+    if (entry.present && entry.sha256) profileFiles[entry.id] = entry.sha256;
+  }
+  return {
+    harnessHead: inventory.harnessHead,
+    lockedHashes: inventory.lockedHashes,
+    profileBundles: inventory.profileBundles,
+    extensionPoints,
+    profileFiles,
+  };
+}
+
+/** Extract the repo-relative path from a `git status --porcelain` line. */
+function dirtyPath(line) {
+  return line.replace(/^..\s+/, '').trim().replace(/^"(.*)"$/, '$1');
+}
+
+/**
+ * Compare the live tree against the lock frozen in the fixture.
+ *
+ * A changed HEAD, lockfile digest, mechanism/composition/preset digest, adopted
+ * profile-layer digest, removed entry, or unreadable/unavailable lock block all
+ * make the check fail. Unrelated untracked working-tree artifacts are NOT drift;
+ * a locked core-mechanism path appearing modified IS.
+ *
+ * Returns `{ ok, drift, unverified }`. `unverified` lists conditions that could
+ * not be compared at all; any entry there also forces `ok:false`, so an
+ * unverifiable lock can never report a clean baseline.
+ */
 export function checkAgainstFixture(inventory, fixtureDoc) {
   const drift = [];
+  const unverified = [];
   const baseline = fixtureDoc.baseline ?? {};
 
   if (inventory.harnessHead !== baseline.harnessHead) {
     drift.push(`HEAD changed: locked ${baseline.harnessHead}, live ${inventory.harnessHead}`);
   }
+
   for (const [file, locked] of Object.entries(baseline.lockedHashes ?? {})) {
-    const live = inventory.lockedHashes[file];
+    const live = inventory.lockedHashes?.[file];
     if (live === undefined) {
       drift.push(`locked file ${file} is not tracked by the inventory`);
     } else if (live !== locked) {
       drift.push(`${file} changed: locked ${locked.slice(0, 12)}, live ${String(live).slice(0, 12)}`);
     }
   }
-  if (inventory.missingRequired.length > 0) {
-    drift.push(`required extension points missing: ${inventory.missingRequired.join(', ')}`);
+
+  // --- necessary core mechanism / composition / preset digests -------------
+  const livePoints = new Map((inventory.extensionPoints ?? []).map((entry) => [entry.id, entry]));
+  const lockedPoints = baseline.extensionPoints ?? {};
+  if (Object.keys(lockedPoints).length === 0) {
+    drift.push('the baseline freezes no mechanism digests: the core-mechanism lock is UNVERIFIED');
   }
-  const lockedBundles = baseline.profileBundles ?? [];
-  if (inventory.profileBundles.length > 0) {
-    const same =
-      lockedBundles.length === inventory.profileBundles.length &&
-      lockedBundles.every((name, index) => name === inventory.profileBundles[index]);
-    if (!same) {
-      drift.push(`profile bundles changed: locked [${lockedBundles.join(', ')}], live [${inventory.profileBundles.join(', ')}]`);
+  for (const [id, lockedHash] of Object.entries(lockedPoints)) {
+    const live = livePoints.get(id);
+    if (!live) {
+      drift.push(`mechanism "${id}" is absent from the live inventory (removed or renamed)`);
+      continue;
     }
-  } else {
-    drift.push('live profile bundles are unavailable, so the composition lock is UNVERIFIED');
+    if (!live.present) {
+      drift.push(`mechanism "${id}" is MISSING at ${live.path}`);
+      continue;
+    }
+    if (live.sha256 !== lockedHash) {
+      drift.push(
+        `mechanism "${id}" content changed: locked ${String(lockedHash).slice(0, 12)}, live ${String(live.sha256).slice(0, 12)} (${live.path})`,
+      );
+    }
   }
-  const presetEntry = inventory.extensionPoints.find((entry) => entry.id === 'preset-standard');
-  if (!presetEntry?.present) drift.push('the standard agent preset composition is missing');
-  if (baseline.agentPreset && baseline.agentPreset !== 'standard') {
-    drift.push(`locked agent preset is "${baseline.agentPreset}", which the inventory does not resolve`);
+  const addedPoints = [...livePoints.values()]
+    .filter((entry) => entry.present && !(entry.id in lockedPoints))
+    .map((entry) => entry.id);
+  if (addedPoints.length > 0) {
+    unverified.push(`live inventory reports mechanism(s) outside the frozen lock: ${addedPoints.join(', ')}`);
   }
 
-  return { ok: drift.length === 0, drift };
+  if ((inventory.missingRequired ?? []).length > 0) {
+    drift.push(`required extension points missing: ${inventory.missingRequired.join(', ')}`);
+  }
+
+  // --- adopted profile layers ---------------------------------------------
+  const liveProfile = new Map((inventory.profileFiles ?? []).map((entry) => [entry.id, entry]));
+  const lockedProfile = baseline.profileFiles ?? {};
+  if ((inventory.profileFiles ?? []).length === 0) {
+    unverified.push('live profile layers are unavailable, so the adopted profile composition is UNVERIFIED');
+  }
+  if (Object.keys(lockedProfile).length === 0) {
+    drift.push('the baseline freezes no profile-layer digests: the adopted profile lock is UNVERIFIED');
+  }
+  for (const [id, lockedHash] of Object.entries(lockedProfile)) {
+    const live = liveProfile.get(id);
+    if (!live) {
+      drift.push(`profile layer "${id}" is absent from the live inventory (removed)`);
+      continue;
+    }
+    if (!live.present) {
+      drift.push(`profile layer "${id}" is MISSING or unreadable at ${live.path}`);
+      continue;
+    }
+    if (live.sha256 !== lockedHash) {
+      drift.push(
+        `profile layer "${id}" content changed: locked ${String(lockedHash).slice(0, 12)}, live ${String(live.sha256).slice(0, 12)}`,
+      );
+    }
+  }
+
+  // --- composition ---------------------------------------------------------
+  const lockedBundles = baseline.profileBundles ?? [];
+  const liveBundles = inventory.profileBundles ?? [];
+  if (liveBundles.length > 0) {
+    const same =
+      lockedBundles.length === liveBundles.length &&
+      lockedBundles.every((name, index) => name === liveBundles[index]);
+    if (!same) {
+      drift.push(`profile bundles changed: locked [${lockedBundles.join(', ')}], live [${liveBundles.join(', ')}]`);
+    }
+  } else {
+    unverified.push('live profile bundles are unavailable, so the composition lock is UNVERIFIED');
+  }
+  if (!livePoints.get('preset-standard')?.present) {
+    drift.push('the standard agent preset composition is missing from the live inventory');
+  }
+  if (baseline.agentPreset && baseline.agentPreset !== 'standard') {
+    unverified.push(`locked agent preset is "${baseline.agentPreset}", which the inventory does not resolve`);
+  }
+
+  // --- working tree: only a locked core path being modified is drift --------
+  const lockedPaths = new Set(
+    [...livePoints.values()].filter((entry) => entry.id in lockedPoints).map((entry) => entry.path),
+  );
+  const dirtyCore = (inventory.harnessDirtyPaths ?? [])
+    .map(dirtyPath)
+    .filter((path) => lockedPaths.has(path));
+  if (dirtyCore.length > 0) {
+    drift.push(`locked core mechanism path(s) appear modified in the working tree: ${dirtyCore.join(', ')}`);
+  }
+
+  return { ok: drift.length === 0 && unverified.length === 0, drift, unverified };
 }
 
 function main(argv) {
   const json = argv.includes('--json');
   const check = argv.includes('--check');
+  const lock = argv.includes('--lock');
   const harnessArgIndex = argv.indexOf('--harness');
   const fixtureArgIndex = argv.indexOf('--fixture');
   const harnessPath =
@@ -253,15 +367,27 @@ function main(argv) {
 
   try {
     const inventory = collectInventory(harnessPath);
+    if (lock) {
+      // Prints the digest-only lock subset to paste into the frozen fixture.
+      // No file contents are emitted, so no secret material can be captured.
+      process.stdout.write(`${JSON.stringify(collectLock(inventory), null, 2)}\n`);
+      return 0;
+    }
     if (check) {
       const doc = readJson(fixturePath, 'fixture');
       const result = checkAgainstFixture(inventory, doc);
-      const payload = { ok: result.ok, harnessHead: inventory.harnessHead, drift: result.drift };
+      const payload = {
+        ok: result.ok,
+        harnessHead: inventory.harnessHead,
+        drift: result.drift,
+        unverified: result.unverified,
+      };
       if (json) process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
       else if (result.ok) process.stdout.write(`LOCKED  baseline matches the live Harness tree\n        HEAD ${inventory.harnessHead}\n`);
       else {
         process.stderr.write(`DRIFT   baseline no longer matches the live Harness tree\n`);
         for (const item of result.drift) process.stderr.write(`        - ${item}\n`);
+        for (const item of result.unverified) process.stderr.write(`        ? UNVERIFIED: ${item}\n`);
       }
       return result.ok ? 0 : 1;
     }

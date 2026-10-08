@@ -98,8 +98,15 @@ test('rejects an action that is both allowed and forbidden', () => {
 });
 
 test('rejects an outcome kind outside the vocabulary', () => {
+  // Projected so the projection check passes, but absent from OUTCOME_KINDS.
   const doc = clone();
-  scenario(doc, 'H01-S01').expectedOutcome.kind = 'maybe';
+  doc.publicContractProjection.outcomeKindToPublic.legacy_kind = {
+    terminal: true,
+    ok: true,
+    defaultEndReason: 'COMPLETED',
+    events: ['TURN_STARTED', 'TURN_FINISHED'],
+  };
+  scenario(doc, 'H01-S01').expectedOutcome.kind = 'legacy_kind';
   assertRejected(doc, /not in the vocabulary/);
 });
 
@@ -228,7 +235,7 @@ test('rejects post-tool continuation that stops after the first call', () => {
 test('rejects a cancellation scenario that still ends ok', () => {
   const doc = clone();
   scenario(doc, 'H01-S10').expectedOutcome.terminationReason = 'ok';
-  assertRejected(doc, /terminationReason is "ok"/);
+  assertRejected(doc, /must declare terminationReason cancelled|terminationReason is "ok"/);
 });
 
 test('rejects a cancellation scenario with a call after the stop point', () => {
@@ -346,4 +353,135 @@ test('rejects an unbounded retry loop', () => {
     entry.sequence = index + 1;
   });
   assertRejected(doc, /exceeds bounded retry limit/);
+});
+
+// --- R4: sealed mechanism/profile lock and secret hygiene ------------------
+
+test('rejects a baseline that freezes no mechanism digests', () => {
+  const doc = clone();
+  delete doc.baseline.extensionPoints;
+  assertRejected(doc, /extensionPoints is missing or empty/);
+});
+
+test('rejects a baseline missing a necessary mechanism digest', () => {
+  const doc = clone();
+  delete doc.baseline.extensionPoints['tools-json-schema'];
+  assertRejected(doc, /does not pin required mechanism "tools-json-schema"/);
+});
+
+test('rejects a baseline that freezes no adopted profile-layer digests', () => {
+  const doc = clone();
+  delete doc.baseline.profileFiles;
+  assertRejected(doc, /profileFiles is missing or empty/);
+});
+
+test('rejects a non-digest in the mechanism lock', () => {
+  const doc = clone();
+  doc.baseline.extensionPoints['loop-main'] = 'not-a-digest';
+  assertRejected(doc, /loop-main is not a sha256 digest/);
+});
+
+test('rejects a baseline that does not state the digest-only intent', () => {
+  const doc = clone();
+  delete doc.baseline.mechanismLockNote;
+  assertRejected(doc, /mechanismLockNote is missing/);
+});
+
+test('rejects secret-looking material anywhere in the fixture', () => {
+  const doc = clone();
+  doc.baseline.apiKey = 'placeholder';
+  assertRejected(doc, /looks like a secret field/);
+});
+
+test('rejects secret material nested inside a scenario', () => {
+  const doc = clone();
+  scenario(doc, 'H01-S16').inputFacts.secret = 'placeholder';
+  assertRejected(doc, /looks like a secret field/);
+});
+
+// --- Public contract projection (steer != cancel) --------------------------
+
+test('rejects a fixture with no public contract projection', () => {
+  const doc = clone();
+  delete doc.publicContractProjection;
+  assertRejected(doc, /publicContractProjection block is missing/);
+});
+
+test('rejects a projection missing a public event type', () => {
+  const doc = clone();
+  doc.publicContractProjection.eventTypes = doc.publicContractProjection.eventTypes.filter((t) => t !== 'CALL_STARTED');
+  assertRejected(doc, /eventTypes is missing "CALL_STARTED"/);
+});
+
+test('rejects a projection missing a public endReason', () => {
+  const doc = clone();
+  doc.publicContractProjection.endReasonVocabulary = doc.publicContractProjection.endReasonVocabulary.filter(
+    (r) => r !== 'CAPABILITY_DENIED',
+  );
+  assertRejected(doc, /endReasonVocabulary is missing "CAPABILITY_DENIED"/);
+});
+
+test('rejects an outcome kind with no public projection', () => {
+  const doc = clone();
+  delete doc.publicContractProjection.outcomeKindToPublic.pending_confirmation;
+  assertRejected(doc, /pending_confirmation|no public contract projection/);
+});
+
+test('rejects a termination reason with no public projection', () => {
+  const doc = clone();
+  delete doc.publicContractProjection.terminationReasonToEndReason.budget_exhausted;
+  assertRejected(doc, /"budget_exhausted" has no public endReason projection/);
+});
+
+test('rejects ok/endReason disagreement in the projection', () => {
+  const doc = clone();
+  doc.publicContractProjection.outcomeKindToPublic.answer.ok = false;
+  assertRejected(doc, /ok\/endReason disagree/);
+});
+
+test('rejects an awaiting-interaction outcome that claims completion', () => {
+  const doc = clone();
+  doc.publicContractProjection.outcomeKindToPublic.clarify = {
+    ...doc.publicContractProjection.outcomeKindToPublic.clarify,
+    terminal: true,
+    ok: true,
+    defaultEndReason: 'COMPLETED',
+  };
+  assertRejected(doc, /must not be terminal or ok|INTERACTION_REQUIRED|awaiting-interaction/);
+});
+
+test('rejects a steer scenario projected as cancelled', () => {
+  const doc = clone();
+  scenario(doc, 'H01-S11').expectedOutcome.kind = 'cancelled';
+  assertRejected(doc, /steer/);
+});
+
+test('rejects a steer scenario given a CANCELLED endReason', () => {
+  const doc = clone();
+  scenario(doc, 'H01-S11').expectedOutcome.terminationReason = 'cancelled';
+  assertRejected(doc, /steer/);
+});
+
+test('rejects a cancel scenario that does not project CANCELLED', () => {
+  const doc = clone();
+  doc.publicContractProjection.steerVsCancel.cancel.endReason = 'COMPLETED';
+  assertRejected(doc, /CANCELLED/);
+});
+
+test('rejects a projection that declares steer terminal', () => {
+  const doc = clone();
+  doc.publicContractProjection.steerVsCancel.interject.steerIsTerminal = true;
+  assertRejected(doc, /steerIsTerminal=false/);
+});
+
+test('rejects steer appearing as a termination reason', () => {
+  const doc = clone();
+  doc.terminationReasons.allowed.push('steer');
+  assertRejected(doc, /steer is not an end reason/);
+});
+
+test('positive control: the shipped projection passes after all projection edits', () => {
+  const report = validateFixtures(clone());
+  assert.equal(report.ok, true);
+  assert.ok(report.assertionsEvaluated >= 101);
 });

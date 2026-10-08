@@ -82,6 +82,36 @@ profile 层摘要（只读读取 `$DSH_HOME/profiles/**`）：
 
 > 结论：**接入点不是"再往宿主平面塞工具行"，而是"新增一个 StudyPilot agent preset / 或加入 preset realm"**。这与设计文档 `agent-plugins/studypilot/cordis.patch.yml` 的意图一致，但需要在 H03 明确选择"新增 preset"还是"扩展 standard preset"。
 
+### 2.3 冻结的机制/组合/preset 与 profile 层摘要（一轮 R4 整改）
+
+一轮验收指出：`baseline-inventory.mjs` 采集了 `extensionPoints`/`profileFiles` 的 sha256，却**没有存进 fixture 基线参与比较**，因此"LOCKED baseline matches"无法支撑"核心机制/profile 内容已锁定"的结论。二轮已整改：
+
+**冻结进 fixture 的内容**（`agent-service/tests/fixtures/runtime_scenarios.json` 的 `baseline`）：
+
+| 块 | 条目数 | 内容 |
+| --- | --- | --- |
+| `baseline.lockedHashes` | 3 | `pnpm-lock.yaml`、`pnpm-workspace.yaml`、`package.json` |
+| `baseline.extensionPoints` | 33 | 必要核心机制 + 组合 patch + agent preset 的 sha256（**仅摘要，无文件内容**） |
+| `baseline.profileFiles` | 6 | 实际采用的 web/desktop profile 层（`cordis.yml`、`cordis.patch.yml`、`package.json`）sha256 |
+| `baseline.profileBundles` | 2 | `@deepseek-ai/dsh-base`、`@deepseek-ai/dsh-web-app` |
+| `baseline.mechanismLockNote` | — | 声明"只保存摘要、不保存文件内容、因此不含 secret" |
+
+生成方式（可复现）：`node scripts/harness/baseline-inventory.mjs --lock` 输出仅含摘要的锁定子集。
+
+**`checkAgainstFixture` 现在拒绝的情形**（`{ok:false}`）：
+
+1. HEAD 变化；锁文件摘要变化。
+2. **必要机制/组合/preset 摘要变化**（如 `loop-main` 内容变化 → 一轮反例，现为 `accepted=false`）。
+3. **机制缺失**（磁盘缺失，或从 inventory 中被移除/改名）。
+4. **profile 层摘要变化**（bundles 不变也拒绝 → 一轮反例，现为 `accepted=false`）。
+5. **profile 层缺失或不可读**。
+6. 锁定的核心机制路径出现在 working tree 修改项中（**仅**锁定核心路径算漂移；无关未跟踪工件不算——避免"dirty 列表全等"冒充机制保护）。
+7. `baseline` 未冻结机制或 profile 摘要（显式判为 UNVERIFIED，不再静默通过）。
+
+**明确判为 UNVERIFIED（同样使 `ok:false`，不静默变干净）**：live inventory 出现冻结锁之外的机制；profile 层整体不可读；profile bundles 不可读；锁定的 preset 名无法解析。返回值因此为 `{ok, drift, unverified}`——`checkAgainstFixture` 的任何调用方都能区分"内容变化"与"无法比较"。
+
+**不存 secret**：锁定块只含 sha256 摘要；生成器只输出摘要；fixture 校验器额外做全文档敏感键扫描（`apiKey`/`secret`/`password`/`token`/`credential` 等键名一律拒绝）。profile 层中仅有一个 `apiKeyEnv: ANTIGRAVITY_TOOLS_API_KEY` 这类**环境变量名**，其值从未被读取、也从未进入 fixture。
+
 ---
 
 ## 3. 原 Harness 只读盘点：loop / 压缩 / 恢复 / 工具 / 事件 / 插件 / approve / question / 预算
@@ -433,13 +463,46 @@ RED 变异体在 `mktemp -d` 临时目录生成，**未写入仓库**。
 
 ```
 $ node --test scripts/harness/baseline-fixtures.test.mjs
-ℹ tests 41   ℹ pass 41   ℹ fail 0
+ℹ tests 61   ℹ pass 61   ℹ fail 0
 
 $ node --test scripts/harness/baseline-inventory.test.mjs
-ℹ tests 16   ℹ pass 16   ℹ fail 0
+ℹ tests 34   ℹ pass 34   ℹ fail 0
 ```
 
-`baseline-fixtures.test.mjs` 含 1 个 GREEN 对照 + 40 个负向控制，每个只破坏一条规则并断言被拒（缺场景、重复 id、丢覆盖标签、rubric 空、allowed∩forbidden、非连续序列、截断哈希、缺锁摘要、伪造 modelRuns、伪造 pairedResult、多余 measurement 键、文档级 `nativeScore`、协议放行真实模型、非 median/非 3 次、未知断言种类、不可追溯 mustMention、无必要工具调用、目录外工具、取消后仍 ok、取消后仍有调用、空状态当错误、失败无错误码、预览已执行、PENDING 当成功、幂等漂移、越权 owner 泄漏、resume 重放、预算不含压缩、无静默降级规则、steer 无效、压缩丢事实、截断未承认、无限重试 …）。
+二轮在原有 41 + 16 项之上新增负例：
+
+- **inventory（+18）**：核心机制摘要变化、组合 patch 变化、preset 摘要变化、profile 层摘要变化（bundles 不变）、机制从 inventory 移除、机制文件缺失、profile 层缺失/不可读、profile 层整体不可读（UNVERIFIED）、出现冻结锁之外的机制（UNVERIFIED）、**仅**锁定核心路径 dirty、无关未跟踪工件不算漂移（正例）、baseline 未冻结机制摘要、baseline 未冻结 profile 摘要、`collectLock` 只输出摘要、锁等值正例，以及一条**真实只读正例**（在本机 live inventory 上比对全部 33 + 6 个摘要完全相等）。
+- **fixtures（+20）**：baseline 未冻结机制摘要、缺必要机制摘要、未冻结 profile 摘要、非摘要值、未声明"仅摘要"意图、顶层与场景内敏感键、缺投影块、缺公共事件名、缺公共 endReason、outcome kind 无投影、terminationReason 无投影、ok/endReason 不一致、交互待答却被标为完成、steer 被投影成 cancelled、steer 被赋予 CANCELLED endReason、cancel 未投影 CANCELLED、投影声明 steer 为终结、steer 被列入 terminationReasons。
+
+`baseline-fixtures.test.mjs` 共 61 项（含 2 个正例对照）；`baseline-inventory.test.mjs` 共 34 项，其中 6 项为真实只读正例（依赖本机桌面 Harness，缺失时 skip 而非 fail）。
+
+### 7.5 场景术语到公共 Runtime 契约的投影（steer ≠ cancel）
+
+16 个场景**保留不变**（id、事实、允许/禁止、硬失败、rubric 均未改；`scenarios` 数组与一轮逐字段相等，已用结构化比对确认）。二轮新增 `publicContractProjection` 块，把本端术语显式投影到公共 schema（`contracts/agent-runtime/runtime.schema.json`，本轮 Owner 为 MiniMax；**本端只声明投影，未修改公共 schema**）：
+
+| 本端 `expectedOutcome.kind` | 公共事件形状 | `endReason` | `ok` |
+| --- | --- | --- | --- |
+| `answer` | `TURN_STARTED → ASSISTANT_DELTA → ASSISTANT_MESSAGE → TURN_FINISHED` | `COMPLETED` | `true` |
+| `tool_use` | `TURN_STARTED → CALL_STARTED → CALL_FINISHED → ASSISTANT_MESSAGE → TURN_FINISHED` | `COMPLETED` | `true` |
+| `refusal` | `TURN_STARTED → ASSISTANT_MESSAGE → TURN_FINISHED` | `CAPABILITY_DENIED` | `false` |
+| `failed` | `TURN_STARTED → ERROR → TURN_FINISHED` | `FAILED` | `false` |
+| `cancelled` | `TURN_STARTED → TURN_FINISHED` | `CANCELLED` | `false` |
+| `clarify` | `TURN_STARTED → INTERACTION_REQUIRED` | 无（**不产生 TURN_FINISHED**） | 无 |
+| `pending_confirmation` | `TURN_STARTED → CALL_STARTED → INTERACTION_REQUIRED` | 无（**不产生 TURN_FINISHED**） | 无 |
+
+本端 `terminationReason` → 公共 `endReason`：`ok→COMPLETED`、`cancelled→CANCELLED`、`budget_exhausted→BUDGET_EXHAUSTED`、`max_tokens→MAX_TOKENS`、`failed→FAILED`、`needs_confirmation→`（无，属交互待答）。公共词表 `COMPLETED / FAILED / CANCELLED / BUDGET_EXHAUSTED / MAX_TOKENS / CAPABILITY_DENIED`，只有 `COMPLETED` 为成功；`TURN_FINISHED.payload.ok` 必须与 `endReason` 一致。
+
+**steer ≠ cancel（可离线强制的规则）**：
+
+| | cancel（`cancel` 覆盖标签，H01-S10） | steer（`interject` 覆盖标签，H01-S11） |
+| --- | --- | --- |
+| 语义 | 用户终结本轮 | 在下一步边界注入新指示，本轮继续推理 |
+| 是否立即终结 | 是 | **否**（steer 本身不终结） |
+| 投影 `endReason` | `CANCELLED` | **不得为 `CANCELLED`**；steer 不是 endReason |
+| `ok` | `false` | 之后可正常以 `COMPLETED/true` 结束 |
+| 公共事件 | `TURN_FINISHED` | 仍为活跃轮次（`TURN_STARTED`） |
+
+校验器对上述规则做**逐场景强制**（`steer_not_cancel`、`cancel_maps_to_cancelled` 断言 + 全局投影一致性检查），因此"把 steer 当成 cancel"或"把待答状态当成完成"都会使校验失败。术语对齐的说明也写入 fixture：本端早期术语（`turn.started`、`tool.call.started`、`content.delta` 等）**不是**公共契约形状，已由投影统一为 uppercase 事件名。
 
 ---
 
@@ -517,13 +580,15 @@ node --test scripts/harness/baseline-inventory.test.mjs
 
 | 命令 | 结果 |
 | --- | --- |
-| `git -C <worktree> rev-parse --abbrev-ref HEAD` / `HEAD` | `codex/harness-h01-deepseek-baseline` / `f7311079a83b84c5e7f3a9076ce4efccb3044c86` |
-| `node scripts/harness/baseline-fixtures.mjs` | exit 0；16 场景 / 16 覆盖标签 / 99 断言 / 33 硬失败规则 |
-| `node --test scripts/harness/baseline-fixtures.test.mjs` | 41 tests, 41 pass, 0 fail |
-| `node scripts/harness/baseline-inventory.mjs` | exit 0；HEAD `ddefc45…`；32 扩展点全部存在；3 个锁摘要记录 |
+| `git -C <worktree> rev-parse --abbrev-ref HEAD` / `HEAD` | `codex/harness-h01-deepseek-baseline`；二轮 HEAD 见第 12 节 |
+| `node scripts/harness/baseline-fixtures.mjs` | exit 0；16 场景 / 16 覆盖标签 / **101** 断言 / 33 硬失败规则 |
+| `node --test scripts/harness/baseline-fixtures.test.mjs` | **61 tests, 61 pass, 0 fail** |
+| `node scripts/harness/baseline-inventory.mjs` | exit 0；HEAD `ddefc45…`；**33** 个机制扩展点全部存在；3 个锁摘要 |
+| `node scripts/harness/baseline-inventory.mjs --lock` | 输出仅含摘要的冻结子集（33 机制 + 6 profile 层 + 3 锁文件），无文件内容 |
 | `node scripts/harness/baseline-inventory.mjs --check` | exit 0；`LOCKED baseline matches the live Harness tree` |
-| `node --test scripts/harness/baseline-inventory.test.mjs` | 16 tests, 16 pass, 0 fail |
-| RED 变异体校验（2 例） | exit 1 / exit 1（如 7.3） |
+| `node --test scripts/harness/baseline-inventory.test.mjs` | **34 tests, 34 pass, 0 fail** |
+| RED 变异体校验（fixtures 2 例） | exit 1 / exit 1（如 7.3） |
+| R4 独立反例复现（10 例，见 7.4 / 2.3） | 10/10 符合预期，其中一轮的 2 例由 `accepted=true` 变为 **`accepted=false`** |
 
 ---
 
@@ -540,7 +605,10 @@ node --test scripts/harness/baseline-inventory.test.mjs
 
 1. 未运行桌面 Harness 的任何测试或构建；第 3 节结论均为静态源码证据（含行号），个别处标注 UNVERIFIED。
 2. 未复现设计文档所述的 schema 实验；本端仅以源码与仓内既有测试作为等价证据（9.1）。
-3. `<DSH_APP>/Contents/Resources/app.asar/dsh` 在本机是 **asar 归档内的路径，不是可列目录**，无法直接盘点打包副本；因此基线以桌面源码仓库 `ddefc45…` 为准。**运行中的 GUI/已安装版本是否与 `ddefc45…` 完全同源：已发现不一致证据**——本 checkout 的 `SESSION_FORMAT_VERSION = 3`（`packages/core/session/src/types.ts:88`），而 `~/.dsh/sessions/` 下**实际存在 `session.v4.jsonl.zstd`** 产物（只读 `ls` 观察），说明已安装构建写的是 v4 格式。⇒ **基线 `ddefc45…` 不等于运行中构建**，接入前需由 Codex 或用户确认目标构建版本（本端不再深入，避免越界）。
+3. `<DSH_APP>/Contents/Resources/app.asar/dsh` 在本机是 **asar 归档内的路径，不是可列目录**，无法直接盘点打包副本；因此基线以桌面源码仓库 `ddefc45…` 为准。**本轮验收的源码目标已由用户指定为桌面 commit `ddefc45fbc7f8e46dd73185e68295696d1297887`，H01 即按该源码验收。**
+   - 观察事实：`~/.dsh/sessions/` 下存在 `session.v4.jsonl.zstd` 产物，而本 checkout 的 `SESSION_FORMAT_VERSION = 3`（`packages/core/session/src/types.ts:88`）。
+   - **该观察只能证明磁盘上存在 v4 产物，不能单独证明当前运行 binary 必然来自新源码**；也可能来自其他安装、历史运行或另一份构建。
+   - 因此措辞定为：**已安装 GUI 与源码 `ddefc45…` 的等价性未验证（UNVERIFIED）**，本轮不改安装、不改模型版本、不要求用户先选版本；仅作为二轮/后续需注意的事实登记。若 Codex 后续需要确认，应以目标构建自身的源码与版本号为准，而不是以会话文件版本反推。
 4. `~/.dsh/.credentials.yaml` 为密钥文件，**未读取**。
 5. fixture 中的业务事实（`u-1001`、`t-204`、`c-01`、`r-77`、`m-616` 等）是**为离线基线冻结的虚构/示例事实**，不代表真实 StudyPilot 数据；真实业务事实须在 H02/H06 由 Java 工具目录与真实接口提供。
 6. 覆盖标签是任务书 14 类的 16 标签化拆分（`post_tool_continuation`、`cancel`/`interject`、`compaction`/`resume` 各拆二），已在 `coverageTaxonomy` 与报告第 7.1 节说明。
@@ -559,39 +627,69 @@ node --test scripts/harness/baseline-inventory.test.mjs
 | 真实成对评测执行器与评分流程 | H05 起，H12 复测 |
 | 页面上下文与业务判断评测扩展 | H09 |
 | 真实 provider 是否接受点号工具名 | H02/H06 验证（本轮 UNVERIFIED） |
-| **运行中/已安装构建的版本确认** | 已发现不一致证据（checkout v3 vs 磁盘 v4 会话格式）；需 Codex 或用户在 H02 前确认目标构建 |
-| 会话格式 v3→v4 的迁移内容（本 checkout 无 v4 codec） | 需以目标构建的源码为准盘点（本轮 UNVERIFIED） |
+| **已安装 GUI 与源码基线的等价性** | 用户已指定本轮源码目标为 `ddefc45…`，H01 按该源码验收；GUI 等价性 UNVERIFIED，无需改安装/让用户选版本 |
+| 磁盘 v4 会话产物与 `ddefc45…`（v3）的关系 | 仅登记为观察事实，不能反推运行 binary 版本；如需确认应以目标构建自身源码/版本号为准（本轮 UNVERIFIED） |
 
 ---
 
-## 12. READY_FOR_CODEX
+## 12. READY_FOR_CODEX（ROUND 2）
 
 | 项 | 值 |
 | --- | --- |
-| 状态 | **READY_FOR_CODEX** |
+| 状态 | **READY_FOR_CODEX（ROUND 2）** |
 | cwd | `/Users/moxiao/IdeaProjects/project-harness-h01-deepseek` |
-| 分支 | `codex/harness-h01-deepseek-baseline` |
-| 基线 | `f7311079a83b84c5e7f3a9076ce4efccb3044c86` |
-| 提交 | 交付提交 `b63184b56336804de588571f43fd20722724457c`（含下列 6 个文件，本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
-| 测试 | fixtures 41/41 通过；inventory 16/16 通过；`--check` 无漂移；RED 变异体 2/2 被拒 |
-| 证据层级 | mock/offline（无真实模型、无服务、无 DB） |
+| 分支 | `codex/harness-h01-deepseek-baseline`（原分支，未切换） |
+| 基线（快照 commit） | `f7311079a83b84c5e7f3a9076ce4efccb3044c86` |
+| 一轮交付提交 | `b63184b56336804de588571f43fd20722724457c`（一轮 Codex HEAD 记为 `61e097f5…`） |
+| 二轮交付提交 | 见本节末「二轮提交」行 |
+| 测试 | fixtures **61/61**；inventory **34/34**；`--check` 无漂移；R4 独立反例 **10/10** 符合预期（含一轮被误接受的 2 例现被拒） |
+| 证据层级 | mock/offline（无真实模型、无服务、无 DB、未运行桌面 Harness 测试或构建） |
 | 未覆盖项 | 见第 11 节（含 UNVERIFIED 清单） |
-| 下一步 | 停在 H01，等 Codex 独立验收。**不进入 H02** |
+| 下一步 | 停在 H01，等 Codex 二轮复验与用户审阅。**不进入 H02** |
 
-**提交内容**：仅本端 Owner 文件（6 个）。
+### 12.1 对一轮 R4 的逐条回应
+
+| 一轮要求 | 二轮落实 | 证据 |
+| --- | --- | --- |
+| 冻结必要核心机制/组合/preset 与 profile 层哈希并参与比较 | `baseline.extensionPoints`（33）+ `baseline.profileFiles`（6）写入 fixture，`checkAgainstFixture` 逐项比对摘要 | 第 2.3 节；`baseline-inventory.mjs` 的 `collectLock`/`checkAgainstFixture` |
+| 缺失/增删/内容变化应被拒或明确 UNVERIFIED | 缺失、移除、内容变化、核心路径 dirty → `drift`；锁外新增机制、profile/bundles 不可读、preset 名未解析 → `unverified`；两者都使 `ok:false` | `checkAgainstFixture` 返回 `{ok, drift, unverified}` |
+| 不保存任何 secret 内容 | 只写摘要；`--lock` 只输出摘要；fixture 校验器做敏感键全文档扫描（含场景内部） | 第 2.3 节；`checkNoSecretMaterial`；`baseline-inventory.test.mjs` 的 secret 断言 |
+| 不要只把 dirty 列表全等当机制保护 | 只有**锁定核心路径**被修改才算漂移；无关未跟踪工件（`.dsh-artifacts/`、`_dsh_v4.ts`、`workspaces/`）不算 | `dirtyPath` 过滤 + 「无关未跟踪工件不算漂移」正例测试 |
+| 新增核心变化/preset 变化/profile 变化与不可读的负测试及现状正例 | inventory 侧新增 18 项（含 6 项真实只读正例）；fixtures 侧新增 20 项 | 第 7.4 节 |
+| 补充证据措辞（v4） | 已改：磁盘 v4 产物**只证明存在 v4 产物**，不能证明当前 binary 来自新源码；本轮源码目标 `ddefc45…` 由用户指定；GUI 等价性 UNVERIFIED；无需改安装或让用户选版本 | 第 11 节限制 3 与未覆盖表 |
+| 保留 16 场景并声明术语到公共 uppercase/endReason 的投影；steer 不等于 cancel | `scenarios` 数组与一轮逐字段相等（结构化比对通过）；新增 `publicContractProjection` 与逐场景强制规则 | 第 7.5 节 |
+
+### 12.2 二轮变更文件（仍限于 6 个 Owner 文件）
 
 ```
-A  agent-service/tests/fixtures/runtime_scenarios.json
-A  scripts/harness/baseline-fixtures.mjs
-A  scripts/harness/baseline-fixtures.test.mjs
-A  scripts/harness/baseline-inventory.mjs
-A  scripts/harness/baseline-inventory.test.mjs
-A  docs/verification/harness/h01-deepseek.md
+M  agent-service/tests/fixtures/runtime_scenarios.json   # + baseline.extensionPoints / profileFiles / publicContractProjection / 2 断言；格式规范化为 2 空格
+M  scripts/harness/baseline-inventory.mjs                # + collectLock、摘要比对、unverified、--lock
+M  scripts/harness/baseline-fixtures.mjs                 # + 摘要锁校验、投影校验、敏感键扫描、2 断言种类
+M  scripts/harness/baseline-fixtures.test.mjs            # 41 → 61 项
+M  scripts/harness/baseline-inventory.test.mjs           # 16 → 34 项
+M  docs/verification/harness/h01-deepseek.md             # 本文档
 ```
 
-**明确未提交、也未改动的路径**：
+未新增或修改任何其他路径。
+
+### 12.3 复查方式（供 Codex）
+
+```bash
+cd /Users/moxiao/IdeaProjects/project-harness-h01-deepseek
+node scripts/harness/baseline-fixtures.mjs                 # 期望 PASS，101 断言
+node --test scripts/harness/baseline-fixtures.test.mjs      # 期望 61/61
+node scripts/harness/baseline-inventory.mjs --check         # 期望 LOCKED
+node --test scripts/harness/baseline-inventory.test.mjs     # 期望 34/34
+node scripts/harness/baseline-inventory.mjs --lock          # 复核冻结摘要可复现
+```
+
+一轮的 `docs/verification/harness/h01-round1-probes.mjs` 现在应对"same HEAD but modified core loop hash"与"same bundles but changed profile hash"给出 `actualAccepted: false`。本端**未运行**该脚本：它会把结果写回 Codex 所属目录（`project/docs/...`），超出本端 Owner 范围；本端用等价的内存反例复现（第 7.4 节），结果一致。
+
+### 12.4 明确未提交、未改动的路径
 
 - `backend/mvnw.cmd`——进入工作树时即为 `M`。Codex 的 `docs/verification/harness/h01-baseline-note.md` 已说明这是 `text eol=crlf` clean filter 造成的快照规范化差异（工作文件字节与来源相同），并要求执行 Agent **不提交/不恢复**该文件。本端遵守：未 `git add`、未 `git checkout`、未修改。
-- `docs/verification/harness/h01-baseline-note.md`——**Codex 编写**的共享补充说明（三棵隔离工作树均于 09:27 出现同名同大小文件），非本端 Owner 文件。本端未修改、未提交、未删除。
+- `docs/verification/harness/h01-baseline-note.md`——**Codex 编写**的共享补充说明，非本端 Owner 文件。本端未修改、未提交、未删除。
 
-本端其余动作均限于上表 6 个文件的新增；未触碰原 Task33 工作树、桌面 Harness 核心、其他 H01 工作树、共享计划/交接/Obsidian、`contracts/**`。
+未触碰：原 Harness（桌面）源码、原 Task33 工作树、其他 H01 工作树、公共 schema `contracts/agent-runtime/runtime.schema.json`、共享计划/交接/Obsidian、模型配置与密钥。未 push / merge / deploy / 重启服务 / 真实模型评测。
+
+**二轮提交**：交付提交 `ROUND2_COMMIT_PLACEHOLDER`（含上述 6 个文件）；该行 hash 回填的 md-only 提交为最终 HEAD，见回执。
