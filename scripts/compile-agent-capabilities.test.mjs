@@ -88,7 +88,8 @@ test('negative: compiler rejects missing tool in metadata', () => {
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 5000
+    timeoutMillis: 5000,
+    handler: 'TestService.testMethod'
   }, {
     name: 'test.tool_b',
     version: 1,
@@ -99,7 +100,8 @@ test('negative: compiler rejects missing tool in metadata', () => {
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 5000
+    timeoutMillis: 5000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -140,7 +142,8 @@ test('negative: compiler rejects unknown tool in metadata', () => {
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 5000
+    timeoutMillis: 5000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -192,7 +195,8 @@ test('negative: compiler rejects governance conflict (e.g. HIGH risk with confir
     idempotencyRequired: true,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -237,7 +241,8 @@ test('negative: compiler rejects example input carrying forbidden auth/secret fi
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -250,7 +255,7 @@ test('negative: compiler rejects example input carrying forbidden auth/secret fi
       exposure: { state: 'allowed', reason: 'test' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: { ownerId: 'injected_user' }, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -282,7 +287,8 @@ test('negative: compiler rejects ok example missing output field', () => {
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -295,7 +301,7 @@ test('negative: compiler rejects ok example missing output field', () => {
       exposure: { state: 'allowed', reason: 'test' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok' }], // 缺失 output 字段
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -327,7 +333,8 @@ test('negative: compiler rejects non-nullable tool having null output for ok exa
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' }, // 非 nullable
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -340,7 +347,7 @@ test('negative: compiler rejects non-nullable tool having null output for ok exa
       exposure: { state: 'allowed', reason: 'test' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: null }], // 错误声明为 null
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -373,7 +380,8 @@ test('negative: compiler rejects missing description', () => {
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -452,7 +460,8 @@ test('negative: compiler rejects write tool exposure as allowed', () => {
     idempotencyRequired: true,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -465,7 +474,7 @@ test('negative: compiler rejects write tool exposure as allowed', () => {
       exposure: { state: 'allowed', reason: 'allow' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
       confirmation: { mode: 'always_user_confirmation', waiting_status: 'WAITING_CONFIRMATION', notes: '' }
     }]
   };
@@ -491,7 +500,8 @@ test('negative: compiler rejects coding/runner tool exposure as allowed', () => 
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'WorkspaceDeveloperService.getGitStatus'
   }];
   const metadata = {
     tools: [{
@@ -504,7 +514,7 @@ test('negative: compiler rejects coding/runner tool exposure as allowed', () => 
       exposure: { state: 'allowed', reason: 'allow' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'WorkspaceDeveloperService.getGitStatus', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -530,7 +540,8 @@ test('negative: compiler rejects fictional authoritative fact', () => {
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object', properties: { realField: { type: 'string' } } },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -543,7 +554,7 @@ test('negative: compiler rejects fictional authoritative fact', () => {
       exposure: { state: 'allowed', reason: 'allow' },
       authoritative_facts: [{ fact: 'fictionalField', meaning: 'invented' }],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: { realField: 'val' } }],
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -569,7 +580,8 @@ test('negative: compiler rejects unknown metadata tool fields', () => {
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -582,7 +594,7 @@ test('negative: compiler rejects unknown metadata tool fields', () => {
       exposure: { state: 'allowed', reason: 'allow' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' },
       inventedExtraField: 42
     }]
@@ -609,7 +621,8 @@ test('negative: compiler rejects unknown schema constraint', () => {
     idempotencyRequired: false,
     inputSchema: { type: 'object', unknownKeywordConstraint: true },
     outputSchema: { type: 'object' },
-    timeoutMillis: 10000
+    timeoutMillis: 10000,
+    handler: 'TestService.testMethod'
   }];
   const metadata = {
     tools: [{
@@ -622,7 +635,7 @@ test('negative: compiler rejects unknown schema constraint', () => {
       exposure: { state: 'allowed', reason: 'allow' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -633,6 +646,366 @@ test('negative: compiler rejects unknown schema constraint', () => {
   assert.throws(() => {
     compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
   }, /Schema 包含未知约束关键字/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects missing exported handler binding in descriptors', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000
+    // no handler field
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-nohandler.json';
+  const tmpMeta = '/tmp/test-meta-nohandler.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /缺少.*handler.*绑定/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects forged handler binding not matching Java source truth', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'UnregisteredClass.noSuchMethod'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'UnregisteredClass.noSuchMethod', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-forged.json';
+  const tmpMeta = '/tmp/test-meta-forged.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /未在 Java 源码中声明|非法 handler|未注册/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler enforces enum constraint on example values', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: { level: { type: 'string', enum: ['A'] } } },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: { level: 'B' }, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-enum.json';
+  const tmpMeta = '/tmp/test-meta-enum.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /枚举/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler enforces minimum constraint on example values', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: { limit: { type: 'integer', minimum: 1 } } },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: { limit: -10 }, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-min.json';
+  const tmpMeta = '/tmp/test-meta-min.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /最小值|minimum/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects empty object output when required fields are specified', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: { status: { type: 'string' } }, required: ['status'] },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', fixture_kind: 'shape_placeholder', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-reqout.json';
+  const tmpMeta = '/tmp/test-meta-reqout.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /缺少必填属性/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects missing cost_hint and exposure', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      // cost_hint missing
+      // exposure missing
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-nocost.json';
+  const tmpMeta = '/tmp/test-meta-nocost.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /缺少 cost_hint|缺少 exposure/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects non-string purpose array items', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: [42],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-nonstr.json';
+  const tmpMeta = '/tmp/test-meta-nonstr.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /when_to_use.*字符串/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects unknown nested fields in confirmation', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '', unrecognized: true }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-unknest.json';
+  const tmpMeta = '/tmp/test-meta-unknest.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /confirmation 包含未知字段/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects compilation when Java source files are missing', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-nosrc.json';
+  const tmpMeta = '/tmp/test-meta-nosrc.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta, sourceRoot: '/tmp' });
+  }, /缺少 Java 源码/);
   unlinkSync(tmpDesc);
   unlinkSync(tmpMeta);
 });

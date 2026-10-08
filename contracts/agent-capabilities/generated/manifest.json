@@ -1,12 +1,12 @@
 {
   "manifest_version": "1.0-draft",
-  "generated_at": "2026-10-08T05:30:43.357Z",
+  "generated_at": "2026-10-08T13:30:07.305Z",
   "sources": {
     "descriptor_count": 65,
-    "descriptors_hash": "0e7cf62526b823ae5db18ff142ed9d1e368f23d5ccff0b930cba617e2e86e896",
-    "metadata_hash": "8d4460c681833ffccf8485ce901d71029ec72460cd6ea35ad4ebaa37cd62eaf6",
+    "descriptors_hash": "37d4d5044f79805305881734d99cbe047261c2ca0a5e983074ce5ffa369432b4",
+    "metadata_hash": "0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a",
     "java_source_hash": "13ff8548e69cf9c4d7fecb99e299b0f44d005afc25347cf7964847c0468ba6c8",
-    "commit": "ebb6f2b95563d71f6a43ac65b1c56bf3f59b31d5"
+    "commit": "da3bae15bbc74978b5cff82ef7b26f357bd50837"
   },
   "tools": [
     {
@@ -527,27 +527,45 @@
           },
           "expect": "Artifact object with status, review history and any recorded scan/rubric outcome.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "workspaceId": "<shape-placeholder>",
-            "relativePath": "<shape-placeholder>",
-            "canonicalPath": "<shape-placeholder>",
-            "description": "<shape-placeholder>",
-            "testEvidence": "<shape-placeholder>",
-            "evaluationMode": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "submissionVersion": "<shape-placeholder>",
-            "roadmapNode": "<shape-placeholder>",
-            "reviewHistory": "<shape-placeholder>",
-            "rubricScore": "<shape-placeholder>",
-            "rubricFeedback": "<shape-placeholder>",
-            "sensitiveScanPassed": "<shape-placeholder>",
-            "sensitiveFindings": "<shape-placeholder>",
-            "acceptedAt": "<shape-placeholder>",
-            "createdAt": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "workspaceId": "synthetic-workspaceId",
+            "relativePath": "synthetic-relativePath",
+            "canonicalPath": "synthetic-canonicalPath",
+            "description": "synthetic-description",
+            "testEvidence": "synthetic-testEvidence",
+            "evaluationMode": "synthetic-evaluationMode",
+            "status": "synthetic-status",
+            "submissionVersion": 0,
+            "roadmapNode": {
+              "id": "synthetic-id",
+              "moduleId": "synthetic-moduleId",
+              "stageId": "synthetic-stageId",
+              "title": "synthetic-title",
+              "moduleTitle": "synthetic-moduleTitle",
+              "stageTitle": "synthetic-stageTitle"
+            },
+            "reviewHistory": [
+              {
+                "id": "synthetic-id",
+                "fromStatus": "synthetic-fromStatus",
+                "toStatus": "synthetic-toStatus",
+                "eventType": "synthetic-eventType",
+                "details": "synthetic-details",
+                "score": 0,
+                "rubricBreakdownJson": "synthetic-rubricBreakdownJson",
+                "createdAt": "synthetic-createdAt"
+              }
+            ],
+            "rubricScore": 0,
+            "rubricFeedback": "synthetic-rubricFeedback",
+            "sensitiveScanPassed": false,
+            "sensitiveFindings": "synthetic-sensitiveFindings",
+            "acceptedAt": "synthetic-acceptedAt",
+            "createdAt": "synthetic-createdAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -802,29 +820,47 @@
           "input": {},
           "expect": "Array of artifact records, newest first (possibly empty, or a truncation envelope if too large).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "workspaceId": "<shape-placeholder>",
-              "relativePath": "<shape-placeholder>",
-              "canonicalPath": "<shape-placeholder>",
-              "description": "<shape-placeholder>",
-              "testEvidence": "<shape-placeholder>",
-              "evaluationMode": "<shape-placeholder>",
-              "status": "<shape-placeholder>",
-              "submissionVersion": "<shape-placeholder>",
-              "roadmapNode": "<shape-placeholder>",
-              "reviewHistory": "<shape-placeholder>",
-              "rubricScore": "<shape-placeholder>",
-              "rubricFeedback": "<shape-placeholder>",
-              "sensitiveScanPassed": "<shape-placeholder>",
-              "sensitiveFindings": "<shape-placeholder>",
-              "acceptedAt": "<shape-placeholder>",
-              "createdAt": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "workspaceId": "synthetic-workspaceId",
+              "relativePath": "synthetic-relativePath",
+              "canonicalPath": "synthetic-canonicalPath",
+              "description": "synthetic-description",
+              "testEvidence": "synthetic-testEvidence",
+              "evaluationMode": "synthetic-evaluationMode",
+              "status": "synthetic-status",
+              "submissionVersion": 0,
+              "roadmapNode": {
+                "id": "synthetic-id",
+                "moduleId": "synthetic-moduleId",
+                "stageId": "synthetic-stageId",
+                "title": "synthetic-title",
+                "moduleTitle": "synthetic-moduleTitle",
+                "stageTitle": "synthetic-stageTitle"
+              },
+              "reviewHistory": [
+                {
+                  "id": "synthetic-id",
+                  "fromStatus": "synthetic-fromStatus",
+                  "toStatus": "synthetic-toStatus",
+                  "eventType": "synthetic-eventType",
+                  "details": "synthetic-details",
+                  "score": 0,
+                  "rubricBreakdownJson": "synthetic-rubricBreakdownJson",
+                  "createdAt": "synthetic-createdAt"
+                }
+              ],
+              "rubricScore": 0,
+              "rubricFeedback": "synthetic-rubricFeedback",
+              "sensitiveScanPassed": false,
+              "sensitiveFindings": "synthetic-sensitiveFindings",
+              "acceptedAt": "synthetic-acceptedAt",
+              "createdAt": "synthetic-createdAt"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -851,28 +887,28 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "workspaceId": {
-            "type": "string"
-          },
           "roadmapNodeId": {
             "type": "string"
           },
-          "testEvidence": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "relativePath": {
             "type": "string"
           },
           "description": {
             "type": "string"
           },
-          "relativePath": {
+          "testEvidence": {
             "type": "string"
           }
         },
         "required": [
-          "workspaceId",
           "roadmapNodeId",
-          "testEvidence",
+          "workspaceId",
+          "relativePath",
           "description",
-          "relativePath"
+          "testEvidence"
         ]
       },
       "output_schema": {
@@ -1114,27 +1150,45 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation an artifact object with status SUBMITTED, submissionVersion, sensitiveScanPassed and null acceptedAt.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "workspaceId": "<shape-placeholder>",
-            "relativePath": "<shape-placeholder>",
-            "canonicalPath": "<shape-placeholder>",
-            "description": "<shape-placeholder>",
-            "testEvidence": "<shape-placeholder>",
-            "evaluationMode": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "submissionVersion": "<shape-placeholder>",
-            "roadmapNode": "<shape-placeholder>",
-            "reviewHistory": "<shape-placeholder>",
-            "rubricScore": "<shape-placeholder>",
-            "rubricFeedback": "<shape-placeholder>",
-            "sensitiveScanPassed": "<shape-placeholder>",
-            "sensitiveFindings": "<shape-placeholder>",
-            "acceptedAt": "<shape-placeholder>",
-            "createdAt": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "workspaceId": "synthetic-workspaceId",
+            "relativePath": "synthetic-relativePath",
+            "canonicalPath": "synthetic-canonicalPath",
+            "description": "synthetic-description",
+            "testEvidence": "synthetic-testEvidence",
+            "evaluationMode": "synthetic-evaluationMode",
+            "status": "synthetic-status",
+            "submissionVersion": 0,
+            "roadmapNode": {
+              "id": "synthetic-id",
+              "moduleId": "synthetic-moduleId",
+              "stageId": "synthetic-stageId",
+              "title": "synthetic-title",
+              "moduleTitle": "synthetic-moduleTitle",
+              "stageTitle": "synthetic-stageTitle"
+            },
+            "reviewHistory": [
+              {
+                "id": "synthetic-id",
+                "fromStatus": "synthetic-fromStatus",
+                "toStatus": "synthetic-toStatus",
+                "eventType": "synthetic-eventType",
+                "details": "synthetic-details",
+                "score": 0,
+                "rubricBreakdownJson": "synthetic-rubricBreakdownJson",
+                "createdAt": "synthetic-createdAt"
+              }
+            ],
+            "rubricScore": 0,
+            "rubricFeedback": "synthetic-rubricFeedback",
+            "sensitiveScanPassed": false,
+            "sensitiveFindings": "synthetic-sensitiveFindings",
+            "acceptedAt": "synthetic-acceptedAt",
+            "createdAt": "synthetic-createdAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -1366,17 +1420,43 @@
           },
           "expect": "Attempt object with score, per-question results and review progress.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "quizId": "<shape-placeholder>",
-            "score": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "warning": "<shape-placeholder>",
-            "results": "<shape-placeholder>",
-            "reviewProgress": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "quizId": "synthetic-quizId",
+            "score": 0,
+            "status": "synthetic-status",
+            "warning": "synthetic-warning",
+            "results": [
+              {
+                "questionId": "synthetic-questionId",
+                "type": "synthetic-type",
+                "questionText": "synthetic-questionText",
+                "options": [
+                  "synthetic-options"
+                ],
+                "selectedAnswers": [
+                  "synthetic-selectedAnswers"
+                ],
+                "codeAnswer": "synthetic-codeAnswer",
+                "correctAnswers": [
+                  "synthetic-correctAnswers"
+                ],
+                "referenceAnswer": "synthetic-referenceAnswer",
+                "correct": false,
+                "knowledgePoint": "synthetic-knowledgePoint",
+                "explanation": "synthetic-explanation",
+                "evaluationMethod": "synthetic-evaluationMethod",
+                "score": 0,
+                "evaluation": {}
+              }
+            ],
+            "reviewProgress": {
+              "clearedCount": 0,
+              "remainingCount": 0
+            }
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -1508,20 +1588,20 @@
           "input": {},
           "expect": "Array of mastery records (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "knowledgePoint": "<shape-placeholder>",
-              "score": "<shape-placeholder>",
-              "quizScore": "<shape-placeholder>",
-              "taskScore": "<shape-placeholder>",
-              "selfAssessmentScore": "<shape-placeholder>",
-              "evidenceCount": "<shape-placeholder>",
-              "attemptCount": "<shape-placeholder>",
-              "updatedAt": "<shape-placeholder>"
+              "knowledgePoint": "synthetic-knowledgePoint",
+              "score": 0,
+              "quizScore": 0,
+              "taskScore": 0,
+              "selfAssessmentScore": 0,
+              "evidenceCount": 0,
+              "attemptCount": 0,
+              "updatedAt": "synthetic-updatedAt"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -1694,15 +1774,25 @@
           },
           "expect": "A node-quiz object with nodeId, status, quizId or latestAttemptId and the nested generation record, or an action awaiting authorization. Behaviour is currently identical to assessment.node_quiz.retry.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "nodeId": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "quizId": "<shape-placeholder>",
-            "latestAttemptId": "<shape-placeholder>",
-            "generation": "<shape-placeholder>"
+            "nodeId": "synthetic-nodeId",
+            "status": "synthetic-status",
+            "quizId": "synthetic-quizId",
+            "latestAttemptId": "synthetic-latestAttemptId",
+            "generation": {
+              "jobId": "synthetic-jobId",
+              "purpose": "synthetic-purpose",
+              "status": "synthetic-status",
+              "retrySequence": 0,
+              "attemptCount": 0,
+              "quizId": "synthetic-quizId",
+              "lastError": "synthetic-lastError",
+              "leaseUntil": "synthetic-leaseUntil",
+              "updatedAt": "synthetic-updatedAt"
+            }
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -1875,15 +1965,25 @@
           },
           "expect": "A node-quiz object with nodeId, status and the nested generation job fields, or an action awaiting authorization.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "nodeId": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "quizId": "<shape-placeholder>",
-            "latestAttemptId": "<shape-placeholder>",
-            "generation": "<shape-placeholder>"
+            "nodeId": "synthetic-nodeId",
+            "status": "synthetic-status",
+            "quizId": "synthetic-quizId",
+            "latestAttemptId": "synthetic-latestAttemptId",
+            "generation": {
+              "jobId": "synthetic-jobId",
+              "purpose": "synthetic-purpose",
+              "status": "synthetic-status",
+              "retrySequence": 0,
+              "attemptCount": 0,
+              "quizId": "synthetic-quizId",
+              "lastError": "synthetic-lastError",
+              "leaseUntil": "synthetic-leaseUntil",
+              "updatedAt": "synthetic-updatedAt"
+            }
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -2056,15 +2156,25 @@
           },
           "expect": "Node quiz status object with quiz id, latest attempt id and generation detail.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "nodeId": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "quizId": "<shape-placeholder>",
-            "latestAttemptId": "<shape-placeholder>",
-            "generation": "<shape-placeholder>"
+            "nodeId": "synthetic-nodeId",
+            "status": "synthetic-status",
+            "quizId": "synthetic-quizId",
+            "latestAttemptId": "synthetic-latestAttemptId",
+            "generation": {
+              "jobId": "synthetic-jobId",
+              "purpose": "synthetic-purpose",
+              "status": "synthetic-status",
+              "retrySequence": 0,
+              "attemptCount": 0,
+              "quizId": "synthetic-quizId",
+              "lastError": "synthetic-lastError",
+              "leaseUntil": "synthetic-leaseUntil",
+              "updatedAt": "synthetic-updatedAt"
+            }
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -2305,18 +2415,42 @@
           },
           "expect": "Quiz object with a question list that contains no correct answers, explanations or rubric.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "materialId": "<shape-placeholder>",
-            "taskId": "<shape-placeholder>",
-            "lessonId": "<shape-placeholder>",
-            "kind": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "modelName": "<shape-placeholder>",
-            "questions": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "materialId": "synthetic-materialId",
+            "taskId": "synthetic-taskId",
+            "lessonId": "synthetic-lessonId",
+            "kind": "synthetic-kind",
+            "title": "synthetic-title",
+            "modelName": "synthetic-modelName",
+            "questions": [
+              {
+                "id": "synthetic-id",
+                "type": "synthetic-type",
+                "difficulty": "synthetic-difficulty",
+                "codingKind": "synthetic-codingKind",
+                "language": "synthetic-language",
+                "knowledgePoint": "synthetic-knowledgePoint",
+                "questionText": "synthetic-questionText",
+                "options": [
+                  "synthetic-options"
+                ],
+                "starterCode": "synthetic-starterCode",
+                "sources": [
+                  {
+                    "sourceType": "synthetic-sourceType",
+                    "materialId": "synthetic-materialId",
+                    "webResultId": "synthetic-webResultId",
+                    "title": "synthetic-title",
+                    "locator": "synthetic-locator",
+                    "snippet": "synthetic-snippet"
+                  }
+                ]
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -2437,15 +2571,15 @@
           },
           "expect": "A wrong-review object with id, quizId, status, questionCount and remainingCount, or an action awaiting authorization without an active QUIZ_GENERATION grant.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "quizId": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "questionCount": "<shape-placeholder>",
-            "remainingCount": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "quizId": "synthetic-quizId",
+            "status": "synthetic-status",
+            "questionCount": 0,
+            "remainingCount": 0
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -2471,16 +2605,16 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "chapterKey": {
-            "type": "string"
-          },
           "status": {
             "type": "string"
           },
-          "size": {
-            "type": "integer"
+          "chapterKey": {
+            "type": "string"
           },
           "page": {
+            "type": "integer"
+          },
+          "size": {
             "type": "integer"
           }
         },
@@ -2889,14 +3023,27 @@
           "input": {},
           "expect": "Summary object with counts, per-chapter list and current review (or null).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "activeCount": "<shape-placeholder>",
-            "masteredCount": "<shape-placeholder>",
-            "chapters": "<shape-placeholder>",
-            "currentReview": "<shape-placeholder>"
+            "activeCount": 0,
+            "masteredCount": 0,
+            "chapters": [
+              {
+                "chapterKey": "synthetic-chapterKey",
+                "chapterTitle": "synthetic-chapterTitle",
+                "activeCount": 0,
+                "masteredCount": 0
+              }
+            ],
+            "currentReview": {
+              "id": "synthetic-id",
+              "quizId": "synthetic-quizId",
+              "status": "synthetic-status",
+              "questionCount": 0,
+              "remainingCount": 0
+            }
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3026,21 +3173,21 @@
           "input": {},
           "expect": "Array of rule records, newest first (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "type": "<shape-placeholder>",
-              "status": "<shape-placeholder>",
-              "timezone": "<shape-placeholder>",
-              "localTime": "<shape-placeholder>",
-              "riskLevel": "<shape-placeholder>",
-              "requiredScope": "<shape-placeholder>",
-              "createdAt": "<shape-placeholder>",
-              "updatedAt": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "type": "synthetic-type",
+              "status": "synthetic-status",
+              "timezone": "synthetic-timezone",
+              "localTime": "synthetic-localTime",
+              "riskLevel": "synthetic-riskLevel",
+              "requiredScope": "synthetic-requiredScope",
+              "createdAt": "synthetic-createdAt",
+              "updatedAt": "synthetic-updatedAt"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3131,12 +3278,12 @@
           "input": {},
           "expect": "Object with paused and an updated timestamp (epoch when never configured).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "paused": "<shape-placeholder>",
-            "updatedAt": "<shape-placeholder>"
+            "paused": false,
+            "updatedAt": "synthetic-updatedAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3170,8 +3317,8 @@
           }
         },
         "required": [
-          "workspaceId",
-          "q"
+          "q",
+          "workspaceId"
         ]
       },
       "output_schema": {
@@ -3269,13 +3416,19 @@
           },
           "expect": "A code search object with workspaceId, query and a bounded matches array of relativePath, lineNumber and lineContent.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "query": "<shape-placeholder>",
-            "matches": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "query": "synthetic-query",
+            "matches": [
+              {
+                "relativePath": "synthetic-relativePath",
+                "lineNumber": 0,
+                "lineContent": "synthetic-lineContent"
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3309,8 +3462,8 @@
           }
         },
         "required": [
-          "workspaceId",
-          "path"
+          "path",
+          "workspaceId"
         ]
       },
       "output_schema": {
@@ -3400,15 +3553,15 @@
           },
           "expect": "A file read object with workspaceId, relativePath, content, sizeBytes and truncated.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "relativePath": "<shape-placeholder>",
-            "content": "<shape-placeholder>",
-            "sizeBytes": "<shape-placeholder>",
-            "truncated": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "relativePath": "synthetic-relativePath",
+            "content": "synthetic-content",
+            "sizeBytes": 0,
+            "truncated": false
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3540,13 +3693,20 @@
           },
           "expect": "A file tree object with workspaceId, rootPath and a bounded entries array.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "rootPath": "<shape-placeholder>",
-            "entries": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "rootPath": "synthetic-rootPath",
+            "entries": [
+              {
+                "relativePath": "synthetic-relativePath",
+                "name": "synthetic-name",
+                "directory": false,
+                "sizeBytes": 0
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3573,28 +3733,28 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "workspaceId": {
-            "type": "string"
-          },
           "message": {
             "type": "string"
           },
-          "expectedHead": {
-            "type": "string"
-          },
-          "changeFingerprint": {
+          "workspaceId": {
             "type": "string"
           },
           "paths": {
             "type": "array"
+          },
+          "changeFingerprint": {
+            "type": "string"
+          },
+          "expectedHead": {
+            "type": "string"
           }
         },
         "required": [
-          "workspaceId",
           "message",
-          "expectedHead",
+          "workspaceId",
+          "paths",
           "changeFingerprint",
-          "paths"
+          "expectedHead"
         ]
       },
       "output_schema": {
@@ -3693,15 +3853,17 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation a commit result with commitId, message, paths and committedAt.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "commitId": "<shape-placeholder>",
-            "message": "<shape-placeholder>",
-            "paths": "<shape-placeholder>",
-            "committedAt": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "commitId": "synthetic-commitId",
+            "message": "synthetic-message",
+            "paths": [
+              "synthetic-paths"
+            ],
+            "committedAt": "synthetic-committedAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3728,20 +3890,20 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "message": {
-            "type": "string"
+          "paths": {
+            "type": "array"
           },
           "workspaceId": {
             "type": "string"
           },
-          "paths": {
-            "type": "array"
+          "message": {
+            "type": "string"
           }
         },
         "required": [
-          "message",
+          "paths",
           "workspaceId",
-          "paths"
+          "message"
         ]
       },
       "output_schema": {
@@ -3844,16 +4006,18 @@
           },
           "expect": "A commit preview object with workspaceId, branch, expectedHead, changeFingerprint, paths and message.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "branch": "<shape-placeholder>",
-            "expectedHead": "<shape-placeholder>",
-            "changeFingerprint": "<shape-placeholder>",
-            "paths": "<shape-placeholder>",
-            "message": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "branch": "synthetic-branch",
+            "expectedHead": "synthetic-expectedHead",
+            "changeFingerprint": "synthetic-changeFingerprint",
+            "paths": [
+              "synthetic-paths"
+            ],
+            "message": "synthetic-message"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3960,13 +4124,13 @@
           },
           "expect": "A Git text object with workspaceId, content and truncated.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "content": "<shape-placeholder>",
-            "truncated": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "content": "synthetic-content",
+            "truncated": false
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -3992,11 +4156,11 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "workspaceId": {
-            "type": "string"
-          },
           "limit": {
             "type": "integer"
+          },
+          "workspaceId": {
+            "type": "string"
           }
         },
         "required": [
@@ -4077,13 +4241,13 @@
           },
           "expect": "A Git text object with workspaceId, content and truncated.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "content": "<shape-placeholder>",
-            "truncated": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "content": "synthetic-content",
+            "truncated": false
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         },
         {
           "name": "default log",
@@ -4092,13 +4256,13 @@
           },
           "expect": "A Git text object using the service default limit of 20 entries worth of log text.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "content": "<shape-placeholder>",
-            "truncated": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "content": "synthetic-content",
+            "truncated": false
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -4128,37 +4292,37 @@
           "expectedRemoteRef": {
             "type": "string"
           },
-          "branch": {
-            "type": "string"
-          },
-          "remoteName": {
-            "type": "string"
-          },
-          "workspaceId": {
-            "type": "string"
-          },
-          "timeoutSeconds": {
-            "type": "integer"
-          },
-          "remoteUrlDigest": {
+          "expectedHead": {
             "type": "string"
           },
           "expectedRemoteRefCommit": {
             "type": "string"
           },
-          "expectedHead": {
+          "remoteUrlDigest": {
+            "type": "string"
+          },
+          "timeoutSeconds": {
+            "type": "integer"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "remoteName": {
+            "type": "string"
+          },
+          "branch": {
             "type": "string"
           }
         },
         "required": [
           "expectedRemoteRef",
-          "branch",
-          "remoteName",
-          "workspaceId",
-          "timeoutSeconds",
-          "remoteUrlDigest",
+          "expectedHead",
           "expectedRemoteRefCommit",
-          "expectedHead"
+          "remoteUrlDigest",
+          "timeoutSeconds",
+          "workspaceId",
+          "remoteName",
+          "branch"
         ]
       },
       "output_schema": {
@@ -4255,15 +4419,15 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation a push result with pushedCommit, remoteName, branch and pushedAt.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "remoteName": "<shape-placeholder>",
-            "branch": "<shape-placeholder>",
-            "pushedCommit": "<shape-placeholder>",
-            "pushedAt": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "remoteName": "synthetic-remoteName",
+            "branch": "synthetic-branch",
+            "pushedCommit": "synthetic-pushedCommit",
+            "pushedAt": "synthetic-pushedAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -4406,19 +4570,19 @@
           },
           "expect": "A push preview object with remoteName, remoteUrlDigest, branch, expectedHead, expectedRemoteRef, expectedRemoteRefCommit, aheadCount and timeoutSeconds.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "remoteName": "<shape-placeholder>",
-            "remoteUrlDigest": "<shape-placeholder>",
-            "branch": "<shape-placeholder>",
-            "expectedHead": "<shape-placeholder>",
-            "expectedRemoteRef": "<shape-placeholder>",
-            "expectedRemoteRefCommit": "<shape-placeholder>",
-            "aheadCount": "<shape-placeholder>",
-            "timeoutSeconds": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "remoteName": "synthetic-remoteName",
+            "remoteUrlDigest": "synthetic-remoteUrlDigest",
+            "branch": "synthetic-branch",
+            "expectedHead": "synthetic-expectedHead",
+            "expectedRemoteRef": "synthetic-expectedRemoteRef",
+            "expectedRemoteRefCommit": "synthetic-expectedRemoteRefCommit",
+            "aheadCount": 0,
+            "timeoutSeconds": 0
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -4563,17 +4727,21 @@
           },
           "expect": "A Git status object with gitRepository, branch, currentCommit, clean and the modified and untracked lists.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "gitRepository": "<shape-placeholder>",
-            "branch": "<shape-placeholder>",
-            "currentCommit": "<shape-placeholder>",
-            "clean": "<shape-placeholder>",
-            "modifiedFiles": "<shape-placeholder>",
-            "untrackedFiles": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "gitRepository": false,
+            "branch": "synthetic-branch",
+            "currentCommit": "synthetic-currentCommit",
+            "clean": false,
+            "modifiedFiles": [
+              "synthetic-modifiedFiles"
+            ],
+            "untrackedFiles": [
+              "synthetic-untrackedFiles"
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -4604,21 +4772,21 @@
           "channel": {
             "type": "string"
           },
-          "actionKey": {
+          "targetKey": {
             "type": "string"
           },
           "businessApiAvailable": {
             "type": "boolean"
           },
-          "targetKey": {
+          "actionKey": {
             "type": "string"
           }
         },
         "required": [
           "channel",
-          "actionKey",
+          "targetKey",
           "businessApiAvailable",
-          "targetKey"
+          "actionKey"
         ]
       },
       "output_schema": {
@@ -4745,20 +4913,20 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation a local interface execution result with channel, actionKey, targetKey, localAdapterInvoked true and receiptStatus, or a deterministic local adapter error when the adapter fails.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "channel": "<shape-placeholder>",
-            "actionKey": "<shape-placeholder>",
-            "targetKey": "<shape-placeholder>",
-            "localAdapterInvoked": "<shape-placeholder>",
-            "adapter": "<shape-placeholder>",
-            "targetDigest": "<shape-placeholder>",
-            "receiptStatus": "<shape-placeholder>",
-            "startedAt": "<shape-placeholder>",
-            "finishedAt": "<shape-placeholder>",
-            "message": "<shape-placeholder>"
+            "channel": "synthetic-channel",
+            "actionKey": "synthetic-actionKey",
+            "targetKey": "synthetic-targetKey",
+            "localAdapterInvoked": false,
+            "adapter": "synthetic-adapter",
+            "targetDigest": "synthetic-targetDigest",
+            "receiptStatus": "synthetic-receiptStatus",
+            "startedAt": "synthetic-startedAt",
+            "finishedAt": "synthetic-finishedAt",
+            "message": "synthetic-message"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         },
         {
           "name": "business API preferred",
@@ -4770,26 +4938,30 @@
           },
           "expect": "A result with localAdapterInvoked false because the policy returned the BUSINESS_API decision and no local adapter was invoked.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "channel": "<shape-placeholder>",
-            "actionKey": "<shape-placeholder>",
-            "targetKey": "<shape-placeholder>",
-            "localAdapterInvoked": "<shape-placeholder>",
-            "adapter": "<shape-placeholder>",
-            "targetDigest": "<shape-placeholder>",
-            "receiptStatus": "<shape-placeholder>",
-            "startedAt": "<shape-placeholder>",
-            "finishedAt": "<shape-placeholder>",
-            "message": "<shape-placeholder>"
+            "channel": "synthetic-channel",
+            "actionKey": "synthetic-actionKey",
+            "targetKey": "synthetic-targetKey",
+            "localAdapterInvoked": false,
+            "adapter": "synthetic-adapter",
+            "targetDigest": "synthetic-targetDigest",
+            "receiptStatus": "synthetic-receiptStatus",
+            "startedAt": "synthetic-startedAt",
+            "finishedAt": "synthetic-finishedAt",
+            "message": "synthetic-message"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
         "registration": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java#L445-L473",
         "handler": "LocalInterfaceFallbackService.validate as preflight, then LocalInterfaceFallbackService.execute on confirmation; those two are the direct binding to this tool, and they in turn use InterfaceFallbackPolicy.preview and LocalAutomationClient.invoke (declared as unverified deeper collaborators), via the GovernedFunctionalAgentToolHandler bean developerInterfaceFallbackExecuteTool.",
-        "output_schema": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+        "output_schema": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java",
+        "unverified_symbols": [
+          "InterfaceFallbackPolicy.preview",
+          "LocalAutomationClient.invoke"
+        ]
       }
     },
     {
@@ -4812,21 +4984,21 @@
           "channel": {
             "type": "string"
           },
-          "actionKey": {
+          "targetKey": {
             "type": "string"
           },
           "businessApiAvailable": {
             "type": "boolean"
           },
-          "targetKey": {
+          "actionKey": {
             "type": "string"
           }
         },
         "required": [
           "channel",
-          "actionKey",
+          "targetKey",
           "businessApiAvailable",
-          "targetKey"
+          "actionKey"
         ]
       },
       "output_schema": {
@@ -4922,15 +5094,15 @@
           },
           "expect": "An interface fallback decision with fallbackRequired true and the policy reason.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "channel": "<shape-placeholder>",
-            "actionKey": "<shape-placeholder>",
-            "targetKey": "<shape-placeholder>",
-            "fallbackRequired": "<shape-placeholder>",
-            "reason": "<shape-placeholder>"
+            "channel": "synthetic-channel",
+            "actionKey": "synthetic-actionKey",
+            "targetKey": "synthetic-targetKey",
+            "fallbackRequired": false,
+            "reason": "synthetic-reason"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         },
         {
           "name": "business API available",
@@ -4942,15 +5114,15 @@
           },
           "expect": "A decision with channel BUSINESS_API, fallbackRequired false and the reason that a deterministic business API exists.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "channel": "<shape-placeholder>",
-            "actionKey": "<shape-placeholder>",
-            "targetKey": "<shape-placeholder>",
-            "fallbackRequired": "<shape-placeholder>",
-            "reason": "<shape-placeholder>"
+            "channel": "synthetic-channel",
+            "actionKey": "synthetic-actionKey",
+            "targetKey": "synthetic-targetKey",
+            "fallbackRequired": false,
+            "reason": "synthetic-reason"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -4980,24 +5152,24 @@
           "workspaceId": {
             "type": "string"
           },
-          "explanation": {
-            "type": "string"
-          },
-          "targetFile": {
+          "expectedSha256": {
             "type": "string"
           },
           "unifiedDiff": {
             "type": "string"
           },
-          "expectedSha256": {
+          "targetFile": {
+            "type": "string"
+          },
+          "explanation": {
             "type": "string"
           }
         },
         "required": [
-          "expectedSha256",
-          "workspaceId",
+          "targetFile",
           "unifiedDiff",
-          "targetFile"
+          "workspaceId",
+          "expectedSha256"
         ]
       },
       "output_schema": {
@@ -5117,19 +5289,21 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation a patch preview shaped result with safeToApply true, conflict false and the resultSha256 of the written file.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "targetFile": "<shape-placeholder>",
-            "unifiedDiff": "<shape-placeholder>",
-            "expectedSha256": "<shape-placeholder>",
-            "resultSha256": "<shape-placeholder>",
-            "conflict": "<shape-placeholder>",
-            "conflictReason": "<shape-placeholder>",
-            "affectedLines": "<shape-placeholder>",
-            "safeToApply": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "targetFile": "synthetic-targetFile",
+            "unifiedDiff": "synthetic-unifiedDiff",
+            "expectedSha256": "synthetic-expectedSha256",
+            "resultSha256": "synthetic-resultSha256",
+            "conflict": false,
+            "conflictReason": "synthetic-conflictReason",
+            "affectedLines": [
+              "synthetic-affectedLines"
+            ],
+            "safeToApply": false
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -5155,20 +5329,20 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "diff": {
+          "targetFile": {
             "type": "string"
           },
           "workspaceId": {
             "type": "string"
           },
-          "targetFile": {
+          "diff": {
             "type": "string"
           }
         },
         "required": [
-          "diff",
+          "targetFile",
           "workspaceId",
-          "targetFile"
+          "diff"
         ]
       },
       "output_schema": {
@@ -5290,19 +5464,21 @@
           },
           "expect": "A patch preview object with expectedSha256, resultSha256, conflict, conflictReason, affectedLines and safeToApply.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "targetFile": "<shape-placeholder>",
-            "unifiedDiff": "<shape-placeholder>",
-            "expectedSha256": "<shape-placeholder>",
-            "resultSha256": "<shape-placeholder>",
-            "conflict": "<shape-placeholder>",
-            "conflictReason": "<shape-placeholder>",
-            "affectedLines": "<shape-placeholder>",
-            "safeToApply": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "targetFile": "synthetic-targetFile",
+            "unifiedDiff": "synthetic-unifiedDiff",
+            "expectedSha256": "synthetic-expectedSha256",
+            "resultSha256": "synthetic-resultSha256",
+            "conflict": false,
+            "conflictReason": "synthetic-conflictReason",
+            "affectedLines": [
+              "synthetic-affectedLines"
+            ],
+            "safeToApply": false
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -5328,16 +5504,16 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "workspaceId": {
-            "type": "string"
-          },
           "changedFiles": {
             "type": "array"
+          },
+          "workspaceId": {
+            "type": "string"
           }
         },
         "required": [
-          "workspaceId",
-          "changedFiles"
+          "changedFiles",
+          "workspaceId"
         ]
       },
       "output_schema": {
@@ -5450,17 +5626,24 @@
           },
           "expect": "A test recommendation object with workspaceId, templates, executions, requiresDependencyPreparation and reasons.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "templates": "<shape-placeholder>",
-            "executions": "<shape-placeholder>",
-            "templateType": "<shape-placeholder>",
-            "workingDirectory": "<shape-placeholder>",
-            "requiresDependencyPreparation": "<shape-placeholder>",
-            "reasons": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "templates": [
+              "synthetic-templates"
+            ],
+            "executions": [
+              {
+                "templateType": "synthetic-templateType",
+                "workingDirectory": "synthetic-workingDirectory"
+              }
+            ],
+            "requiresDependencyPreparation": false,
+            "reasons": [
+              "synthetic-reasons"
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -5582,18 +5765,18 @@
           "input": {},
           "expect": "Array of audit entries, newest first (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "action": "<shape-placeholder>",
-              "targetType": "<shape-placeholder>",
-              "targetId": "<shape-placeholder>",
-              "details": "<shape-placeholder>",
-              "createdAt": "<shape-placeholder>"
+              "id": 0,
+              "action": "synthetic-action",
+              "targetType": "synthetic-targetType",
+              "targetId": "synthetic-targetId",
+              "details": "synthetic-details",
+              "createdAt": "synthetic-createdAt"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -5767,28 +5950,28 @@
           "input": {},
           "expect": "Array of execution records, newest first (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "idempotencyKey": "<shape-placeholder>",
-              "executionType": "<shape-placeholder>",
-              "triggerType": "<shape-placeholder>",
-              "riskLevel": "<shape-placeholder>",
-              "requiredScope": "<shape-placeholder>",
-              "status": "<shape-placeholder>",
-              "summary": "<shape-placeholder>",
-              "resultSummary": "<shape-placeholder>",
-              "errorMessage": "<shape-placeholder>",
-              "modelName": "<shape-placeholder>",
-              "promptTokens": "<shape-placeholder>",
-              "completionTokens": "<shape-placeholder>",
-              "latencyMs": "<shape-placeholder>",
-              "estimatedCost": "<shape-placeholder>",
-              "createdAt": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "idempotencyKey": "synthetic-idempotencyKey",
+              "executionType": "synthetic-executionType",
+              "triggerType": "synthetic-triggerType",
+              "riskLevel": "synthetic-riskLevel",
+              "requiredScope": "synthetic-requiredScope",
+              "status": "synthetic-status",
+              "summary": "synthetic-summary",
+              "resultSummary": "synthetic-resultSummary",
+              "errorMessage": "synthetic-errorMessage",
+              "modelName": "synthetic-modelName",
+              "promptTokens": 0,
+              "completionTokens": 0,
+              "latencyMs": 0,
+              "estimatedCost": 0,
+              "createdAt": "synthetic-createdAt"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -6557,18 +6740,147 @@
           "input": {},
           "expect": "Aggregate object with learning collections, roadmap (object or null), wrong-question summary, counts, workspaces and warnings.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "generatedAt": "<shape-placeholder>",
-            "learning": "<shape-placeholder>",
-            "roadmap": "<shape-placeholder>",
-            "wrongQuestions": "<shape-placeholder>",
-            "unreadNotificationCount": "<shape-placeholder>",
-            "pendingConfirmationCount": "<shape-placeholder>",
-            "workspaces": "<shape-placeholder>",
-            "warnings": "<shape-placeholder>"
+            "generatedAt": "synthetic-generatedAt",
+            "learning": {
+              "timeZone": "synthetic-timeZone",
+              "goals": [
+                {
+                  "id": "synthetic-id",
+                  "title": "synthetic-title",
+                  "targetDate": "synthetic-targetDate",
+                  "weeklyStudyHours": 0,
+                  "status": "synthetic-status"
+                }
+              ],
+              "plans": [
+                {
+                  "id": "synthetic-id",
+                  "goalId": "synthetic-goalId",
+                  "title": "synthetic-title",
+                  "startDate": "synthetic-startDate",
+                  "endDate": "synthetic-endDate",
+                  "status": "synthetic-status",
+                  "version": 0
+                }
+              ],
+              "tasks": [
+                {
+                  "id": "synthetic-id",
+                  "planId": "synthetic-planId",
+                  "title": "synthetic-title",
+                  "scheduledDate": "synthetic-scheduledDate",
+                  "estimatedMinutes": 0,
+                  "status": "synthetic-status",
+                  "version": 0,
+                  "completedAt": "synthetic-completedAt",
+                  "actualMinutes": 0,
+                  "taskKind": "synthetic-taskKind",
+                  "knowledgePoint": "synthetic-knowledgePoint",
+                  "sourceAttemptId": "synthetic-sourceAttemptId"
+                }
+              ],
+              "materials": [
+                {
+                  "id": "synthetic-id",
+                  "title": "synthetic-title",
+                  "materialType": "synthetic-materialType",
+                  "category": "synthetic-category",
+                  "privacyLevel": "synthetic-privacyLevel",
+                  "sourceUrl": "synthetic-sourceUrl",
+                  "originalFilename": "synthetic-originalFilename",
+                  "mediaType": "synthetic-mediaType",
+                  "contentLength": 0,
+                  "processingStatus": "synthetic-processingStatus",
+                  "summary": "synthetic-summary",
+                  "tags": [
+                    "synthetic-tags"
+                  ],
+                  "knowledgePoints": [
+                    "synthetic-knowledgePoints"
+                  ],
+                  "processingWarnings": [
+                    "synthetic-processingWarnings"
+                  ],
+                  "contentReference": "synthetic-contentReference",
+                  "failureReason": "synthetic-failureReason"
+                }
+              ],
+              "mastery": [
+                {
+                  "knowledgePoint": "synthetic-knowledgePoint",
+                  "score": 0,
+                  "quizScore": 0,
+                  "taskScore": 0,
+                  "selfAssessmentScore": 0,
+                  "evidenceCount": 0,
+                  "attemptCount": 0,
+                  "updatedAt": "synthetic-updatedAt"
+                }
+              ]
+            },
+            "roadmap": {
+              "enrollmentId": "synthetic-enrollmentId",
+              "roadmapCode": "synthetic-roadmapCode",
+              "templateVersion": 0,
+              "title": "synthetic-title",
+              "completedRequiredNodes": 0,
+              "totalRequiredNodes": 0,
+              "stages": [
+                {
+                  "id": "synthetic-id",
+                  "code": "synthetic-code",
+                  "order": 0,
+                  "title": "synthetic-title",
+                  "completedRequiredNodes": 0,
+                  "totalRequiredNodes": 0,
+                  "nodes": [
+                    {
+                      "id": "synthetic-id",
+                      "code": "synthetic-code",
+                      "title": "synthetic-title",
+                      "displayStatus": "synthetic-displayStatus"
+                    }
+                  ]
+                }
+              ]
+            },
+            "wrongQuestions": {
+              "activeCount": 0,
+              "masteredCount": 0,
+              "chapters": [
+                {
+                  "chapterKey": "synthetic-chapterKey",
+                  "chapterTitle": "synthetic-chapterTitle",
+                  "activeCount": 0,
+                  "masteredCount": 0
+                }
+              ],
+              "currentReview": {
+                "id": "synthetic-id",
+                "quizId": "synthetic-quizId",
+                "status": "synthetic-status",
+                "questionCount": 0,
+                "remainingCount": 0
+              }
+            },
+            "unreadNotificationCount": 0,
+            "pendingConfirmationCount": 0,
+            "workspaces": [
+              {
+                "id": "synthetic-id",
+                "name": "synthetic-name",
+                "rootPath": "synthetic-rootPath",
+                "status": "synthetic-status",
+                "createdAt": "synthetic-createdAt"
+              }
+            ],
+            "warnings": [
+              "synthetic-warnings"
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -6597,17 +6909,17 @@
           "weeklyStudyHours": {
             "type": "integer"
           },
-          "targetDate": {
+          "title": {
             "type": "string"
           },
-          "title": {
+          "targetDate": {
             "type": "string"
           }
         },
         "required": [
           "weeklyStudyHours",
-          "targetDate",
-          "title"
+          "title",
+          "targetDate"
         ]
       },
       "output_schema": {
@@ -6698,15 +7010,15 @@
           },
           "expect": "Either an immediate goal object when a LEARNING_MANAGEMENT grant is active, or an action awaiting authorization; on success the goal has id, title, targetDate, weeklyStudyHours and status.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "targetDate": "<shape-placeholder>",
-            "weeklyStudyHours": "<shape-placeholder>",
-            "status": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "title": "synthetic-title",
+            "targetDate": "synthetic-targetDate",
+            "weeklyStudyHours": 0,
+            "status": "synthetic-status"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -6820,17 +7132,17 @@
           "input": {},
           "expect": "Array of goal objects (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "title": "<shape-placeholder>",
-              "targetDate": "<shape-placeholder>",
-              "weeklyStudyHours": "<shape-placeholder>",
-              "status": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "title": "synthetic-title",
+              "targetDate": "synthetic-targetDate",
+              "weeklyStudyHours": 0,
+              "status": "synthetic-status"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -6860,21 +7172,21 @@
           "endDate": {
             "type": "string"
           },
-          "startDate": {
+          "goalId": {
             "type": "string"
           },
           "title": {
             "type": "string"
           },
-          "goalId": {
+          "startDate": {
             "type": "string"
           }
         },
         "required": [
           "endDate",
-          "startDate",
+          "goalId",
           "title",
-          "goalId"
+          "startDate"
         ]
       },
       "output_schema": {
@@ -6977,17 +7289,17 @@
           },
           "expect": "A plan object with id, goalId, title, startDate, endDate, status and version, or an action awaiting authorization when no active PLAN_GENERATION grant exists.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "goalId": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "startDate": "<shape-placeholder>",
-            "endDate": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "version": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "goalId": "synthetic-goalId",
+            "title": "synthetic-title",
+            "startDate": "synthetic-startDate",
+            "endDate": "synthetic-endDate",
+            "status": "synthetic-status",
+            "version": 0
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -7113,17 +7425,17 @@
           },
           "expect": "The plan object for that id, or a not-found error if it is not owned by the caller.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "goalId": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "startDate": "<shape-placeholder>",
-            "endDate": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "version": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "goalId": "synthetic-goalId",
+            "title": "synthetic-title",
+            "startDate": "synthetic-startDate",
+            "endDate": "synthetic-endDate",
+            "status": "synthetic-status",
+            "version": 0
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -7245,19 +7557,19 @@
           "input": {},
           "expect": "Array of plan objects (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "goalId": "<shape-placeholder>",
-              "title": "<shape-placeholder>",
-              "startDate": "<shape-placeholder>",
-              "endDate": "<shape-placeholder>",
-              "status": "<shape-placeholder>",
-              "version": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "goalId": "synthetic-goalId",
+              "title": "synthetic-title",
+              "startDate": "synthetic-startDate",
+              "endDate": "synthetic-endDate",
+              "status": "synthetic-status",
+              "version": 0
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -7285,29 +7597,29 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "actualMinutes": {
-            "type": "integer"
-          },
           "taskId": {
             "type": "string"
           },
-          "reason": {
+          "actualMinutes": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "scheduledDate": {
             "type": "string"
           },
           "expectedVersion": {
             "type": "integer"
           },
-          "scheduledDate": {
-            "type": "string"
-          },
-          "status": {
+          "reason": {
             "type": "string"
           }
         },
         "required": [
           "expectedVersion",
-          "status",
-          "taskId"
+          "taskId",
+          "status"
         ]
       },
       "output_schema": {
@@ -7443,22 +7755,22 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation a task object whose status is COMPLETED, whose version is incremented and whose actualMinutes is recorded.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "planId": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "scheduledDate": "<shape-placeholder>",
-            "estimatedMinutes": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "version": "<shape-placeholder>",
-            "completedAt": "<shape-placeholder>",
-            "actualMinutes": "<shape-placeholder>",
-            "taskKind": "<shape-placeholder>",
-            "knowledgePoint": "<shape-placeholder>",
-            "sourceAttemptId": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "planId": "synthetic-planId",
+            "title": "synthetic-title",
+            "scheduledDate": "synthetic-scheduledDate",
+            "estimatedMinutes": 0,
+            "status": "synthetic-status",
+            "version": 0,
+            "completedAt": "synthetic-completedAt",
+            "actualMinutes": 0,
+            "taskKind": "synthetic-taskKind",
+            "knowledgePoint": "synthetic-knowledgePoint",
+            "sourceAttemptId": "synthetic-sourceAttemptId"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -7619,48 +7931,48 @@
           },
           "expect": "Array of task objects scheduled for that date (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "planId": "<shape-placeholder>",
-              "title": "<shape-placeholder>",
-              "scheduledDate": "<shape-placeholder>",
-              "estimatedMinutes": "<shape-placeholder>",
-              "status": "<shape-placeholder>",
-              "version": "<shape-placeholder>",
-              "completedAt": "<shape-placeholder>",
-              "actualMinutes": "<shape-placeholder>",
-              "taskKind": "<shape-placeholder>",
-              "knowledgePoint": "<shape-placeholder>",
-              "sourceAttemptId": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "planId": "synthetic-planId",
+              "title": "synthetic-title",
+              "scheduledDate": "synthetic-scheduledDate",
+              "estimatedMinutes": 0,
+              "status": "synthetic-status",
+              "version": 0,
+              "completedAt": "synthetic-completedAt",
+              "actualMinutes": 0,
+              "taskKind": "synthetic-taskKind",
+              "knowledgePoint": "synthetic-knowledgePoint",
+              "sourceAttemptId": "synthetic-sourceAttemptId"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         },
         {
           "name": "all tasks",
           "input": {},
           "expect": "Array of every task owned by the caller.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "planId": "<shape-placeholder>",
-              "title": "<shape-placeholder>",
-              "scheduledDate": "<shape-placeholder>",
-              "estimatedMinutes": "<shape-placeholder>",
-              "status": "<shape-placeholder>",
-              "version": "<shape-placeholder>",
-              "completedAt": "<shape-placeholder>",
-              "actualMinutes": "<shape-placeholder>",
-              "taskKind": "<shape-placeholder>",
-              "knowledgePoint": "<shape-placeholder>",
-              "sourceAttemptId": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "planId": "synthetic-planId",
+              "title": "synthetic-title",
+              "scheduledDate": "synthetic-scheduledDate",
+              "estimatedMinutes": 0,
+              "status": "synthetic-status",
+              "version": 0,
+              "completedAt": "synthetic-completedAt",
+              "actualMinutes": 0,
+              "taskKind": "synthetic-taskKind",
+              "knowledgePoint": "synthetic-knowledgePoint",
+              "sourceAttemptId": "synthetic-sourceAttemptId"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -7846,26 +8158,32 @@
           },
           "expect": "Material metadata object with summary, tags and processing outcome.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "materialType": "<shape-placeholder>",
-            "category": "<shape-placeholder>",
-            "privacyLevel": "<shape-placeholder>",
-            "sourceUrl": "<shape-placeholder>",
-            "originalFilename": "<shape-placeholder>",
-            "mediaType": "<shape-placeholder>",
-            "contentLength": "<shape-placeholder>",
-            "processingStatus": "<shape-placeholder>",
-            "summary": "<shape-placeholder>",
-            "tags": "<shape-placeholder>",
-            "knowledgePoints": "<shape-placeholder>",
-            "processingWarnings": "<shape-placeholder>",
-            "contentReference": "<shape-placeholder>",
-            "failureReason": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "title": "synthetic-title",
+            "materialType": "synthetic-materialType",
+            "category": "synthetic-category",
+            "privacyLevel": "synthetic-privacyLevel",
+            "sourceUrl": "synthetic-sourceUrl",
+            "originalFilename": "synthetic-originalFilename",
+            "mediaType": "synthetic-mediaType",
+            "contentLength": 0,
+            "processingStatus": "synthetic-processingStatus",
+            "summary": "synthetic-summary",
+            "tags": [
+              "synthetic-tags"
+            ],
+            "knowledgePoints": [
+              "synthetic-knowledgePoints"
+            ],
+            "processingWarnings": [
+              "synthetic-processingWarnings"
+            ],
+            "contentReference": "synthetic-contentReference",
+            "failureReason": "synthetic-failureReason"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -8046,28 +8364,34 @@
           "input": {},
           "expect": "Array of material metadata objects (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "title": "<shape-placeholder>",
-              "materialType": "<shape-placeholder>",
-              "category": "<shape-placeholder>",
-              "privacyLevel": "<shape-placeholder>",
-              "sourceUrl": "<shape-placeholder>",
-              "originalFilename": "<shape-placeholder>",
-              "mediaType": "<shape-placeholder>",
-              "contentLength": "<shape-placeholder>",
-              "processingStatus": "<shape-placeholder>",
-              "summary": "<shape-placeholder>",
-              "tags": "<shape-placeholder>",
-              "knowledgePoints": "<shape-placeholder>",
-              "processingWarnings": "<shape-placeholder>",
-              "contentReference": "<shape-placeholder>",
-              "failureReason": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "title": "synthetic-title",
+              "materialType": "synthetic-materialType",
+              "category": "synthetic-category",
+              "privacyLevel": "synthetic-privacyLevel",
+              "sourceUrl": "synthetic-sourceUrl",
+              "originalFilename": "synthetic-originalFilename",
+              "mediaType": "synthetic-mediaType",
+              "contentLength": 0,
+              "processingStatus": "synthetic-processingStatus",
+              "summary": "synthetic-summary",
+              "tags": [
+                "synthetic-tags"
+              ],
+              "knowledgePoints": [
+                "synthetic-knowledgePoints"
+              ],
+              "processingWarnings": [
+                "synthetic-processingWarnings"
+              ],
+              "contentReference": "synthetic-contentReference",
+              "failureReason": "synthetic-failureReason"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -8093,24 +8417,24 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "content": {
-            "type": "string"
-          },
-          "title": {
+          "privacyLevel": {
             "type": "string"
           },
           "category": {
             "type": "string"
           },
-          "privacyLevel": {
+          "title": {
+            "type": "string"
+          },
+          "content": {
             "type": "string"
           }
         },
         "required": [
-          "content",
-          "title",
+          "privacyLevel",
           "category",
-          "privacyLevel"
+          "title",
+          "content"
         ]
       },
       "output_schema": {
@@ -8273,26 +8597,32 @@
           },
           "expect": "A material object with id, materialType TEXT, processingStatus PROCESSING and empty extraction fields, or an action awaiting authorization.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "materialType": "<shape-placeholder>",
-            "category": "<shape-placeholder>",
-            "privacyLevel": "<shape-placeholder>",
-            "sourceUrl": "<shape-placeholder>",
-            "originalFilename": "<shape-placeholder>",
-            "mediaType": "<shape-placeholder>",
-            "contentLength": "<shape-placeholder>",
-            "processingStatus": "<shape-placeholder>",
-            "summary": "<shape-placeholder>",
-            "tags": "<shape-placeholder>",
-            "knowledgePoints": "<shape-placeholder>",
-            "processingWarnings": "<shape-placeholder>",
-            "contentReference": "<shape-placeholder>",
-            "failureReason": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "title": "synthetic-title",
+            "materialType": "synthetic-materialType",
+            "category": "synthetic-category",
+            "privacyLevel": "synthetic-privacyLevel",
+            "sourceUrl": "synthetic-sourceUrl",
+            "originalFilename": "synthetic-originalFilename",
+            "mediaType": "synthetic-mediaType",
+            "contentLength": 0,
+            "processingStatus": "synthetic-processingStatus",
+            "summary": "synthetic-summary",
+            "tags": [
+              "synthetic-tags"
+            ],
+            "knowledgePoints": [
+              "synthetic-knowledgePoints"
+            ],
+            "processingWarnings": [
+              "synthetic-processingWarnings"
+            ],
+            "contentReference": "synthetic-contentReference",
+            "failureReason": "synthetic-failureReason"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -8318,24 +8648,24 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "title": {
-            "type": "string"
-          },
-          "category": {
+          "sourceUrl": {
             "type": "string"
           },
           "privacyLevel": {
             "type": "string"
           },
-          "sourceUrl": {
+          "category": {
+            "type": "string"
+          },
+          "title": {
             "type": "string"
           }
         },
         "required": [
-          "title",
-          "category",
+          "sourceUrl",
           "privacyLevel",
-          "sourceUrl"
+          "category",
+          "title"
         ]
       },
       "output_schema": {
@@ -8498,26 +8828,32 @@
           },
           "expect": "A material object with id, sourceUrl, materialType WEB_PAGE and processingStatus PROCESSING, or an action awaiting authorization.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "materialType": "<shape-placeholder>",
-            "category": "<shape-placeholder>",
-            "privacyLevel": "<shape-placeholder>",
-            "sourceUrl": "<shape-placeholder>",
-            "originalFilename": "<shape-placeholder>",
-            "mediaType": "<shape-placeholder>",
-            "contentLength": "<shape-placeholder>",
-            "processingStatus": "<shape-placeholder>",
-            "summary": "<shape-placeholder>",
-            "tags": "<shape-placeholder>",
-            "knowledgePoints": "<shape-placeholder>",
-            "processingWarnings": "<shape-placeholder>",
-            "contentReference": "<shape-placeholder>",
-            "failureReason": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "title": "synthetic-title",
+            "materialType": "synthetic-materialType",
+            "category": "synthetic-category",
+            "privacyLevel": "synthetic-privacyLevel",
+            "sourceUrl": "synthetic-sourceUrl",
+            "originalFilename": "synthetic-originalFilename",
+            "mediaType": "synthetic-mediaType",
+            "contentLength": 0,
+            "processingStatus": "synthetic-processingStatus",
+            "summary": "synthetic-summary",
+            "tags": [
+              "synthetic-tags"
+            ],
+            "knowledgePoints": [
+              "synthetic-knowledgePoints"
+            ],
+            "processingWarnings": [
+              "synthetic-processingWarnings"
+            ],
+            "contentReference": "synthetic-contentReference",
+            "failureReason": "synthetic-failureReason"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -8624,12 +8960,12 @@
           },
           "expect": "A navigation target with routeKey TODAY and an empty params map.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "routeKey": "<shape-placeholder>",
-            "params": "<shape-placeholder>"
+            "routeKey": "synthetic-routeKey",
+            "params": {}
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         },
         {
           "name": "open a roadmap node",
@@ -8641,12 +8977,12 @@
           },
           "expect": "A navigation target with routeKey ROADMAP_NODE and params containing nodeId set to node-spring-tx.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "routeKey": "<shape-placeholder>",
-            "params": "<shape-placeholder>"
+            "routeKey": "synthetic-routeKey",
+            "params": {}
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         },
         {
           "name": "reject an unknown route",
@@ -8785,19 +9121,19 @@
           "input": {},
           "expect": "Array of notification objects, newest first (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "type": "<shape-placeholder>",
-              "title": "<shape-placeholder>",
-              "content": "<shape-placeholder>",
-              "read": "<shape-placeholder>",
-              "createdAt": "<shape-placeholder>",
-              "readAt": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "type": "synthetic-type",
+              "title": "synthetic-title",
+              "content": "synthetic-content",
+              "read": false,
+              "createdAt": "synthetic-createdAt",
+              "readAt": "synthetic-readAt"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -8927,17 +9263,17 @@
           },
           "expect": "A notification object with read true and readAt set, or an action awaiting authorization.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "type": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "content": "<shape-placeholder>",
-            "read": "<shape-placeholder>",
-            "createdAt": "<shape-placeholder>",
-            "readAt": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "type": "synthetic-type",
+            "title": "synthetic-title",
+            "content": "synthetic-content",
+            "read": false,
+            "createdAt": "synthetic-createdAt",
+            "readAt": "synthetic-readAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -9119,17 +9455,34 @@
           "input": {},
           "expect": "Compact roadmap object, or null when the user has not enrolled.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "enrollmentId": "<shape-placeholder>",
-            "roadmapCode": "<shape-placeholder>",
-            "templateVersion": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "completedRequiredNodes": "<shape-placeholder>",
-            "totalRequiredNodes": "<shape-placeholder>",
-            "stages": "<shape-placeholder>"
+            "enrollmentId": "synthetic-enrollmentId",
+            "roadmapCode": "synthetic-roadmapCode",
+            "templateVersion": 0,
+            "title": "synthetic-title",
+            "completedRequiredNodes": 0,
+            "totalRequiredNodes": 0,
+            "stages": [
+              {
+                "id": "synthetic-id",
+                "code": "synthetic-code",
+                "order": 0,
+                "title": "synthetic-title",
+                "completedRequiredNodes": 0,
+                "totalRequiredNodes": 0,
+                "nodes": [
+                  {
+                    "id": "synthetic-id",
+                    "code": "synthetic-code",
+                    "title": "synthetic-title",
+                    "displayStatus": "synthetic-displayStatus"
+                  }
+                ]
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         },
         {
           "name": "no current roadmap (valid empty state)",
@@ -9137,7 +9490,7 @@
           "input": {},
           "output": null,
           "fixture_kind": "nullable_empty",
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java",
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs",
           "expect": "A null result: roadmap.current.get is the only tool whose registered top-level output is nullable, and null means the user has no current roadmap rather than an error."
         }
       ],
@@ -9173,8 +9526,8 @@
           }
         },
         "required": [
-          "roadmapCode",
-          "templateVersion"
+          "templateVersion",
+          "roadmapCode"
         ]
       },
       "output_schema": {
@@ -9268,16 +9621,16 @@
           },
           "expect": "An action awaiting confirmation with a null result; after the user confirms, an enrollment object with id, roadmapCode, templateVersion, title, status and enrolledAt.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "roadmapCode": "<shape-placeholder>",
-            "templateVersion": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "enrolledAt": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "roadmapCode": "synthetic-roadmapCode",
+            "templateVersion": 0,
+            "title": "synthetic-title",
+            "status": "synthetic-status",
+            "enrolledAt": "synthetic-enrolledAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -9644,21 +9997,89 @@
           },
           "expect": "Module object with counters, milestone node and node list.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "stageId": "<shape-placeholder>",
-            "code": "<shape-placeholder>",
-            "order": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "description": "<shape-placeholder>",
-            "completedRequiredNodes": "<shape-placeholder>",
-            "totalRequiredNodes": "<shape-placeholder>",
-            "displayStatus": "<shape-placeholder>",
-            "milestoneNode": "<shape-placeholder>",
-            "nodes": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "stageId": "synthetic-stageId",
+            "code": "synthetic-code",
+            "order": 0,
+            "title": "synthetic-title",
+            "description": "synthetic-description",
+            "completedRequiredNodes": 0,
+            "totalRequiredNodes": 0,
+            "displayStatus": "synthetic-displayStatus",
+            "milestoneNode": {
+              "id": "synthetic-id",
+              "code": "synthetic-code",
+              "order": 0,
+              "title": "synthetic-title",
+              "objectives": [
+                "synthetic-objectives"
+              ],
+              "highFrequency": [
+                "synthetic-highFrequency"
+              ],
+              "commonMistakes": [
+                "synthetic-commonMistakes"
+              ],
+              "searchKeywords": [
+                "synthetic-searchKeywords"
+              ],
+              "estimatedMinutes": 0,
+              "practiceMinutes": 0,
+              "difficulty": "synthetic-difficulty",
+              "required": false,
+              "prerequisiteCodes": [
+                "synthetic-prerequisiteCodes"
+              ],
+              "availabilityStatus": "synthetic-availabilityStatus",
+              "learningStatus": "synthetic-learningStatus",
+              "checkInStatus": "synthetic-checkInStatus",
+              "quizStatus": "synthetic-quizStatus",
+              "artifactStatus": "synthetic-artifactStatus",
+              "completionStatus": "synthetic-completionStatus",
+              "diagnosticMastered": false,
+              "displayStatus": "synthetic-displayStatus",
+              "version": 0
+            },
+            "nodes": [
+              {
+                "id": "synthetic-id",
+                "code": "synthetic-code",
+                "order": 0,
+                "title": "synthetic-title",
+                "objectives": [
+                  "synthetic-objectives"
+                ],
+                "highFrequency": [
+                  "synthetic-highFrequency"
+                ],
+                "commonMistakes": [
+                  "synthetic-commonMistakes"
+                ],
+                "searchKeywords": [
+                  "synthetic-searchKeywords"
+                ],
+                "estimatedMinutes": 0,
+                "practiceMinutes": 0,
+                "difficulty": "synthetic-difficulty",
+                "required": false,
+                "prerequisiteCodes": [
+                  "synthetic-prerequisiteCodes"
+                ],
+                "availabilityStatus": "synthetic-availabilityStatus",
+                "learningStatus": "synthetic-learningStatus",
+                "checkInStatus": "synthetic-checkInStatus",
+                "quizStatus": "synthetic-quizStatus",
+                "artifactStatus": "synthetic-artifactStatus",
+                "completionStatus": "synthetic-completionStatus",
+                "diagnosticMastered": false,
+                "displayStatus": "synthetic-displayStatus",
+                "version": 0
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -9860,32 +10281,42 @@
           },
           "expect": "Full node blueprint including objectives, prerequisites and status flags.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "code": "<shape-placeholder>",
-            "order": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "objectives": "<shape-placeholder>",
-            "highFrequency": "<shape-placeholder>",
-            "commonMistakes": "<shape-placeholder>",
-            "searchKeywords": "<shape-placeholder>",
-            "estimatedMinutes": "<shape-placeholder>",
-            "practiceMinutes": "<shape-placeholder>",
-            "difficulty": "<shape-placeholder>",
-            "required": "<shape-placeholder>",
-            "prerequisiteCodes": "<shape-placeholder>",
-            "availabilityStatus": "<shape-placeholder>",
-            "learningStatus": "<shape-placeholder>",
-            "checkInStatus": "<shape-placeholder>",
-            "quizStatus": "<shape-placeholder>",
-            "artifactStatus": "<shape-placeholder>",
-            "completionStatus": "<shape-placeholder>",
-            "diagnosticMastered": "<shape-placeholder>",
-            "displayStatus": "<shape-placeholder>",
-            "version": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "code": "synthetic-code",
+            "order": 0,
+            "title": "synthetic-title",
+            "objectives": [
+              "synthetic-objectives"
+            ],
+            "highFrequency": [
+              "synthetic-highFrequency"
+            ],
+            "commonMistakes": [
+              "synthetic-commonMistakes"
+            ],
+            "searchKeywords": [
+              "synthetic-searchKeywords"
+            ],
+            "estimatedMinutes": 0,
+            "practiceMinutes": 0,
+            "difficulty": "synthetic-difficulty",
+            "required": false,
+            "prerequisiteCodes": [
+              "synthetic-prerequisiteCodes"
+            ],
+            "availabilityStatus": "synthetic-availabilityStatus",
+            "learningStatus": "synthetic-learningStatus",
+            "checkInStatus": "synthetic-checkInStatus",
+            "quizStatus": "synthetic-quizStatus",
+            "artifactStatus": "synthetic-artifactStatus",
+            "completionStatus": "synthetic-completionStatus",
+            "diagnosticMastered": false,
+            "displayStatus": "synthetic-displayStatus",
+            "version": 0
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -10193,20 +10624,68 @@
           },
           "expect": "Stage object with module summaries and full nodes, or not-found if the id is not in the enrolled template.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "code": "<shape-placeholder>",
-            "order": "<shape-placeholder>",
-            "title": "<shape-placeholder>",
-            "description": "<shape-placeholder>",
-            "graduationProjectTitle": "<shape-placeholder>",
-            "completedRequiredNodes": "<shape-placeholder>",
-            "totalRequiredNodes": "<shape-placeholder>",
-            "modules": "<shape-placeholder>",
-            "nodes": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "code": "synthetic-code",
+            "order": 0,
+            "title": "synthetic-title",
+            "description": "synthetic-description",
+            "graduationProjectTitle": "synthetic-graduationProjectTitle",
+            "completedRequiredNodes": 0,
+            "totalRequiredNodes": 0,
+            "modules": [
+              {
+                "id": "synthetic-id",
+                "code": "synthetic-code",
+                "order": 0,
+                "title": "synthetic-title",
+                "description": "synthetic-description",
+                "completedRequiredNodes": 0,
+                "totalRequiredNodes": 0,
+                "milestoneNodeId": "synthetic-milestoneNodeId",
+                "milestoneNodeCode": "synthetic-milestoneNodeCode",
+                "displayStatus": "synthetic-displayStatus"
+              }
+            ],
+            "nodes": [
+              {
+                "id": "synthetic-id",
+                "code": "synthetic-code",
+                "order": 0,
+                "title": "synthetic-title",
+                "objectives": [
+                  "synthetic-objectives"
+                ],
+                "highFrequency": [
+                  "synthetic-highFrequency"
+                ],
+                "commonMistakes": [
+                  "synthetic-commonMistakes"
+                ],
+                "searchKeywords": [
+                  "synthetic-searchKeywords"
+                ],
+                "estimatedMinutes": 0,
+                "practiceMinutes": 0,
+                "difficulty": "synthetic-difficulty",
+                "required": false,
+                "prerequisiteCodes": [
+                  "synthetic-prerequisiteCodes"
+                ],
+                "availabilityStatus": "synthetic-availabilityStatus",
+                "learningStatus": "synthetic-learningStatus",
+                "checkInStatus": "synthetic-checkInStatus",
+                "quizStatus": "synthetic-quizStatus",
+                "artifactStatus": "synthetic-artifactStatus",
+                "completionStatus": "synthetic-completionStatus",
+                "diagnosticMastered": false,
+                "displayStatus": "synthetic-displayStatus",
+                "version": 0
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -10366,21 +10845,29 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation an upgrade object with sourceVersion, targetVersion, status and the node and module delta lists.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "sourceVersion": "<shape-placeholder>",
-            "targetVersion": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "unchangedNodeCodes": "<shape-placeholder>",
-            "addedNodeCodes": "<shape-placeholder>",
-            "removedNodeCodes": "<shape-placeholder>",
-            "manualReviewNodeCodes": "<shape-placeholder>",
-            "addedModuleCount": "<shape-placeholder>",
-            "removedModuleCount": "<shape-placeholder>",
-            "changedModuleCount": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "sourceVersion": 0,
+            "targetVersion": 0,
+            "status": "synthetic-status",
+            "unchangedNodeCodes": [
+              "synthetic-unchangedNodeCodes"
+            ],
+            "addedNodeCodes": [
+              "synthetic-addedNodeCodes"
+            ],
+            "removedNodeCodes": [
+              "synthetic-removedNodeCodes"
+            ],
+            "manualReviewNodeCodes": [
+              "synthetic-manualReviewNodeCodes"
+            ],
+            "addedModuleCount": 0,
+            "removedModuleCount": 0,
+            "changedModuleCount": 0
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -10407,22 +10894,22 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "workspaceId": {
-            "type": "string"
-          },
-          "idempotencyKey": {
+          "templateType": {
             "type": "string"
           },
           "workingDirectory": {
             "type": "string"
           },
-          "templateType": {
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "workspaceId": {
             "type": "string"
           }
         },
         "required": [
-          "workspaceId",
-          "templateType"
+          "templateType",
+          "workspaceId"
         ]
       },
       "output_schema": {
@@ -10556,22 +11043,24 @@
           },
           "expect": "Without an active RUNNER_MANAGEMENT grant an action awaiting authorization; with a grant an immediate runner result with status, exitCode, commandTokens, success and stdout or stderr summaries.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "executionId": "<shape-placeholder>",
-            "governanceExecutionId": "<shape-placeholder>",
-            "workspaceId": "<shape-placeholder>",
-            "templateType": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "exitCode": "<shape-placeholder>",
-            "commandTokens": "<shape-placeholder>",
-            "stdoutSummary": "<shape-placeholder>",
-            "stderrSummary": "<shape-placeholder>",
-            "success": "<shape-placeholder>",
-            "durationMillis": "<shape-placeholder>",
-            "executedAt": "<shape-placeholder>"
+            "executionId": "synthetic-executionId",
+            "governanceExecutionId": "synthetic-governanceExecutionId",
+            "workspaceId": "synthetic-workspaceId",
+            "templateType": "synthetic-templateType",
+            "status": "synthetic-status",
+            "exitCode": 0,
+            "commandTokens": [
+              "synthetic-commandTokens"
+            ],
+            "stdoutSummary": "synthetic-stdoutSummary",
+            "stderrSummary": "synthetic-stderrSummary",
+            "success": false,
+            "durationMillis": 0,
+            "executedAt": "synthetic-executedAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -10597,22 +11086,22 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "workspaceId": {
-            "type": "string"
-          },
-          "idempotencyKey": {
+          "templateType": {
             "type": "string"
           },
           "workingDirectory": {
             "type": "string"
           },
-          "templateType": {
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "workspaceId": {
             "type": "string"
           }
         },
         "required": [
-          "workspaceId",
-          "templateType"
+          "templateType",
+          "workspaceId"
         ]
       },
       "output_schema": {
@@ -10741,22 +11230,24 @@
           },
           "expect": "An action awaiting confirmation first; after the user confirms, a runner result with status, exitCode, commandTokens and success.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "executionId": "<shape-placeholder>",
-            "governanceExecutionId": "<shape-placeholder>",
-            "workspaceId": "<shape-placeholder>",
-            "templateType": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "exitCode": "<shape-placeholder>",
-            "commandTokens": "<shape-placeholder>",
-            "stdoutSummary": "<shape-placeholder>",
-            "stderrSummary": "<shape-placeholder>",
-            "success": "<shape-placeholder>",
-            "durationMillis": "<shape-placeholder>",
-            "executedAt": "<shape-placeholder>"
+            "executionId": "synthetic-executionId",
+            "governanceExecutionId": "synthetic-governanceExecutionId",
+            "workspaceId": "synthetic-workspaceId",
+            "templateType": "synthetic-templateType",
+            "status": "synthetic-status",
+            "exitCode": 0,
+            "commandTokens": [
+              "synthetic-commandTokens"
+            ],
+            "stdoutSummary": "synthetic-stdoutSummary",
+            "stderrSummary": "synthetic-stderrSummary",
+            "success": false,
+            "durationMillis": 0,
+            "executedAt": "synthetic-executedAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -10782,23 +11273,23 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "workspaceId": {
-            "type": "string"
-          },
-          "idempotencyKey": {
+          "templateType": {
             "type": "string"
           },
           "workingDirectory": {
             "type": "string"
           },
-          "templateType": {
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "workspaceId": {
             "type": "string"
           }
         },
         "required": [
-          "idempotencyKey",
+          "templateType",
           "workspaceId",
-          "templateType"
+          "idempotencyKey"
         ]
       },
       "output_schema": {
@@ -10930,22 +11421,24 @@
           },
           "expect": "A runner preview object with workspaceId, workspaceName, templateType, commandTokens, renderedCommand, confirmationRequired, riskLevel, timeoutSeconds and workingDirectory.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "workspaceId": "<shape-placeholder>",
-            "workspaceName": "<shape-placeholder>",
-            "workspacePath": "<shape-placeholder>",
-            "templateType": "<shape-placeholder>",
-            "templateDescription": "<shape-placeholder>",
-            "riskLevel": "<shape-placeholder>",
-            "commandTokens": "<shape-placeholder>",
-            "renderedCommand": "<shape-placeholder>",
-            "timeoutSeconds": "<shape-placeholder>",
-            "confirmationRequired": "<shape-placeholder>",
-            "explanation": "<shape-placeholder>",
-            "workingDirectory": "<shape-placeholder>"
+            "workspaceId": "synthetic-workspaceId",
+            "workspaceName": "synthetic-workspaceName",
+            "workspacePath": "synthetic-workspacePath",
+            "templateType": "synthetic-templateType",
+            "templateDescription": "synthetic-templateDescription",
+            "riskLevel": "synthetic-riskLevel",
+            "commandTokens": [
+              "synthetic-commandTokens"
+            ],
+            "renderedCommand": "synthetic-renderedCommand",
+            "timeoutSeconds": 0,
+            "confirmationRequired": false,
+            "explanation": "synthetic-explanation",
+            "workingDirectory": "synthetic-workingDirectory"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -10971,16 +11464,16 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "to": {
+          "from": {
             "type": "string"
           },
-          "from": {
+          "to": {
             "type": "string"
           }
         },
         "required": [
-          "from",
-          "to"
+          "to",
+          "from"
         ]
       },
       "output_schema": {
@@ -11122,15 +11615,30 @@
           },
           "expect": "A schedule object with scheduleId, timeZone, dailyCapacityMinutes, weekendsEnabled and the day list, or an action awaiting authorization when the grant is missing.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "scheduleId": "<shape-placeholder>",
-            "timeZone": "<shape-placeholder>",
-            "dailyCapacityMinutes": "<shape-placeholder>",
-            "weekendsEnabled": "<shape-placeholder>",
-            "days": "<shape-placeholder>"
+            "scheduleId": "synthetic-scheduleId",
+            "timeZone": "synthetic-timeZone",
+            "dailyCapacityMinutes": 0,
+            "weekendsEnabled": false,
+            "days": [
+              {
+                "date": "synthetic-date",
+                "plannedMinutes": 0,
+                "items": [
+                  {
+                    "id": "synthetic-id",
+                    "nodeId": "synthetic-nodeId",
+                    "nodeCode": "synthetic-nodeCode",
+                    "title": "synthetic-title",
+                    "plannedMinutes": 0,
+                    "status": "synthetic-status"
+                  }
+                ]
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -11334,16 +11842,16 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "to": {
+          "from": {
             "type": "string"
           },
-          "from": {
+          "to": {
             "type": "string"
           }
         },
         "required": [
-          "from",
-          "to"
+          "to",
+          "from"
         ]
       },
       "output_schema": {
@@ -11428,16 +11936,16 @@
           },
           "expect": "Array of unfinished items within that seven-day window (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "date": "<shape-placeholder>",
-              "nodeId": "<shape-placeholder>",
-              "title": "<shape-placeholder>",
-              "status": "<shape-placeholder>"
+              "date": "synthetic-date",
+              "nodeId": "synthetic-nodeId",
+              "title": "synthetic-title",
+              "status": "synthetic-status"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -11622,19 +12130,29 @@
           "input": {},
           "expect": "Desensitized status object with provider/model names, per-provider configured flags and masked suffixes, and a warning when defaults are unverifiable.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "modelProvider": "<shape-placeholder>",
-            "modelName": "<shape-placeholder>",
-            "deepseek": "<shape-placeholder>",
-            "tavily": "<shape-placeholder>",
-            "deepseekConfigured": "<shape-placeholder>",
-            "deepseekMaskedSuffix": "<shape-placeholder>",
-            "tavilyConfigured": "<shape-placeholder>",
-            "tavilyMaskedSuffix": "<shape-placeholder>",
-            "warning": "<shape-placeholder>"
+            "modelProvider": "synthetic-modelProvider",
+            "modelName": "synthetic-modelName",
+            "deepseek": {
+              "configured": false,
+              "source": "synthetic-source",
+              "maskedSuffix": "synthetic-maskedSuffix",
+              "available": false
+            },
+            "tavily": {
+              "configured": false,
+              "source": "synthetic-source",
+              "maskedSuffix": "synthetic-maskedSuffix",
+              "available": false
+            },
+            "deepseekConfigured": false,
+            "deepseekMaskedSuffix": "synthetic-deepseekMaskedSuffix",
+            "tavilyConfigured": false,
+            "tavilyMaskedSuffix": "synthetic-tavilyMaskedSuffix",
+            "warning": "synthetic-warning"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -11765,15 +12283,21 @@
           "input": {},
           "expect": "Settings object, or a not-found error when the user never saved settings.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "timeZone": "<shape-placeholder>",
-            "dailyStudyLimitMinutes": "<shape-placeholder>",
-            "weekendPreference": "<shape-placeholder>",
-            "defaultPrivacyLevel": "<shape-placeholder>",
-            "weeklyAvailability": "<shape-placeholder>"
+            "timeZone": "synthetic-timeZone",
+            "dailyStudyLimitMinutes": 0,
+            "weekendPreference": "synthetic-weekendPreference",
+            "defaultPrivacyLevel": "synthetic-defaultPrivacyLevel",
+            "weeklyAvailability": [
+              {
+                "dayOfWeek": "synthetic-dayOfWeek",
+                "startTime": "synthetic-startTime",
+                "endTime": "synthetic-endTime"
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -11913,15 +12437,21 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation a settings object whose dailyStudyLimitMinutes is 90 and whose other fields are unchanged.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "timeZone": "<shape-placeholder>",
-            "dailyStudyLimitMinutes": "<shape-placeholder>",
-            "weekendPreference": "<shape-placeholder>",
-            "defaultPrivacyLevel": "<shape-placeholder>",
-            "weeklyAvailability": "<shape-placeholder>"
+            "timeZone": "synthetic-timeZone",
+            "dailyStudyLimitMinutes": 0,
+            "weekendPreference": "synthetic-weekendPreference",
+            "defaultPrivacyLevel": "synthetic-defaultPrivacyLevel",
+            "weeklyAvailability": [
+              {
+                "dayOfWeek": "synthetic-dayOfWeek",
+                "startTime": "synthetic-startTime",
+                "endTime": "synthetic-endTime"
+              }
+            ]
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -12035,17 +12565,17 @@
           "input": {},
           "expect": "Array of workspace records, oldest first (possibly empty).",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": [
             {
-              "id": "<shape-placeholder>",
-              "name": "<shape-placeholder>",
-              "rootPath": "<shape-placeholder>",
-              "status": "<shape-placeholder>",
-              "createdAt": "<shape-placeholder>"
+              "id": "synthetic-id",
+              "name": "synthetic-name",
+              "rootPath": "synthetic-rootPath",
+              "status": "synthetic-status",
+              "createdAt": "synthetic-createdAt"
             }
           ],
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {
@@ -12071,16 +12601,16 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "rootPath": {
+          "name": {
             "type": "string"
           },
-          "name": {
+          "rootPath": {
             "type": "string"
           }
         },
         "required": [
-          "name",
-          "rootPath"
+          "rootPath",
+          "name"
         ]
       },
       "output_schema": {
@@ -12169,15 +12699,15 @@
           },
           "expect": "An action awaiting confirmation first; after confirmation a workspace object with id, name, rootPath, status and createdAt.",
           "outcome": "ok",
-          "fixture_kind": "shape_placeholder",
+          "fixture_kind": "synthetic_typed",
           "output": {
-            "id": "<shape-placeholder>",
-            "name": "<shape-placeholder>",
-            "rootPath": "<shape-placeholder>",
-            "status": "<shape-placeholder>",
-            "createdAt": "<shape-placeholder>"
+            "id": "synthetic-id",
+            "name": "synthetic-name",
+            "rootPath": "synthetic-rootPath",
+            "status": "synthetic-status",
+            "createdAt": "synthetic-createdAt"
           },
-          "fixture_source": "backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java"
+          "fixture_source": "scripts/harness/capability-semantics-instances.mjs"
         }
       ],
       "source_provenance": {

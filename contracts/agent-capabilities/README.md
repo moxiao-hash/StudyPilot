@@ -31,7 +31,7 @@
    - `pending`: 已注册但当前无法满足声明契约的缺陷工具。
 8. `authoritative_facts`: 权威业务事实数组（可选），包含 `fact` 与 `meaning`。
 9. `examples`: 数组（最少 1 项），包含 `name`, `input`, `expect`, `outcome` (`ok` | `rejected` | `unavailable`), 可选 `output`, `error`, `fixture_kind`, `fixture_source`。
-10. `source_provenance`: 对象，包含 `registration` (代码位置), `handler` (实际处理类与方法描述), `output_schema` (Java schema 类位置)。
+10. `source_provenance`: 对象，包含 `registration` (代码位置), `handler` (实际处理类与方法描述), `output_schema` (Java schema 类位置), 可选 `unverified_symbols` (未调用验证的更深层协作方符号列表)。
 11. `confirmation`: 对象，包含 `mode` (`none` | `always_user_confirmation` | `conditional_scope_grant`), `waiting_status` (`WAITING_CONFIRMATION` | `WAITING_AUTHORIZATION` | null), `notes` (string)。
 
 ## 3. 编译产物 (`contracts/agent-capabilities/generated/manifest.json`)
@@ -39,5 +39,5 @@
 编译生成的单体 JSON 文档遵循 `manifest.schema.json`：
 - `manifest_version`: `"1.0-draft"`
 - `generated_at`: ISO-8601 UTC 瞬时字符串
-- `sources`: 包含 `descriptor_count`, `descriptors_hash`, `metadata_hash` 溯源摘要
+- `sources`: 包含 `descriptor_count`, `descriptors_hash`, `metadata_hash`, `java_source_hash`, `commit` 溯源摘要
 - `tools`: 排序稳定的完整工具条目数组（共 65 个工具）

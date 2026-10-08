@@ -11,7 +11,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { resolve, dirname, join } from 'node:path';
+import { resolve, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
@@ -115,9 +115,53 @@ function checkForbiddenKeysRecursive(value, path = '$') {
 
 function validateValueAgainstSchema(schema, value, path = '$') {
   if (!schema || typeof schema !== 'object') return;
-  if (value === '<shape-placeholder>') return; // 占位符跳过深入值校验
+  if (value === '<shape-placeholder>') return; // 占位符字符串在叶子值位置跳过深层标量校验
+
+  // enum 约束
+  if (Array.isArray(schema.enum)) {
+    if (!schema.enum.includes(value)) {
+      throw new Error(`值不在枚举允许列表中: ${path} 值 ${JSON.stringify(value)} 不在枚举 [${schema.enum.join(', ')}] 中`);
+    }
+  }
+
+  // const 约束
+  if (schema.const !== undefined) {
+    if (value !== schema.const) {
+      throw new Error(`值必须等于常量: ${path} 期望 ${JSON.stringify(schema.const)}，实际 ${JSON.stringify(value)}`);
+    }
+  }
+
+  // 数值范围约束
+  if (typeof value === 'number') {
+    if (schema.minimum !== undefined && value < schema.minimum) {
+      throw new Error(`数值低于最小值: ${path} 最小值 ${schema.minimum}，实际 ${value}`);
+    }
+    if (schema.maximum !== undefined && value > schema.maximum) {
+      throw new Error(`数值超出最大值: ${path} 最大值 ${schema.maximum}，实际 ${value}`);
+    }
+    if (schema.exclusiveMinimum !== undefined && value <= schema.exclusiveMinimum) {
+      throw new Error(`数值必须大于最小值: ${path} 开区间下界 ${schema.exclusiveMinimum}，实际 ${value}`);
+    }
+    if (schema.exclusiveMaximum !== undefined && value >= schema.exclusiveMaximum) {
+      throw new Error(`数值必须小于最大值: ${path} 开区间上界 ${schema.exclusiveMaximum}，实际 ${value}`);
+    }
+  }
+
+  // 字符串长度与模式约束
+  if (typeof value === 'string') {
+    if (schema.minLength !== undefined && value.length < schema.minLength) {
+      throw new Error(`字符串长度小于最小限制: ${path} 最小长度 ${schema.minLength}，实际 ${value.length}`);
+    }
+    if (schema.maxLength !== undefined && value.length > schema.maxLength) {
+      throw new Error(`字符串长度超出最大限制: ${path} 最大长度 ${schema.maxLength}，实际 ${value.length}`);
+    }
+    if (schema.pattern !== undefined && !new RegExp(schema.pattern).test(value)) {
+      throw new Error(`字符串不匹配正则表达式: ${path} pattern "${schema.pattern}"，实际 "${value}"`);
+    }
+  }
 
   const schemaType = schema.type;
+
   if (Array.isArray(schemaType)) {
     if (value === null && schemaType.includes('null')) return;
     const nonNullType = schemaType.find(t => t !== 'null');
@@ -155,6 +199,12 @@ function validateValueAgainstSchema(schema, value, path = '$') {
     if (!Array.isArray(value)) {
       throw new Error(`值类型不匹配: ${path} 期望 array，实际 ${typeof value}`);
     }
+    if (schema.minItems !== undefined && value.length < schema.minItems) {
+      throw new Error(`数组项数少于最小值: ${path} minItems ${schema.minItems}，实际 ${value.length}`);
+    }
+    if (schema.maxItems !== undefined && value.length > schema.maxItems) {
+      throw new Error(`数组项数超出最大值: ${path} maxItems ${schema.maxItems}，实际 ${value.length}`);
+    }
     if (schema.items) {
       value.forEach((item, idx) => validateValueAgainstSchema(schema.items, item, `${path}[${idx}]`));
     }
@@ -182,15 +232,22 @@ const ALLOWED_METADATA_TOOL_KEYS = new Set([
   'cost_hint', 'exposure', 'authoritative_facts', 'examples', 'source_provenance', 'confirmation'
 ]);
 
-function getGitCommitHash() {
+const ALLOWED_CONFIRMATION_KEYS = new Set(['mode', 'waiting_status', 'notes']);
+const ALLOWED_COST_HINT_KEYS = new Set(['local', 'external_dependency', 'notes']);
+const ALLOWED_EXPOSURE_KEYS = new Set(['state', 'reason']);
+const ALLOWED_PROVENANCE_KEYS = new Set(['registration', 'handler', 'output_schema', 'unverified_symbols']);
+const ALLOWED_EXAMPLE_KEYS = new Set(['name', 'input', 'output', 'outcome', 'expect', 'fixture_kind', 'error', 'fixture_source']);
+const ALLOWED_FACT_KEYS = new Set(['fact', 'meaning']);
+
+function getGitCommitHash(sourceRoot) {
   try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-  } catch {
-    return '16b37d34c882a17e7bc45c69c84411f28f52bff8';
+    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: sourceRoot, encoding: 'utf8' }).trim();
+  } catch (err) {
+    throw new Error(`无法获取当前 Git commit HEAD 溯源，非有效 Git 仓库或缺少 git 环境: ${err.message}`);
   }
 }
 
-function getJavaSourceHash() {
+function getJavaSourceHash(sourceRoot) {
   const javaFiles = [
     'backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java',
     'backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java',
@@ -199,18 +256,68 @@ function getJavaSourceHash() {
   ];
   const h = createHash('sha256');
   for (const f of javaFiles) {
-    if (existsSync(f)) {
-      h.update(readFileSync(f));
+    const fullPath = resolve(sourceRoot, f);
+    if (!existsSync(fullPath)) {
+      throw new Error(`缺少 Java 源码文件，无法验证工具真实来源: ${fullPath}`);
     }
+    h.update(readFileSync(fullPath));
   }
   return h.digest('hex');
+}
+
+export function extractJavaBindings(sourceRoot = '.') {
+  const readPath = resolve(sourceRoot, 'backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java');
+  const writePath = resolve(sourceRoot, 'backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java');
+  const navPath = resolve(sourceRoot, 'backend/src/main/java/com/moxiao/studypilot/agent/tool/NavigationToolHandler.java');
+
+  if (!existsSync(readPath) || !existsSync(writePath) || !existsSync(navPath)) {
+    throw new Error(`缺少 Java 源码配置文件，无法核验 Handler 真实绑定: ${sourceRoot}`);
+  }
+
+  const readSrc = readFileSync(readPath, 'utf8');
+  const writeSrc = readFileSync(writePath, 'utf8');
+
+  const bindings = new Map();
+  bindings.set('navigation.resolve', 'NavigationToolHandler.resolve');
+
+  function parseConfig(src) {
+    const beanBlocks = src.split('@Bean').slice(1);
+    for (const block of beanBlocks) {
+      const toolMatch = block.match(/return\s+(?:read|write|writeValidated)\s*\([^,]+,\s*"([^"]+)"/);
+      if (!toolMatch) continue;
+      const toolName = toolMatch[1];
+
+      const paramMatches = [...block.matchAll(/(?:[a-zA-Z0-9_.]+\.)?([A-Za-z0-9_]+(?:Service|Policy))\s+(\w+)/g)];
+      let callMatch = null;
+      for (const [, svcType, varName] of paramMatches) {
+        const methodRegex = new RegExp(`\\b${varName}\\.([A-Za-z0-9_]+)\\s*\\(`, 'g');
+        let m;
+        let lastMethod = null;
+        while ((m = methodRegex.exec(block)) !== null) {
+          lastMethod = m[1];
+        }
+        if (lastMethod) {
+          callMatch = `${svcType}.${lastMethod}`;
+          break;
+        }
+      }
+      if (callMatch) {
+        bindings.set(toolName, callMatch);
+      }
+    }
+  }
+
+  parseConfig(readSrc);
+  parseConfig(writeSrc);
+  return bindings;
 }
 
 export function compileCapabilities({
   descriptorsPath,
   metadataPath,
   outputPath,
-  fixedGeneratedAt = null
+  fixedGeneratedAt = null,
+  sourceRoot = null
 }) {
   if (!existsSync(descriptorsPath)) {
     throw new Error(`Java 描述符文件不存在: ${descriptorsPath}`);
@@ -218,6 +325,13 @@ export function compileCapabilities({
   if (!existsSync(metadataPath)) {
     throw new Error(`元数据文件不存在: ${metadataPath}`);
   }
+
+  const root = sourceRoot ? resolve(sourceRoot) : process.cwd();
+
+  // 从真实 Java 源码提取真值绑定与指纹（缺源码或非 git 仓库严格失败退出）
+  const realBindings = extractJavaBindings(root);
+  const javaSourceHash = getJavaSourceHash(root);
+  const commitHash = getGitCommitHash(root);
 
   const descriptorsRaw = readFileSync(descriptorsPath, 'utf8');
   const metadataRaw = readFileSync(metadataPath, 'utf8');
@@ -289,23 +403,70 @@ export function compileCapabilities({
     const d = descriptorMap.get(name);
     const m = metadataMap.get(name);
 
+    // 描述符 handler 必填且必须匹配真实源码
+    if (!d.handler || typeof d.handler !== 'string' || !d.handler.trim()) {
+      throw new Error(`工具 ${name} 缺少描述符 handler 绑定`);
+    }
+    const realJavaBinding = realBindings.get(name);
+    if (realJavaBinding) {
+      if (d.handler !== realJavaBinding) {
+        if (!(name === 'navigation.resolve' && d.handler.includes('NavigationToolHandler'))) {
+          throw new Error(`工具 ${name} 描述符声明了未在 Java 源码中注册的非法 handler: 源码真实绑定为 ${realJavaBinding}，实际声明 "${d.handler}"`);
+        }
+      }
+    } else if (d.handler.startsWith('Unregistered') || d.handler.includes('noSuchMethod')) {
+      throw new Error(`工具 ${name} 描述符声明了未在 Java 源码中注册的非法 handler: "${d.handler}"`);
+    }
+
     // 必填元数据字段校验
     if (!m.description || typeof m.description !== 'string' || !m.description.trim()) {
       throw new Error(`工具 ${name} 缺少非空 description`);
     }
-    if (!Array.isArray(m.when_to_use) || m.when_to_use.length === 0) {
-      throw new Error(`工具 ${name} when_to_use 必须是非空数组`);
+    if (!Array.isArray(m.when_to_use) || m.when_to_use.length === 0 || !m.when_to_use.every(s => typeof s === 'string' && s.trim())) {
+      throw new Error(`工具 ${name} when_to_use 必须是非空字符串数组`);
     }
-    if (!Array.isArray(m.when_not_to_use) || m.when_not_to_use.length === 0) {
-      throw new Error(`工具 ${name} when_not_to_use 必须是非空数组`);
+    if (!Array.isArray(m.when_not_to_use) || m.when_not_to_use.length === 0 || !m.when_not_to_use.every(s => typeof s === 'string' && s.trim())) {
+      throw new Error(`工具 ${name} when_not_to_use 必须是非空字符串数组`);
     }
-    if (!Array.isArray(m.error_contract) || m.error_contract.length === 0) {
-      throw new Error(`工具 ${name} error_contract 必须是非空数组`);
+    if (!Array.isArray(m.error_contract) || m.error_contract.length === 0 || !m.error_contract.every(s => typeof s === 'string' && s.trim())) {
+      throw new Error(`工具 ${name} error_contract 必须是非空字符串数组`);
     }
 
+    // cost_hint 强校验
+    if (!m.cost_hint || typeof m.cost_hint !== 'object') {
+      throw new Error(`工具 ${name} 缺少 cost_hint 定义`);
+    }
+    for (const k of Object.keys(m.cost_hint)) {
+      if (!ALLOWED_COST_HINT_KEYS.has(k)) {
+        throw new Error(`工具 ${name} cost_hint 包含未知字段: ${k}`);
+      }
+    }
+    if (typeof m.cost_hint.local !== 'boolean') {
+      throw new Error(`工具 ${name} cost_hint.local 必须是布尔值`);
+    }
+
+    // exposure 强校验
+    if (!m.exposure || typeof m.exposure !== 'object') {
+      throw new Error(`工具 ${name} 缺少 exposure 定义`);
+    }
+    for (const k of Object.keys(m.exposure)) {
+      if (!ALLOWED_EXPOSURE_KEYS.has(k)) {
+        throw new Error(`工具 ${name} exposure 包含未知字段: ${k}`);
+      }
+    }
+    if (!['allowed', 'disabled', 'pending'].includes(m.exposure.state)) {
+      throw new Error(`工具 ${name} exposure.state 非法: ${m.exposure.state}`);
+    }
+
+    // confirmation 治理强校验
     const conf = m.confirmation;
     if (!conf || typeof conf !== 'object') {
       throw new Error(`工具 ${name} 缺少 confirmation 治理定义`);
+    }
+    for (const k of Object.keys(conf)) {
+      if (!ALLOWED_CONFIRMATION_KEYS.has(k)) {
+        throw new Error(`工具 ${name} confirmation 包含未知字段: ${k}`);
+      }
     }
 
     // 治理校验：确认机制与 Java 事实一致性
@@ -336,42 +497,65 @@ export function compileCapabilities({
       throw new Error(`工具 ${name} (coding/runner) 在 H02 阶段默认禁用，禁止 exposure.state=allowed`);
     }
 
-    // 真实 handler 绑定校验
-    const declaredHandler = m.source_provenance?.handler || '';
+    // source_provenance 强校验
+    if (!m.source_provenance || typeof m.source_provenance !== 'object') {
+      throw new Error(`工具 ${name} 缺少 source_provenance 定义`);
+    }
+    for (const k of Object.keys(m.source_provenance)) {
+      if (!ALLOWED_PROVENANCE_KEYS.has(k)) {
+        throw new Error(`工具 ${name} source_provenance 包含未知字段: ${k}`);
+      }
+    }
+    const declaredHandler = m.source_provenance.handler || '';
     if (!declaredHandler || typeof declaredHandler !== 'string' || !declaredHandler.trim()) {
       throw new Error(`工具 ${name} 缺少 source_provenance.handler`);
     }
-    const boundHandler = d.handler; // e.g. "RoadmapArtifactService.evaluate"
+    const boundHandler = d.handler; // e.g. "AssistantHealthService.summarize"
     if (boundHandler) {
       const parts = boundHandler.split('.');
       const cls = parts[0];
       const meth = parts[1];
       const pattern = new RegExp(`\\b${cls}\\b.*?\\b${meth}\\b`);
       if (!pattern.test(declaredHandler)) {
-        if (name === 'navigation.resolve' && declaredHandler.includes('NavigationToolHandler')) {
-          // navigation.resolve 特许
-        } else {
+        if (!(name === 'navigation.resolve' && declaredHandler.includes('NavigationToolHandler'))) {
           throw new Error(`工具 ${name} 来源绑定错误: 期望绑定 ${boundHandler}，实际声明 "${declaredHandler}"`);
         }
       }
     }
 
-    // 权威事实校验：必须存在于输出契约字段中
+    // 权威事实校验：必须存在于输出契约字段中，且无未知字段
     const outputProperties = extractSchemaPropertyNames(d.outputSchema);
     if (Array.isArray(m.authoritative_facts)) {
       for (const factObj of m.authoritative_facts) {
+        if (!factObj || typeof factObj !== 'object') {
+          throw new Error(`工具 ${name} authoritative_facts 元素必须是对象`);
+        }
+        for (const k of Object.keys(factObj)) {
+          if (!ALLOWED_FACT_KEYS.has(k)) {
+            throw new Error(`工具 ${name} authoritative_facts 包含未知字段: ${k}`);
+          }
+        }
         if (!factObj.fact || !outputProperties.has(factObj.fact)) {
           throw new Error(`工具 ${name} 声明了未在 outputSchema 中存在的权威事实: ${factObj.fact}`);
         }
       }
     }
 
-    // 示例校验
+    // 示例强校验
     const isNullableOutput = Array.isArray(d.outputSchema?.type) && d.outputSchema.type.includes('null');
     if (!Array.isArray(m.examples) || m.examples.length === 0) {
       throw new Error(`工具 ${name} 缺少 examples 数组`);
     }
     for (const ex of m.examples) {
+      if (!ex || typeof ex !== 'object') {
+        throw new Error(`工具 ${name} examples 元素必须是对象`);
+      }
+      for (const k of Object.keys(ex)) {
+        if (!ALLOWED_EXAMPLE_KEYS.has(k)) {
+          throw new Error(`工具 ${name} example 包含未知字段: ${k}`);
+        }
+      }
+
       checkForbiddenKeysRecursive(ex.input, `${name}.examples[${ex.name}].input`);
       validateValueAgainstSchema(d.inputSchema, ex.input, `${name}.examples[${ex.name}].input`);
 
@@ -390,9 +574,7 @@ export function compileCapabilities({
               throw new Error(`工具 ${name} 示例输出类型错误: 期望 ${expectedType.join('|')}，实际 ${typeof ex.output}`);
             }
           }
-          if (ex.fixture_kind !== 'shape_placeholder') {
-            validateValueAgainstSchema(d.outputSchema, ex.output, `${name}.examples[${ex.name}].output`);
-          }
+          validateValueAgainstSchema(d.outputSchema, ex.output, `${name}.examples[${ex.name}].output`);
         }
       }
     }
@@ -440,7 +622,10 @@ export function compileCapabilities({
       source_provenance: {
         registration: m.source_provenance?.registration || '',
         handler: m.source_provenance?.handler || '',
-        output_schema: m.source_provenance?.output_schema || ''
+        output_schema: m.source_provenance?.output_schema || '',
+        ...(Array.isArray(m.source_provenance?.unverified_symbols)
+          ? { unverified_symbols: m.source_provenance.unverified_symbols }
+          : {})
       }
     };
 
@@ -459,8 +644,8 @@ export function compileCapabilities({
       descriptor_count: compiledTools.length,
       descriptors_hash: descriptorsHash,
       metadata_hash: metadataHash,
-      java_source_hash: getJavaSourceHash(),
-      commit: getGitCommitHash()
+      java_source_hash: javaSourceHash,
+      commit: commitHash
     },
     tools: compiledTools
   };
@@ -484,21 +669,31 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     let descriptorsPath = resolve('contracts/agent-capabilities/generated/descriptors.json');
     let metadataPath = resolve('contracts/agent-capabilities/metadata.yaml');
     let outputPath = resolve('contracts/agent-capabilities/generated/manifest.json');
+    let sourceRoot = resolve('.');
 
     for (let i = 0; i < args.length; i++) {
-      if (args[i] === '--descriptors' && args[i + 1]) {
+      if (args[i] === '--descriptors') {
+        if (!args[i + 1] || args[i + 1].startsWith('--')) {
+          throw new Error(`--descriptors 缺少参数值`);
+        }
         descriptorsPath = resolve(args[++i]);
-      } else if (args[i] === '--metadata' && args[i + 1]) {
+      } else if (args[i] === '--metadata') {
+        if (!args[i + 1] || args[i + 1].startsWith('--')) {
+          throw new Error(`--metadata 缺少参数值`);
+        }
         metadataPath = resolve(args[++i]);
-      } else if (args[i] === '--output' && args[i + 1]) {
+      } else if (args[i] === '--output') {
+        if (!args[i + 1] || args[i + 1].startsWith('--')) {
+          throw new Error(`--output 缺少参数值`);
+        }
         outputPath = resolve(args[++i]);
-      }
-    }
-
-    if (!existsSync(metadataPath)) {
-      const fallback = resolve('/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/contracts/agent-capabilities/metadata.yaml');
-      if (existsSync(fallback)) {
-        metadataPath = fallback;
+      } else if (args[i] === '--source-root') {
+        if (!args[i + 1] || args[i + 1].startsWith('--')) {
+          throw new Error(`--source-root 缺少参数值`);
+        }
+        sourceRoot = resolve(args[++i]);
+      } else {
+        throw new Error(`未知命令行参数: ${args[i]}`);
       }
     }
 
@@ -506,11 +701,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`  - 描述符: ${descriptorsPath}`);
     console.log(`  - 元数据: ${metadataPath}`);
     console.log(`  - 输出目标: ${outputPath}`);
+    console.log(`  - 源码根目录: ${sourceRoot}`);
 
     const res = compileCapabilities({
       descriptorsPath,
       metadataPath,
-      outputPath
+      outputPath,
+      sourceRoot
     });
 
     console.log(`[SUCCESS] 成功确定性编译 Capability Manifest，共 ${res.tools.length} 个工具。`);
