@@ -390,14 +390,14 @@ PyYAML tools: 65 | equal to source: True
 | cwd | `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek` |
 | 分支 | `codex/harness-h02-deepseek` |
 | 基线 | `16b37d34c882a17e7bc45c69c84411f28f52bff8` |
-| 交付提交 | `9b6f9c48ecb0a5a18884e2998790c5fac767a0c4`（二轮整改，含同一组 6 个 Owner 文件；本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
+| 交付提交 | `b7847e1d562c43d079ebd492e2dd2fd5a4945d0f`（三轮整改，含同一组 6 个 Owner 文件；本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
 | 测试 | 元数据 65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 **50/50** 以预期错误码被拒；`--check` 无漂移；`node --test` **54/54**；PyYAML 严格解析与源事实逐字段相等；首轮 9 + 二轮 3 个独立变异全部按预期表现 |
 | 元数据统计 | 65 条 = 43 READ + 21 WRITE + 1 NAVIGATE；`always_user_confirmation` 11、`conditional_scope_grant` 10、`none` 44；`authoritative_facts` 274 条；`examples` 73 条 = 67 `ok` + 1 `rejected` + 5 `unavailable`（`fixture_kind`：66 形状 + 1 可空空态 + 1 拒绝 + 5 缺陷）；`cost_hint.local:false` 5 条 |
 | 证据层级 | mock/offline（无模型、无服务、无数据库） |
 | 未覆盖项 | 见第 8 节 |
 | 下一步 | 停在 H02，等 Codex 独立验收；**不进入 H03** |
 
-**提交内容**：仅本端 Owner 文件（6 个）。一轮交付提交 `c94cbc9`，二轮整改提交 `9b6f9c4`。
+**提交内容**：仅本端 Owner 文件（6 个）。一轮交付提交 `c94cbc9`，二轮整改提交 `9b6f9c4`，三轮整改提交 `b7847e1`。
 
 ```
 A  contracts/agent-capabilities/metadata.yaml
