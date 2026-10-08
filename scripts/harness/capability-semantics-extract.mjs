@@ -177,9 +177,42 @@ function enclosingBeanMethod(text, offset) {
   const boundClasses = [...new Set([...context.matchAll(/\b([A-Z][A-Za-z0-9_]*)\b/g)].map((m) => m[1]))].sort();
   const boundMethods = [...new Set([
     found[1],
-    ...[...context.matchAll(/\b([a-z][A-Za-z0-9_]*)\s*\(/g)].map((m) => m[1]),
+    ...[...context.matchAll(/\b([a-z][a-z0-9_]*)\s*\(/g)].map((m) => m[1]),
   ])].sort();
-  return { beanMethod: found[1], handlerServices, boundClasses, boundMethods };
+
+  // Receiver -> declared type, so a call can be paired with the type that
+  // actually receives it. Declared parameters and the lambda parameters of the
+  // registration helper both contribute.
+  const varTypes = new Map();
+  for (const raw of found[2].split(',')) {
+    const tokens = raw.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length < 2) continue;
+    const name = tokens[tokens.length - 1];
+    const type = tokens[tokens.length - 2].replace(/<.*>$/, '').split('.').pop();
+    if (name) varTypes.set(name, type);
+  }
+  const biFunction = /Bi(?:Function|Consumer)<\s*([A-Za-z0-9_.]+)\s*,\s*([A-Za-z0-9_.]+)/.exec(text);
+  const lambdaTypes = biFunction
+    ? [biFunction[1].split('.').pop(), biFunction[2].split('.').pop()]
+    : ['AgentToolContext', 'JsonNode'];
+  for (const lambda of body.matchAll(/\(\s*([a-z][A-Za-z0-9_]*)\s*,\s*([a-z][A-Za-z0-9_]*)\s*\)\s*->/g)) {
+    if (!varTypes.has(lambda[1])) varTypes.set(lambda[1], lambdaTypes[0]);
+    if (!varTypes.has(lambda[2])) varTypes.set(lambda[2], lambdaTypes[1]);
+  }
+
+  // Verified receiver.method pairs: the receiver's declared type paired with the
+  // method actually called on it. This is what makes a binding claim checkable —
+  // a class name and a method name co-existing in the context is NOT a binding.
+  const pairs = new Set();
+  for (const call of body.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*\.\s*([a-z][A-Za-z0-9_]*)\s*\(/g)) {
+    const receiver = call[1];
+    const method = call[2];
+    const type = varTypes.get(receiver)
+      ?? (receiver === 'this' ? found[1] : (/^[A-Z]/.test(receiver) ? receiver : null));
+    if (type) pairs.add(`${type}#${method}`);
+  }
+  const boundPairs = [...pairs].sort();
+  return { beanMethod: found[1], handlerServices, boundClasses, boundMethods, boundPairs, varTypes: Object.fromEntries(varTypes) };
 }
 
 function scanRegistrations(text, kind) {
@@ -193,7 +226,7 @@ function scanRegistrations(text, kind) {
     const strings = [...block.matchAll(/"([^"]+)"/g)].map((entry) => entry[1]);
     const name = strings[0];
     const category = strings[1];
-    const { beanMethod, handlerServices, boundClasses, boundMethods } =
+    const { beanMethod, handlerServices, boundClasses, boundMethods, boundPairs } =
       enclosingBeanMethod(text, match.index);
     const entry = {
       name,
@@ -202,6 +235,7 @@ function scanRegistrations(text, kind) {
       handlerServices,
       boundClasses,
       boundMethods,
+      boundPairs,
       registrationLine: lineAt(text, match.index),
       inputProperties: parseStringMap(block, 'Map.of'),
       inputRequired: parseStringSet(block, 'Set.of'),
@@ -251,7 +285,15 @@ function scanNavigation(text) {
     // Binding symbols for the navigation tool come from its own source file:
     // the descriptor is built in the constructor and invoke() is the entry point.
     boundClasses: [...new Set([...text.matchAll(/\b([A-Z][A-Za-z0-9_]*)\b/g)].map((m) => m[1]))].sort(),
-    boundMethods: [...new Set([...text.matchAll(/\b([a-z][A-Za-z0-9_]*)\s*\(/g)].map((m) => m[1]))].sort(),
+    boundMethods: [...new Set([...text.matchAll(/\b([a-z][a-z0-9_]*)\s*\(/g)].map((m) => m[1]))].sort(),
+    // The navigation tool IS the AgentToolHandler implementation (no bean
+    // wrapper), so its own interface methods are the execution entry points.
+    boundPairs: [...new Set([
+      ...[...text.matchAll(/\b([A-Z][A-Za-z0-9_]*)\s*\.\s*([a-z][A-Za-z0-9_]*)\s*\(/g)].map((m) => `${m[1]}#${m[2]}`),
+      ...[...text.matchAll(/\b(this)\s*\.\s*([a-z][A-Za-z0-9_]*)\s*\(/g)].map((m) => `NavigationToolHandler#${m[2]}`),
+      'NavigationToolHandler#invoke',
+      'NavigationToolHandler#descriptor',
+    ])].sort(),
     registrationLine: lineAt(text, text.indexOf('new AgentToolDescriptor(')),
   };
 }

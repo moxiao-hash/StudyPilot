@@ -226,6 +226,11 @@
       "id": "P04",
       "title": "已核实缺陷的 READ 工具为 pending 而非 allowed",
       "expect": "schedule.today.get、assessment.wrong_questions.list、governance.health.get、artifacts.evaluate 暴露为 pending，且原因各自写明真实失败条件。"
+    },
+    {
+      "id": "P05",
+      "title": "唯一可空工具允许显式 null 空状态",
+      "expect": "roadmap.current.get 的 nullable_empty 示例（显式 null、outcome ok）被接受；缺失 output 字段一律拒绝。"
     }
   ],
   "negativeCases": [
@@ -874,6 +879,103 @@
         }
       ],
       "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N44",
+      "intent": "R-D3 可空工具删掉 output 字段",
+      "ops": [
+        {
+          "op": "delete_example_field",
+          "tool": "roadmap.current.get",
+          "field": "output"
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N45",
+      "intent": "R-D3 全局删掉 output 字段",
+      "ops": [
+        {
+          "op": "delete_all_example_field",
+          "field": "output"
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N46",
+      "intent": "R-D3 非可空工具使用 nullable_empty",
+      "ops": [
+        {
+          "op": "set_example_field",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "field": "fixture_kind",
+          "value": "nullable_empty"
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N47",
+      "intent": "R-D3 非可空工具返回显式 null",
+      "ops": [
+        {
+          "op": "set_example_output",
+          "tool": "assessment.mastery.list",
+          "index": 0,
+          "value": null
+        }
+      ],
+      "expectErrorCode": "E_OUTPUT_INSTANCE"
+    },
+    {
+      "id": "N48",
+      "intent": "R-D1 笛卡尔配对：真实类+他人方法",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "artifacts.evaluate",
+          "field": "source_provenance.handler",
+          "value": "RoadmapArtifactService.ownerId"
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N49",
+      "intent": "R-D1 笛卡尔配对：上下文类+真实方法名",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "artifacts.evaluate",
+          "field": "source_provenance.handler",
+          "value": "ObjectMapper.evaluate"
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
+    },
+    {
+      "id": "N50",
+      "intent": "R-D1 把不存在的方法改标 unverified 绕过",
+      "ops": [
+        {
+          "op": "set_tool_field",
+          "tool": "artifacts.evaluate",
+          "field": "source_provenance.handler",
+          "value": "RoadmapArtifactService.evaluate and ObjectMapper.evaluate"
+        },
+        {
+          "op": "add_tool_field",
+          "tool": "artifacts.evaluate",
+          "field": "source_provenance.unverified_symbols",
+          "value": [
+            "ObjectMapper.evaluate"
+          ]
+        }
+      ],
+      "expectErrorCode": "E_PROVENANCE"
     }
   ],
   "frozenFacts": {
@@ -1073,6 +1175,16 @@
         "putObject",
         "schemaFor",
         "withObject"
+      ],
+      "boundPairs": [
+        "AgentToolOutputSchemas#schemaFor",
+        "Map#copyOf",
+        "Map#entry",
+        "Map#ofEntries",
+        "NavigationToolHandler#descriptor",
+        "NavigationToolHandler#invoke",
+        "ROUTES#get",
+        "Set#of"
       ]
     },
     "tools": [
@@ -1101,7 +1213,6 @@
           "artifactEvaluateTool",
           "evaluate",
           "of",
-          "ownerId",
           "read",
           "text"
         ],
@@ -1132,7 +1243,13 @@
           "createdAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapArtifactService#evaluate",
+          "Set#of"
+        ]
       },
       {
         "name": "artifacts.get",
@@ -1159,7 +1276,6 @@
           "artifact",
           "artifactTool",
           "of",
-          "ownerId",
           "read",
           "text"
         ],
@@ -1190,7 +1306,13 @@
           "createdAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapArtifactService#artifact",
+          "Set#of"
+        ]
       },
       {
         "name": "artifacts.list",
@@ -1217,7 +1339,6 @@
           "artifacts",
           "artifactsTool",
           "of",
-          "ownerId",
           "read"
         ],
         "registrationLine": 274,
@@ -1243,7 +1364,13 @@
           "createdAt"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapArtifactService#artifacts",
+          "Set#of"
+        ]
       },
       {
         "name": "artifacts.submit",
@@ -1276,9 +1403,6 @@
         "boundMethods": [
           "artifactSubmitTool",
           "of",
-          "operationIdempotencyKey",
-          "ownerId",
-          "requireValid",
           "submit",
           "text",
           "write"
@@ -1318,7 +1442,15 @@
           "createdAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#operationIdempotencyKey",
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "Map#of",
+          "RoadmapArtifactService#submit",
+          "Set#of"
+        ]
       },
       {
         "name": "assessment.attempt.get",
@@ -1342,9 +1474,7 @@
           "Set"
         ],
         "boundMethods": [
-          "getAttempt",
           "of",
-          "ownerId",
           "quizAttemptTool",
           "read",
           "text"
@@ -1366,7 +1496,13 @@
           "reviewProgress"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "QuizService#getAttempt",
+          "Set#of"
+        ]
       },
       {
         "name": "assessment.mastery.list",
@@ -1391,14 +1527,11 @@
           "Set"
         ],
         "boundMethods": [
-          "listMastery",
           "map",
           "masteryTool",
           "of",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 184,
         "inputProperties": {},
@@ -1414,7 +1547,13 @@
           "updatedAt"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "QuizService#listMastery",
+          "Set#of"
+        ]
       },
       {
         "name": "assessment.node_quiz.generate",
@@ -1445,10 +1584,6 @@
         ],
         "boundMethods": [
           "of",
-          "operationIdempotencyKey",
-          "ownerId",
-          "requireValid",
-          "retryQuiz",
           "roadmapQuizGenerateWriteTool",
           "text",
           "write"
@@ -1468,7 +1603,15 @@
           "generation"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#operationIdempotencyKey",
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "Map#of",
+          "RoadmapLearningLoopService#retryQuiz",
+          "Set#of"
+        ]
       },
       {
         "name": "assessment.node_quiz.retry",
@@ -1499,10 +1642,6 @@
         ],
         "boundMethods": [
           "of",
-          "operationIdempotencyKey",
-          "ownerId",
-          "requireValid",
-          "retryQuiz",
           "roadmapQuizRetryWriteTool",
           "text",
           "write"
@@ -1522,7 +1661,15 @@
           "generation"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#operationIdempotencyKey",
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "Map#of",
+          "RoadmapLearningLoopService#retryQuiz",
+          "Set#of"
+        ]
       },
       {
         "name": "assessment.node_quiz_status.get",
@@ -1548,7 +1695,6 @@
         "boundMethods": [
           "nodeQuizStatusTool",
           "of",
-          "ownerId",
           "quiz",
           "read",
           "text"
@@ -1568,7 +1714,13 @@
           "generation"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapLearningLoopService#quiz",
+          "Set#of"
+        ]
       },
       {
         "name": "assessment.quiz.get",
@@ -1597,7 +1749,6 @@
           "from",
           "get",
           "of",
-          "ownerId",
           "questions",
           "quiz",
           "quizTool",
@@ -1622,7 +1773,14 @@
           "questions"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "QuizResponse#from",
+          "QuizService#get",
+          "Set#of"
+        ]
       },
       {
         "name": "assessment.wrong_question_review.create",
@@ -1654,10 +1812,6 @@
         "boundMethods": [
           "create",
           "of",
-          "operationIdempotencyKey",
-          "optionalText",
-          "ownerId",
-          "requireValid",
           "write",
           "wrongQuestionReviewWriteTool"
         ],
@@ -1674,7 +1828,15 @@
           "remainingCount"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#operationIdempotencyKey",
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "Map#of",
+          "Set#of",
+          "WrongQuestionReviewService#create"
+        ]
       },
       {
         "name": "assessment.wrong_questions.list",
@@ -1700,15 +1862,11 @@
           "WrongQuestionStatus"
         ],
         "boundMethods": [
-          "asInt",
           "get",
-          "hasNonNull",
           "list",
           "of",
-          "ownerId",
           "read",
           "text",
-          "valueOf",
           "wrongQuestionsTool"
         ],
         "registrationLine": 200,
@@ -1744,7 +1902,16 @@
           "masteredAt"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "JsonNode#get",
+          "JsonNode#hasNonNull",
+          "Map#of",
+          "Set#of",
+          "WrongQuestionService#list",
+          "WrongQuestionStatus#valueOf"
+        ]
       },
       {
         "name": "assessment.wrong_questions.summary",
@@ -1769,7 +1936,6 @@
         ],
         "boundMethods": [
           "of",
-          "ownerId",
           "read",
           "summary",
           "wrongQuestionSummaryTool"
@@ -1784,7 +1950,13 @@
           "currentReview"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WrongQuestionService#summary"
+        ]
       },
       {
         "name": "automation.rules.list",
@@ -1813,10 +1985,8 @@
           "list",
           "map",
           "of",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 303,
         "inputProperties": {},
@@ -1833,7 +2003,13 @@
           "updatedAt"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AssistantAutomationService#list",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "automation.settings.get",
@@ -1861,7 +2037,6 @@
           "automationSettingsTool",
           "from",
           "of",
-          "ownerId",
           "read",
           "settings"
         ],
@@ -1873,7 +2048,14 @@
           "updatedAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AssistantAutomationService#settings",
+          "AutomationSettingsResponse#from",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "developer.code.search",
@@ -1899,9 +2081,7 @@
         "boundMethods": [
           "developerCodeSearchTool",
           "of",
-          "ownerId",
           "read",
-          "searchCode",
           "text"
         ],
         "registrationLine": 358,
@@ -1919,7 +2099,13 @@
           "matches"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#searchCode"
+        ]
       },
       {
         "name": "developer.file.read",
@@ -1945,9 +2131,7 @@
         "boundMethods": [
           "developerFileReadTool",
           "of",
-          "ownerId",
           "read",
-          "readFile",
           "text"
         ],
         "registrationLine": 345,
@@ -1967,7 +2151,13 @@
           "truncated"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#readFile"
+        ]
       },
       {
         "name": "developer.file_tree.get",
@@ -1992,9 +2182,7 @@
         ],
         "boundMethods": [
           "developerFileTreeTool",
-          "getFileTree",
           "of",
-          "ownerId",
           "read",
           "text"
         ],
@@ -2011,7 +2199,13 @@
           "entries"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#getFileTree"
+        ]
       },
       {
         "name": "developer.git.commit",
@@ -2041,14 +2235,9 @@
           "WorkspaceDeveloperService"
         ],
         "boundMethods": [
-          "commitConfirmed",
           "developerGitCommitTool",
-          "gitCommitRequest",
           "of",
-          "ownerId",
-          "text",
-          "validateGitCommit",
-          "writeValidated"
+          "text"
         ],
         "registrationLine": 393,
         "inputProperties": {
@@ -2073,7 +2262,14 @@
           "committedAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#commitConfirmed",
+          "WorkspaceDeveloperService#validateGitCommit"
+        ]
       },
       {
         "name": "developer.git.commit.preview",
@@ -2099,10 +2295,7 @@
         "boundMethods": [
           "developerGitCommitPreviewTool",
           "of",
-          "ownerId",
-          "previewGitCommit",
           "read",
-          "stringList",
           "text"
         ],
         "registrationLine": 431,
@@ -2125,7 +2318,13 @@
           "message"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#previewGitCommit"
+        ]
       },
       {
         "name": "developer.git.diff",
@@ -2150,9 +2349,7 @@
         ],
         "boundMethods": [
           "developerGitDiffTool",
-          "getGitDiff",
           "of",
-          "ownerId",
           "read",
           "text"
         ],
@@ -2169,7 +2366,13 @@
           "truncated"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#getGitDiff"
+        ]
       },
       {
         "name": "developer.git.log",
@@ -2193,13 +2396,9 @@
           "WorkspaceDeveloperService"
         ],
         "boundMethods": [
-          "asInt",
           "developerGitLogTool",
           "get",
-          "getGitLog",
-          "hasNonNull",
           "of",
-          "ownerId",
           "read",
           "text"
         ],
@@ -2217,7 +2416,15 @@
           "truncated"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "JsonNode#get",
+          "JsonNode#hasNonNull",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#getGitLog"
+        ]
       },
       {
         "name": "developer.git.push",
@@ -2248,13 +2455,8 @@
         ],
         "boundMethods": [
           "developerGitPushTool",
-          "gitPushRequest",
           "of",
-          "ownerId",
-          "pushConfirmed",
-          "text",
-          "validateGitPush",
-          "writeValidated"
+          "text"
         ],
         "registrationLine": 410,
         "inputProperties": {
@@ -2285,7 +2487,14 @@
           "pushedAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#pushConfirmed",
+          "WorkspaceDeveloperService#validateGitPush"
+        ]
       },
       {
         "name": "developer.git.push.preview",
@@ -2311,8 +2520,6 @@
         "boundMethods": [
           "developerGitPushPreviewTool",
           "of",
-          "ownerId",
-          "previewGitPush",
           "read",
           "text"
         ],
@@ -2335,7 +2542,13 @@
           "timeoutSeconds"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#previewGitPush"
+        ]
       },
       {
         "name": "developer.git.status",
@@ -2360,9 +2573,7 @@
         ],
         "boundMethods": [
           "developerGitStatusTool",
-          "getGitStatus",
           "of",
-          "ownerId",
           "read",
           "text"
         ],
@@ -2383,7 +2594,13 @@
           "untrackedFiles"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#getGitStatus"
+        ]
       },
       {
         "name": "developer.interface_fallback.execute",
@@ -2412,15 +2629,12 @@
           "Set"
         ],
         "boundMethods": [
-          "asBoolean",
           "developerInterfaceFallbackExecuteTool",
           "execute",
           "of",
-          "ownerId",
           "path",
           "text",
-          "validate",
-          "writeValidated"
+          "validate"
         ],
         "registrationLine": 456,
         "inputProperties": {
@@ -2448,7 +2662,15 @@
           "message"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "JsonNode#path",
+          "LocalInterfaceFallbackService#execute",
+          "LocalInterfaceFallbackService#validate",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "developer.interface_fallback.preview",
@@ -2472,7 +2694,6 @@
           "Set"
         ],
         "boundMethods": [
-          "asBoolean",
           "developerInterfaceFallbackPreviewTool",
           "of",
           "path",
@@ -2501,7 +2722,13 @@
           "reason"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "InterfaceFallbackPolicy#preview",
+          "JsonNode#path",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "developer.patch.apply",
@@ -2531,14 +2758,9 @@
           "WorkspaceDeveloperService"
         ],
         "boundMethods": [
-          "applyConfirmedPatch",
           "developerPatchApplyTool",
           "of",
-          "ownerId",
-          "patchRequest",
-          "text",
-          "validatePatchRequest",
-          "writeValidated"
+          "text"
         ],
         "registrationLine": 376,
         "inputProperties": {
@@ -2566,7 +2788,14 @@
           "safeToApply"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#applyConfirmedPatch",
+          "WorkspaceDeveloperService#validatePatchRequest"
+        ]
       },
       {
         "name": "developer.patch.preview",
@@ -2592,8 +2821,6 @@
         "boundMethods": [
           "developerPatchPreviewTool",
           "of",
-          "ownerId",
-          "previewPatch",
           "read",
           "text"
         ],
@@ -2620,7 +2847,13 @@
           "safeToApply"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#previewPatch"
+        ]
       },
       {
         "name": "developer.tests.recommend",
@@ -2646,10 +2879,7 @@
         "boundMethods": [
           "developerTestsRecommendTool",
           "of",
-          "ownerId",
           "read",
-          "recommendTests",
-          "stringList",
           "text"
         ],
         "registrationLine": 418,
@@ -2671,7 +2901,13 @@
           "reasons"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "WorkspaceDeveloperService#recommendTests"
+        ]
       },
       {
         "name": "governance.audit.list",
@@ -2697,13 +2933,10 @@
         ],
         "boundMethods": [
           "auditLogsTool",
-          "listAuditLogs",
           "map",
           "of",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 245,
         "inputProperties": {},
@@ -2717,7 +2950,13 @@
           "createdAt"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentGovernanceService#listAuditLogs",
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "governance.executions.list",
@@ -2743,13 +2982,10 @@
         ],
         "boundMethods": [
           "executionsTool",
-          "listExecutions",
           "map",
           "of",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 238,
         "inputProperties": {},
@@ -2773,7 +3009,13 @@
           "createdAt"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentGovernanceService#listExecutions",
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "governance.health.get",
@@ -2799,7 +3041,6 @@
         "boundMethods": [
           "assistantHealthTool",
           "of",
-          "ownerId",
           "read",
           "summarize"
         ],
@@ -2821,7 +3062,13 @@
           "latencySamples"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AssistantHealthService#summarize",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "learning.context.get",
@@ -2848,7 +3095,6 @@
           "get",
           "learningContextTool",
           "of",
-          "ownerId",
           "read"
         ],
         "registrationLine": 55,
@@ -2865,7 +3111,13 @@
           "warnings"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentLearningContextService#get",
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "learning.goal.create",
@@ -2898,19 +3150,14 @@
           "Set"
         ],
         "boundMethods": [
-          "asInt",
           "create",
           "from",
           "get",
           "learningGoalCreateTool",
           "of",
-          "ownerId",
           "parse",
-          "requireValid",
-          "targetDate",
           "text",
           "title",
-          "weeklyStudyHours",
           "write"
         ],
         "registrationLine": 80,
@@ -2932,7 +3179,17 @@
           "status"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "CreateLearningGoalService#create",
+          "JsonNode#get",
+          "LearningGoalResponse#from",
+          "LocalDate#parse",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "learning.goals.list",
@@ -2961,10 +3218,8 @@
           "list",
           "map",
           "of",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 61,
         "inputProperties": {},
@@ -2977,7 +3232,13 @@
           "status"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "CreateLearningGoalService#list",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "learning.plan.create",
@@ -3013,9 +3274,7 @@
           "from",
           "learningPlanCreateTool",
           "of",
-          "ownerId",
           "parse",
-          "requireValid",
           "text",
           "write"
         ],
@@ -3042,7 +3301,16 @@
           "version"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "LearningPlanResponse#from",
+          "LearningPlanService#create",
+          "LocalDate#parse",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "learning.plan.get",
@@ -3070,9 +3338,7 @@
           "from",
           "learningPlanTool",
           "of",
-          "ownerId",
           "read",
-          "requireOwnedPlan",
           "text"
         ],
         "registrationLine": 75,
@@ -3092,7 +3358,14 @@
           "version"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "LearningPlanResponse#from",
+          "LearningPlanService#requireOwnedPlan",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "learning.plans.list",
@@ -3121,10 +3394,8 @@
           "list",
           "map",
           "of",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 68,
         "inputProperties": {},
@@ -3139,7 +3410,13 @@
           "version"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "LearningPlanService#list",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "learning.task.update",
@@ -3172,22 +3449,12 @@
           "TASK_STATUS_CHANGE"
         ],
         "boundMethods": [
-          "asInt",
-          "asText",
-          "changeStatusIdempotently",
           "from",
           "get",
           "of",
-          "operationIdempotencyKey",
-          "optionalDate",
-          "optionalInt",
-          "optionalText",
-          "ownerId",
           "path",
-          "requireValid",
           "taskStatusWriteTool",
           "text",
-          "valueOf",
           "write"
         ],
         "registrationLine": 129,
@@ -3219,7 +3486,19 @@
           "sourceAttemptId"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#operationIdempotencyKey",
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "JsonNode#get",
+          "JsonNode#path",
+          "LearningTaskResponse#from",
+          "LearningTaskService#changeStatusIdempotently",
+          "LearningTaskStatus#valueOf",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "learning.tasks.list",
@@ -3248,11 +3527,8 @@
           "list",
           "map",
           "of",
-          "optionalDate",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 83,
         "inputProperties": {
@@ -3274,7 +3550,13 @@
           "sourceAttemptId"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "LearningTaskService#list",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "materials.get",
@@ -3303,7 +3585,6 @@
           "get",
           "materialTool",
           "of",
-          "ownerId",
           "read",
           "text"
         ],
@@ -3333,7 +3614,14 @@
           "failureReason"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "MaterialResponse#from",
+          "MaterialService#get",
+          "Set#of"
+        ]
       },
       {
         "name": "materials.list",
@@ -3362,10 +3650,8 @@
           "map",
           "materialsTool",
           "of",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 216,
         "inputProperties": {},
@@ -3389,7 +3675,13 @@
           "failureReason"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "MaterialService#list",
+          "Set#of"
+        ]
       },
       {
         "name": "materials.text.import",
@@ -3422,14 +3714,10 @@
           "Set"
         ],
         "boundMethods": [
-          "createText",
           "from",
           "of",
-          "ownerId",
-          "requireValid",
           "text",
           "textMaterialImportWriteTool",
-          "valueOf",
           "write"
         ],
         "registrationLine": 270,
@@ -3464,7 +3752,17 @@
           "failureReason"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "Map#of",
+          "MaterialCategory#valueOf",
+          "MaterialResponse#from",
+          "MaterialService#createText",
+          "PrivacyLevel#valueOf",
+          "Set#of"
+        ]
       },
       {
         "name": "materials.web.import",
@@ -3497,13 +3795,9 @@
           "Set"
         ],
         "boundMethods": [
-          "createWeb",
           "from",
           "of",
-          "ownerId",
-          "requireValid",
           "text",
-          "valueOf",
           "webMaterialImportWriteTool",
           "write"
         ],
@@ -3539,7 +3833,17 @@
           "failureReason"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "Map#of",
+          "MaterialCategory#valueOf",
+          "MaterialResponse#from",
+          "MaterialService#createWeb",
+          "PrivacyLevel#valueOf",
+          "Set#of"
+        ]
       },
       {
         "name": "notifications.list",
@@ -3568,10 +3872,8 @@
           "map",
           "notificationsTool",
           "of",
-          "ownerId",
           "read",
-          "stream",
-          "toList"
+          "stream"
         ],
         "registrationLine": 231,
         "inputProperties": {},
@@ -3586,7 +3888,13 @@
           "readAt"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "NotificationService#list",
+          "Set#of"
+        ]
       },
       {
         "name": "notifications.mark_read",
@@ -3617,10 +3925,8 @@
         ],
         "boundMethods": [
           "from",
-          "markRead",
           "notificationMarkReadTool",
           "of",
-          "ownerId",
           "text",
           "write"
         ],
@@ -3641,7 +3947,14 @@
           "readAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "NotificationResponse#from",
+          "NotificationService#markRead",
+          "Set#of"
+        ]
       },
       {
         "name": "roadmap.current.get",
@@ -3666,11 +3979,8 @@
           "Set"
         ],
         "boundMethods": [
-          "currentMapIfPresent",
           "map",
           "of",
-          "orElse",
-          "ownerId",
           "read",
           "roadmapCurrentTool"
         ],
@@ -3687,7 +3997,13 @@
           "stages"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": true
+        "nullableTopLevel": true,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapQueryService#currentMapIfPresent",
+          "Set#of"
+        ]
       },
       {
         "name": "roadmap.enroll",
@@ -3717,11 +4033,9 @@
           "V"
         ],
         "boundMethods": [
-          "asInt",
           "enroll",
           "get",
           "of",
-          "ownerId",
           "path",
           "roadmapEnrollTool",
           "text",
@@ -3745,7 +4059,15 @@
           "enrolledAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "JsonNode#get",
+          "JsonNode#path",
+          "Map#of",
+          "RoadmapEnrollmentService#enroll",
+          "Set#of"
+        ]
       },
       {
         "name": "roadmap.module.get",
@@ -3769,9 +4091,7 @@
           "Set"
         ],
         "boundMethods": [
-          "currentModule",
           "of",
-          "ownerId",
           "read",
           "roadmapModuleTool",
           "text"
@@ -3797,7 +4117,13 @@
           "nodes"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapQueryService#currentModule",
+          "Set#of"
+        ]
       },
       {
         "name": "roadmap.node.get",
@@ -3821,9 +4147,7 @@
           "Set"
         ],
         "boundMethods": [
-          "currentNode",
           "of",
-          "ownerId",
           "read",
           "roadmapNodeTool",
           "text"
@@ -3860,7 +4184,13 @@
           "version"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapQueryService#currentNode",
+          "Set#of"
+        ]
       },
       {
         "name": "roadmap.stage.get",
@@ -3884,9 +4214,7 @@
           "Set"
         ],
         "boundMethods": [
-          "currentStage",
           "of",
-          "ownerId",
           "read",
           "roadmapStageTool",
           "text"
@@ -3911,7 +4239,13 @@
           "nodes"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapQueryService#currentStage",
+          "Set#of"
+        ]
       },
       {
         "name": "roadmap.upgrade",
@@ -3942,7 +4276,6 @@
         "boundMethods": [
           "confirm",
           "of",
-          "ownerId",
           "roadmapUpgradeTool",
           "text",
           "write"
@@ -3968,7 +4301,13 @@
           "changedModuleCount"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapUpgradeService#confirm",
+          "Set#of"
+        ]
       },
       {
         "name": "runner.check.run",
@@ -4000,14 +4339,8 @@
         ],
         "boundMethods": [
           "of",
-          "optionalText",
-          "ownerId",
-          "requireRunnerSuccess",
           "runnerCheckRunTool",
-          "runnerIdempotencyKey",
-          "submitExecution",
           "text",
-          "valueOf",
           "write"
         ],
         "registrationLine": 306,
@@ -4036,7 +4369,14 @@
           "executedAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RunnerGovernanceService#submitExecution",
+          "RunnerTemplateType#valueOf",
+          "Set#of"
+        ]
       },
       {
         "name": "runner.dependencies.prepare",
@@ -4068,14 +4408,8 @@
         ],
         "boundMethods": [
           "of",
-          "optionalText",
-          "ownerId",
-          "requireRunnerSuccess",
           "runnerDependenciesPrepareTool",
-          "runnerIdempotencyKey",
-          "submitExecution",
           "text",
-          "valueOf",
           "write"
         ],
         "registrationLine": 329,
@@ -4104,7 +4438,14 @@
           "executedAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RunnerGovernanceService#submitExecution",
+          "RunnerTemplateType#valueOf",
+          "Set#of"
+        ]
       },
       {
         "name": "runner.execution.preview",
@@ -4131,13 +4472,10 @@
         ],
         "boundMethods": [
           "of",
-          "optionalText",
-          "ownerId",
           "preview",
           "read",
           "runnerExecutionPreviewTool",
-          "text",
-          "valueOf"
+          "text"
         ],
         "registrationLine": 314,
         "inputProperties": {
@@ -4166,7 +4504,14 @@
           "workingDirectory"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RunnerGovernanceService#preview",
+          "RunnerTemplateType#valueOf",
+          "Set#of"
+        ]
       },
       {
         "name": "schedule.refresh",
@@ -4197,7 +4542,6 @@
         ],
         "boundMethods": [
           "of",
-          "ownerId",
           "parse",
           "refresh",
           "scheduleRefreshTool",
@@ -4221,7 +4565,14 @@
           "days"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "LocalDate#parse",
+          "Map#of",
+          "RoadmapScheduleService#refresh",
+          "Set#of"
+        ]
       },
       {
         "name": "schedule.today.get",
@@ -4246,9 +4597,7 @@
           "Set"
         ],
         "boundMethods": [
-          "getOrCreate",
           "of",
-          "ownerId",
           "parse",
           "read",
           "text",
@@ -4269,7 +4618,14 @@
           "days"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "LocalDate#parse",
+          "Map#of",
+          "RoadmapScheduleService#getOrCreate",
+          "Set#of"
+        ]
       },
       {
         "name": "schedule.unfinished.get",
@@ -4299,20 +4655,15 @@
           "date",
           "days",
           "filter",
-          "flatMap",
-          "getOrCreate",
           "items",
           "map",
-          "nodeId",
           "of",
-          "ownerId",
           "parse",
           "read",
           "status",
           "stream",
           "text",
           "title",
-          "toList",
           "unfinishedScheduleTool"
         ],
         "registrationLine": 133,
@@ -4331,7 +4682,14 @@
           "status"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "LocalDate#parse",
+          "Map#of",
+          "RoadmapScheduleService#getOrCreate",
+          "Set#of"
+        ]
       },
       {
         "name": "settings.ai_status.get",
@@ -4357,7 +4715,6 @@
         "boundMethods": [
           "aiSettingsStatusTool",
           "of",
-          "ownerId",
           "read",
           "settings"
         ],
@@ -4376,7 +4733,13 @@
           "warning"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AiCredentialService#settings",
+          "Map#of",
+          "Set#of"
+        ]
       },
       {
         "name": "settings.learning.get",
@@ -4405,7 +4768,6 @@
           "get",
           "learningSettingsTool",
           "of",
-          "ownerId",
           "read"
         ],
         "registrationLine": 280,
@@ -4419,7 +4781,14 @@
           "weeklyAvailability"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "Set#of",
+          "UserSettingsResponse#from",
+          "UserSettingsService#get"
+        ]
       },
       {
         "name": "settings.learning.update",
@@ -4452,25 +4821,14 @@
           "UserSettingsService"
         ],
         "boundMethods": [
-          "asInt",
           "from",
           "get",
-          "getDayOfWeek",
-          "getDefaultPrivacyLevel",
-          "getEndTime",
-          "getStartTime",
-          "getTimeZone",
-          "getWeekendPreference",
-          "getWeeklyAvailability",
           "learningSettingsUpdateTool",
           "map",
           "of",
-          "ownerId",
           "path",
-          "requireValid",
           "save",
           "stream",
-          "toList",
           "write"
         ],
         "registrationLine": 208,
@@ -4488,7 +4846,18 @@
           "weeklyAvailability"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "JsonNode#get",
+          "JsonNode#path",
+          "Map#of",
+          "Set#of",
+          "UserSettingsResponse#from",
+          "UserSettingsService#get",
+          "UserSettingsService#save"
+        ]
       },
       {
         "name": "workspaces.list",
@@ -4513,7 +4882,6 @@
         ],
         "boundMethods": [
           "of",
-          "ownerId",
           "read",
           "workspaces",
           "workspacesTool"
@@ -4529,7 +4897,13 @@
           "createdAt"
         ],
         "outputContainer": "array",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "Map#of",
+          "RoadmapArtifactService#workspaces",
+          "Set#of"
+        ]
       },
       {
         "name": "workspaces.register",
@@ -4560,10 +4934,7 @@
           "WORKSPACE_REGISTRATION"
         ],
         "boundMethods": [
-          "createWorkspace",
           "of",
-          "ownerId",
-          "requireValid",
           "text",
           "workspaceRegisterTool",
           "write"
@@ -4585,7 +4956,14 @@
           "createdAt"
         ],
         "outputContainer": "object",
-        "nullableTopLevel": false
+        "nullableTopLevel": false,
+        "boundPairs": [
+          "AgentToolContext#ownerId",
+          "AgentToolRequestValidator#requireValid",
+          "Map#of",
+          "RoadmapArtifactService#createWorkspace",
+          "Set#of"
+        ]
       }
     ]
   },

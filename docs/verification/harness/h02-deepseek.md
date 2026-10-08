@@ -140,11 +140,11 @@ else                        -> PENDING                （立即执行）
 
 ---
 
-## 3.1 第二轮整改（R-D1 / R-D2 / R-D3）
+## 3.1 二轮与三轮整改（R-D1 / R-D2 / R-D3）
 
 首轮 Codex 独立内存变异发现 6 个漏项，本轮逐条闭环。整改只动本端 Owner 文件，未改生产 Java、公共 Schema、编译器、他端文件或 H01 冻结契约。
 
-### R-D1 真实执行绑定（原先只检类是否存在）
+### R-D1 真实执行绑定（从"类是否存在"到"接收者/方法配对"）
 
 `source_provenance.handler` 现在必须满足**执行绑定**校验：
 
@@ -155,6 +155,16 @@ else                        -> PENDING                （立即执行）
 
 该规则当场抓出一处**真实元数据错误**：`developer.interface_fallback.execute` 原先声称的 `InterfaceFallbackPolicy.preview` / `LocalAutomationClient.invoke` 并非该工具的直接绑定，已改为真实绑定 `LocalInterfaceFallbackService.validate` / `.execute`，并把那两个更深的协作者列入 `unverified_symbols`（它们确实存在于源码）。
 
+**三轮补强（接收者配对）**：二轮复验指出，仅用"类集合 ∩ 方法集合"的**笛卡尔组合**判断绑定并不成立——上下文里同时存在 `RoadmapArtifactService` 与 `ownerId` 两个符号，并不意味着前者拥有后者。现改为**接收者/类型配对**：
+
+1. 由 bean 方法签名建立 `变量 → 声明类型` 映射（并纳入注册 helper 的 lambda 参数类型，取自同文件 `BiFunction<AgentToolContext, JsonNode, ...>`）；
+2. 在方法体内匹配 `receiver.method(` 调用，把**接收者的声明类型**与**被调用的方法**组成 `Class#method` 配对；
+3. 只有配对集合中的项才算绑定。
+
+因此 `service.evaluate(...)` 产生 `RoadmapArtifactService#evaluate`，而**不会**产生 `ObjectMapper#evaluate` 或 `RoadmapArtifactService#ownerId`；后两者被拒。同时 `unverified_symbols` 仍要求类存在且方法真的出现在该类源文件中，无法把不存在的方法改标绕过。导航工具本身即 `AgentToolHandler` 实现，其接口方法 `invoke`/`descriptor` 作为入口绑定列入。
+
+**静态检查的能力边界（明确 UNVERIFIED）**：上述配对是**静态**核对——它能证明"声明的绑定确实出现在该工具注册上下文的接收者/方法调用中"，但**不能**证明运行期一定走到该调用（分支、注解处理、代理、反射等静态不可判定）。因此最终注册证明仍以 MiniMax 从真实描述符导出为准；本端不把静态配对等同于运行期证明。
+
 ### R-D2 导航白名单、逐 route 安全参数与递归身份注入
 
 - `routeKey` 必须落在 Java 注册的 28 个白名单路由内，否则 `E_NAVIGATION_ROUTE`。
@@ -164,7 +174,7 @@ else                        -> PENDING                （立即执行）
 
 该规则同样当场抓出**本端自己的元数据错误**：导航示例里出现过并不在 Java 白名单中的 `ADMIN_CONSOLE` 路由。
 
-### R-D3 合法输入输出实例与结果必需字段
+### R-D3 合法输入输出实例、结果必需字段与显式可空语义
 
 示例升级为带**结果语义**的三态结构：
 
@@ -178,9 +188,32 @@ else                        -> PENDING                （立即执行）
 
 校验器强制：`ok` 示例的输出容器类型必须与登记的 `outputContainer` 一致，且不得出现未声明字段；`shape_placeholder` 的每个叶子**必须**是文档化的占位符 `"<shape-placeholder>"`，从而**不允许把伪造业务数值伪装成形状 fixture**；`rejected` 示例的输入必须**真的**违反某条规则（否则拒绝"假拒绝"）；`unavailable` 必须对应已冻结的缺陷；已判 `pending` 的工具**不得**存在 `ok` 示例。
 
-当前分布：72 个示例 = 66 `ok` + 1 `rejected`（导航未知路由）+ 5 `unavailable`（D1–D4，其中 `artifacts.evaluate` 有 2 个示例）。
+**三轮补强（缺失字段 ≠ 显式 null）**：二轮复验指出 `checkExampleOutput` 把 `undefined` 与 `null` 并列放行，于是删掉可空工具全部示例的 `output` 字段仍能通过。现改为：
+
+- `output` 字段必须**显式存在**（own property）；缺失一律拒绝，并明确区分"缺失结果字段"与"显式 null 结果"；
+- 显式 `null` 仅允许注册输出为可空的那一个工具（`roadmap.current.get`，`type: ["object","null"]`）；
+- 新增 `fixture_kind: nullable_empty`，且强制其只能用于可空输出工具、`output` 必须显式为 `null`、`outcome` 必须为 `ok`；
+- `contract_defect` 也必须显式 `null`，不能靠删字段蒙过。
+
+并补上正例：`roadmap.current.get` 增加一个"当前没有路线"的显式 null 空状态示例（`nullable_empty`），与该工具唯一的可空契约对应。
+
+当前分布：73 个示例 = 67 `ok` + 1 `rejected`（导航未知路由）+ 5 `unavailable`（D1–D4，其中 `artifacts.evaluate` 2 个）；`fixture_kind` = 66 `shape_placeholder` + 1 `nullable_empty` + 1 `rejection` + 5 `contract_defect`。
 
 > **明确 BLOCKED（不记为已完成）**：逐字段类型、嵌套 schema 与 `required` 集合的完整输出一致性校验依赖 MiniMax 的 `manifest.schema.json`，该文件**至今未交付**。本端因此只实现了离线可验证的子集（容器类型、顶层字段闭包、占位符纪律、结果/失败语义、fixture 溯源），并在报告与报告中如实标注为 BLOCKED，**没有**把输出校验声称为已完成。
+
+## 3.2 与 MiniMax 上游契约的对齐核对（只读，未写他端）
+
+MiniMax 的 H02 契约草案与生成产物本轮已出现，本端**只读**核对，未写入其工作树：
+
+| 项 | 观测 | 结论 |
+| --- | --- | --- |
+| 位置 | `project-harness-h02-minimax` @ `ebb6f2b95563d71f6a43ac65b1c56bf3f59b31d5`；`contracts/agent-capabilities/manifest.schema.json`（sha256 `559c4360…`）、`README.md`、`generated/{descriptors,manifest}.json` | 契约与产物均已产出 |
+| 元数据字段约定 | README §2 要求的字段与本端 `metadata.yaml` **一致**：`cost_hint{local,external_dependency,notes}`、`exposure{state,reason}`（allowed/disabled/pending 同义）、`confirmation{mode,waiting_status,notes}`、`examples{name,input,expect,outcome,可选 output/error/fixture_kind/fixture_source}`、`source_provenance{registration,handler,output_schema}` | **字段级对齐**；`authoritative_facts` 在其约定中可选，本端更严（必需） |
+| schema 必填项 | `manifestToolEntry` 不含 `input_schema`/`output_schema` 之外的 Java 事实重复要求；`side_effect`/`permission`/`idempotency`/`timeout_ms` 由 Java 描述符注入 | 与本端"不重复 Java 事实"的切分一致 |
+| wire name 集合 | 其 `generated/manifest.json` 65 条 vs 本端 65 条，**集合完全相等**（无单侧多余） | **名称级对齐**（独立于本端的静态提取） |
+| 编译溯源 | 其 `sources.metadata_hash` = `5905c36b…`，而本端当前 `metadata.yaml` sha256 = `8d4460c6…`；且其 `roadmap.current.get` 只有 1 个示例，本端现为 2 个（本轮新增 `nullable_empty`） | 其 manifest 由**较早一版**本端元数据编译而来，相对本轮改动**已过期**（也可能与其哈希口径不同，两种原因都指向"需重编译确认"） |
+
+> **仍然 PENDING / BLOCKED（不记为已完成）**：完整输出一致性校验（逐字段类型、嵌套 schema、`required` 集合）与跨端消费复验，需要在**本轮提交之后**由 MiniMax 用真实描述符重新编译、ZCode 独立消费，才能成立。当前 MiniMax/ZCode 额度受阻，本端**不重复派任务**，也不把他端的既有产物当作已通过本端校验。名称级对齐已确认，但它不替代类型化实例校验与跨端消费。
 
 ## 4. 能力矩阵漂移（文档 vs 代码）
 
@@ -272,7 +305,7 @@ else                        -> PENDING                （立即执行）
 
 ### 6.4 人工正反例与 RED→GREEN
 
-`agent-service/tests/fixtures/capability-semantics.json` 含 4 条正例与 **43 条反例**，每条反例声明 `ops`（对真实元数据的变异）与 `expectErrorCode`。反例覆盖任务书要求的全部检测面：
+`agent-service/tests/fixtures/capability-semantics.json` 含 5 条正例与 **50 条反例**，每条反例声明 `ops`（对真实元数据的变异）与 `expectErrorCode`。反例覆盖任务书要求的全部检测面：
 
 - 来源遗漏 N01、重复 wire name N02、未实现工具/伪造 wire name N03（`studypilot.quiz.answer`）
 - 写操作错误开放 N04、coding/runner 能力错误开放 N05
@@ -287,6 +320,8 @@ else                        -> PENDING                （立即执行）
 - **R-D1** 虚构方法 N30、真实但错误的执行类 N31、用 `unverified_symbols` 洗白虚构方法 N32
 - **R-D2** 非法 routeKey N33、嵌套身份注入 N34、路由参数不符 N35、参数不符合安全标识 N36
 - **R-D3** 非法输出实例 N37、删光 `expect` N38、可接受示例缺结果 N39、假拒绝 N40、缺陷工具谎称成功 N41、形状 fixture 塞入伪造业务值 N42、`fixture_source` 指向不存在文件 N43
+
+三轮新增：**R-D1** 笛卡尔配对（真实类+他人方法）N48、（上下文类+真实方法名）N49、把不存在方法改标 unverified 绕过 N50；**R-D3** 可空工具删 `output` 字段 N44、全局删 `output` N45、非可空工具用 `nullable_empty` N46、非可空工具返回显式 null N47。
 
 ---
 
@@ -306,14 +341,14 @@ nav routes     28
 $ node scripts/harness/capability-semantics.mjs
 PASS  65 metadata entries (allowed 28, disabled 33, pending 4)
       confirmations: 11 always, 10 conditional
-      274 authoritative facts, 72 examples
-      negative fixtures 43/43 rejected with the expected code
+      274 authoritative facts, 73 examples
+      negative fixtures 50/50 rejected with the expected code
 
 $ node scripts/harness/capability-semantics.mjs --check
 MATCH  frozen H02 capability facts still match the Java source
 
 $ node --test scripts/harness/capability-semantics.test.mjs
-ℹ tests 45   ℹ pass 45   ℹ fail 0
+ℹ tests 54   ℹ pass 54   ℹ fail 0
 ```
 
 **独立第三方解析器核对**（只作一次性独立验证，未把 Python 引入交付链）：
@@ -330,7 +365,7 @@ PyYAML tools: 65 | equal to source: True
 
 这两点是 shared「静态自测不能替代独立核对」的实例：若无外部解析器，缺陷会以“自测通过”的形式留在交付物里。
 
-首轮验收的 9 个独立变异已全部按预期表现（其中 6 个此前被误接受，现均被拒）：有效元数据接受；缺工具、重复 wire、虚构方法、真实但错误的执行类、非法导航路由、嵌套身份注入、非法输出实例、缺结果期望——全部拒绝。本端用等价内存变异复现（脚本位于 `/tmp`，未写入仓库），未运行 Codex 的探针脚本本身，因为它会把结果写回 Codex 所属目录。
+首轮 9 个 + 二轮 3 个独立变异已全部按预期表现（其中首轮 6 个、二轮 3 个此前被误接受，现全部被拒）：有效元数据接受；缺工具、重复 wire、虚构方法、真实但错误的执行类、非法导航路由、嵌套身份注入、非法输出实例、缺结果期望——全部拒绝。本端用等价内存变异复现（脚本位于 `/tmp`，未写入仓库），未运行 Codex 的探针脚本本身，因为它会把结果写回 Codex 所属目录。
 
 ---
 
@@ -338,7 +373,7 @@ PyYAML tools: 65 | equal to source: True
 
 1. **BLOCKED — 上游 `manifest.schema.json` 未交付**：MiniMax 工作树仍停在基线 `16b37d34…`，`contracts/` 下只有 H01 的 `agent-runtime/`，无 `agent-capabilities/`；且首轮验收记录 MiniMax 仍限流、ZCode 因 429 RESOURCE_EXHAUSTED 额度冷却终止。按任务书，本端先完成来源盘点与元数据落盘（格式/字段已记录），**未写入他端树**。Schema 到位后只需做字段名映射对齐与复跑，元数据语义不需要重写。
 2. **BLOCKED — 跨端实例消费测试未做**：shared 的吞吐检查点要求在接口就绪后先用最小离线正例连通跨端输入。因上游 Schema 未到且两端受限，本端**无法**完成该连通。这是显式 BLOCKED，不是 warning+skip，也**没有**把跨端兼容记为已验证。
-3. **BLOCKED — 完整输出契约一致性**：逐字段类型、嵌套 schema 与 `required` 集合依赖上游 Schema（见 §3.1）。本端只实现离线可验证子集并如实标注。
+3. **BLOCKED/PENDING — 完整输出契约一致性**：逐字段类型、嵌套 schema 与 `required` 集合依赖上游 `manifest.schema.json`。该文件本轮已出现（§3.2），但完整输出校验仍需要在本端提交后由 MiniMax 用真实描述符**重新编译**再做类型化实例核对；本端只实现离线可验证子集并如实标注，未把占位符实例视为满足完整 Java schema 的产物。
 4. **静态提取不等于注册证明**：本端提取器用于漂移与覆盖交叉核对；注册完整性由 MiniMax 从真实描述符导出证明。
 5. **输出契约逐字段审计未做全量**：本端对"直接返回服务对象"的只读工具做了重点核对，发现并确认 D2/D3 两处类型/字段不符；其余工具未做 65 个的全字段两两比对，属残余风险（ZCode 负责独立覆盖核对）。
 6. **未运行任何 Java 测试、未启动后端、未访问数据库**：D1–D4 全部由源码静态推导得出，并给出 file:line；它们应由 Java Owner 用真实测试复现确认。
@@ -356,8 +391,8 @@ PyYAML tools: 65 | equal to source: True
 | 分支 | `codex/harness-h02-deepseek` |
 | 基线 | `16b37d34c882a17e7bc45c69c84411f28f52bff8` |
 | 交付提交 | `9b6f9c48ecb0a5a18884e2998790c5fac767a0c4`（二轮整改，含同一组 6 个 Owner 文件；本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
-| 测试 | 元数据 65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 **43/43** 以预期错误码被拒；`--check` 无漂移；`node --test` **45/45**；PyYAML 严格解析与源事实逐字段相等；首轮 9 个独立变异全部按预期表现 |
-| 元数据统计 | 65 条 = 43 READ + 21 WRITE + 1 NAVIGATE；`always_user_confirmation` 11、`conditional_scope_grant` 10、`none` 44；`authoritative_facts` 274 条；`examples` 72 条 = 66 `ok` + 1 `rejected` + 5 `unavailable`；`cost_hint.local:false` 5 条 |
+| 测试 | 元数据 65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 **50/50** 以预期错误码被拒；`--check` 无漂移；`node --test` **54/54**；PyYAML 严格解析与源事实逐字段相等；首轮 9 + 二轮 3 个独立变异全部按预期表现 |
+| 元数据统计 | 65 条 = 43 READ + 21 WRITE + 1 NAVIGATE；`always_user_confirmation` 11、`conditional_scope_grant` 10、`none` 44；`authoritative_facts` 274 条；`examples` 73 条 = 67 `ok` + 1 `rejected` + 5 `unavailable`（`fixture_kind`：66 形状 + 1 可空空态 + 1 拒绝 + 5 缺陷）；`cost_hint.local:false` 5 条 |
 | 证据层级 | mock/offline（无模型、无服务、无数据库） |
 | 未覆盖项 | 见第 8 节 |
 | 下一步 | 停在 H02，等 Codex 独立验收；**不进入 H03** |

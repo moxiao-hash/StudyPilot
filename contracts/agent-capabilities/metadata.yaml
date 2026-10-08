@@ -388,6 +388,13 @@ tools:
           totalRequiredNodes: "<shape-placeholder>"
           stages: "<shape-placeholder>"
         fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+      - name: "no current roadmap (valid empty state)"
+        outcome: ok
+        input: {}
+        output: null
+        fixture_kind: nullable_empty
+        fixture_source: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentToolOutputSchemas.java
+        expect: "A null result: roadmap.current.get is the only tool whose registered top-level output is nullable, and null means the user has no current roadmap rather than an error."
     source_provenance:
       registration: backend/src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java#L90-L95
       handler: "RoadmapQueryService.currentMapIfPresent — bean roadmapCurrentTool maps the Optional through AgentRoadmapMapResponse::from, or else null"

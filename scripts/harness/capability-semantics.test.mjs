@@ -508,10 +508,21 @@ test('examples: every shipped example declares outcome, fixture_kind and fixture
   for (const entry of doc.tools) {
     for (const example of entry.examples) {
       assert.ok(['ok', 'rejected', 'unavailable'].includes(example.outcome), `${entry.name}: outcome`);
-      assert.ok(['shape_placeholder', 'rejection', 'contract_defect'].includes(example.fixture_kind), `${entry.name}: fixture_kind`);
+      assert.ok(
+        ['shape_placeholder', 'rejection', 'contract_defect', 'nullable_empty'].includes(example.fixture_kind),
+        `${entry.name}: fixture_kind`,
+      );
       assert.equal(typeof example.fixture_source, 'string', `${entry.name}: fixture_source`);
       assert.equal(typeof example.expect, 'string', `${entry.name}: expect`);
-      if (example.outcome === 'ok') { ok += 1; assert.ok(example.output, `${entry.name}: ok needs an output`); }
+      if (example.outcome === 'ok') {
+        ok += 1;
+        // Presence, not truthiness: an explicit null is a valid result for the
+        // one tool whose registered output is nullable.
+        assert.ok(
+          Object.prototype.hasOwnProperty.call(example, 'output'),
+          `${entry.name}: ok needs an explicit output field`,
+        );
+      }
       if (example.outcome === 'rejected') { rejected += 1; assert.ok(example.error, `${entry.name}: rejected needs an error`); }
       if (example.outcome === 'unavailable') { unavailable += 1; assert.equal(example.output, null, `${entry.name}: unavailable needs a null output`); assert.ok(example.error, `${entry.name}: unavailable needs an error`); }
     }
@@ -522,4 +533,81 @@ test('examples: every shipped example declares outcome, fixture_kind and fixture
     unavailable >= fixture.defectOverrides.items.length,
     'every verified defect contributes at least one unavailable example',
   );
+});
+
+// --- R-D1 (round 2): receiver/method pairing, not a cartesian product ------
+
+test('binding: frozen facts record receiver.method pairs', () => {
+  const evaluate = fixture.frozenFacts.tools.find((tool) => tool.name === 'artifacts.evaluate');
+  assert.ok(Array.isArray(evaluate.boundPairs));
+  assert.ok(evaluate.boundPairs.includes('RoadmapArtifactService#evaluate'));
+  assert.ok(!evaluate.boundPairs.includes('RoadmapArtifactService#ownerId'), 'ownerId is called on the context, not the service');
+  assert.ok(!evaluate.boundPairs.includes('ObjectMapper#evaluate'), 'ObjectMapper never receives evaluate');
+});
+
+test('binding: a real class paired with another object\'s method is rejected', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  doc.tools.find((entry) => entry.name === 'artifacts.evaluate').source_provenance.handler = 'RoadmapArtifactService.ownerId';
+  assert.throws(() => validateMetadata(doc, fixture, fixture.frozenFacts.tools), (e) => e.code === 'E_PROVENANCE');
+});
+
+test('binding: a context class paired with a real service method is rejected', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  doc.tools.find((entry) => entry.name === 'artifacts.evaluate').source_provenance.handler = 'ObjectMapper.evaluate';
+  assert.throws(() => validateMetadata(doc, fixture, fixture.frozenFacts.tools), (e) => e.code === 'E_PROVENANCE');
+});
+
+test('binding: the real receiver.method pair is still accepted', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  doc.tools.find((entry) => entry.name === 'artifacts.evaluate').source_provenance.handler =
+    'RoadmapArtifactService.evaluate, which resolves ownership through AgentToolContext.ownerId';
+  const report = validateMetadata(doc, fixture, fixture.frozenFacts.tools);
+  assert.equal(report.ok, true);
+});
+
+test('binding: relabelling a nonexistent method as unverified cannot bypass the rule', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  const entry = doc.tools.find((candidate) => candidate.name === 'artifacts.evaluate');
+  entry.source_provenance.handler = 'RoadmapArtifactService.evaluate and ObjectMapper.evaluate';
+  entry.source_provenance.unverified_symbols = ['ObjectMapper.evaluate'];
+  assert.throws(() => validateMetadata(doc, fixture, fixture.frozenFacts.tools), (e) => e.code === 'E_PROVENANCE');
+});
+
+// --- R-D3 (round 2): missing output is not an explicit null ---------------
+
+const NULLABLE_TOOL = { name: 'r.c', outputContainer: 'object', outputFields: ['a'], nullableTopLevel: true };
+const PLAIN_TOOL = { name: 'p.q', outputContainer: 'object', outputFields: ['a'], nullableTopLevel: false };
+
+test('output: a missing output field is rejected even for a nullable tool', () => {
+  assert.throws(() => checkExampleOutput(NULLABLE_TOOL, undefined, 'shape_placeholder', false), (e) => e.code === 'E_OUTPUT_INSTANCE');
+});
+
+test('output: an explicit null is accepted only for a nullable tool', () => {
+  checkExampleOutput(NULLABLE_TOOL, null, 'nullable_empty', true);
+  assert.throws(() => checkExampleOutput(PLAIN_TOOL, null, 'shape_placeholder', true), (e) => e.code === 'E_OUTPUT_INSTANCE');
+});
+
+test('output: a contract-defect example needs an explicit null, not a missing field', () => {
+  open: {
+    checkExampleOutput(PLAIN_TOOL, null, 'contract_defect', true);
+  }
+  assert.throws(() => checkExampleOutput(PLAIN_TOOL, undefined, 'contract_defect', false), (e) => e.code === 'E_OUTPUT_INSTANCE');
+});
+
+test('metadata: the nullable tool carries both a shape and an explicit empty-state example', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  const entry = doc.tools.find((candidate) => candidate.name === 'roadmap.current.get');
+  const empty = entry.examples.find((example) => example.fixture_kind === 'nullable_empty');
+  assert.ok(empty, 'the nullable tool must have an explicit null example');
+  assert.equal(empty.output, null);
+  assert.equal(empty.outcome, 'ok');
+  assert.ok(entry.examples.some((example) => example.fixture_kind === 'shape_placeholder'));
+  // Every other tool must declare an output for each of its ok examples.
+  for (const other of doc.tools) {
+    for (const example of other.examples) {
+      if (example.outcome === 'ok') {
+        assert.ok(Object.prototype.hasOwnProperty.call(example, 'output'), `${other.name}: ok example needs an explicit output field`);
+      }
+    }
+  }
 });

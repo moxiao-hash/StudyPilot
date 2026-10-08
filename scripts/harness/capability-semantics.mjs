@@ -333,15 +333,24 @@ function assertPlaceholderLeaves(tool, value, path) {
   }
 }
 
-export function checkExampleOutput(tool, output, fixtureKind) {
+export function checkExampleOutput(tool, output, fixtureKind, present = true) {
+  // A MISSING output field is not the same as an explicit null: the first is an
+  // absent fixture, the second is a legitimate result only where the registered
+  // output is nullable. Deleting the field must therefore never pass.
+  if (!present) {
+    fail(
+      'E_OUTPUT_INSTANCE',
+      `${tool.name}: the example must declare an explicit output field (a missing result is not a null result)`,
+    );
+  }
   if (fixtureKind === 'contract_defect') {
-    if (output !== null && output !== undefined) {
-      fail('E_OUTPUT_INSTANCE', `${tool.name}: a contract-defect example must not claim a result`);
+    if (output !== null) {
+      fail('E_OUTPUT_INSTANCE', `${tool.name}: a contract-defect example must declare an explicit null result`);
     }
     return;
   }
   const nullable = tool.nullableTopLevel === true;
-  if (output === null || output === undefined) {
+  if (output === null) {
     // A registered nullable top-level output is the only legal null result.
     if (nullable) return;
     fail('E_OUTPUT_INSTANCE', `${tool.name}: an acceptable example must include an output instance (only a nullable-output tool may return null)`);
@@ -617,12 +626,12 @@ function checkProvenance(entry, tool) {
   if (pairs.length === 0) {
     fail('E_PROVENANCE', `${entry.name}: source_provenance.handler must name at least one "Class.method"`);
   }
-  const boundClasses = new Set(tool.boundClasses ?? []);
-  const boundMethods = new Set(tool.boundMethods ?? []);
+  // Binding is a receiver/method PAIR, never the cartesian product of a class
+  // set and a method set: `service.evaluate(...)` binds
+  // RoadmapArtifactService#evaluate, and says nothing about ObjectMapper#evaluate.
+  const boundPairs = new Set(tool.boundPairs ?? []);
   const unverified = new Set(provenance.unverified_symbols ?? []);
-  const verifiedPairs = pairs.filter(
-    (pair) => boundClasses.has(pair.className) && boundMethods.has(pair.method),
-  );
+  const verifiedPairs = pairs.filter((pair) => boundPairs.has(`${pair.className}#${pair.method}`));
   if (verifiedPairs.length === 0) {
     fail(
       'E_PROVENANCE',
@@ -631,7 +640,7 @@ function checkProvenance(entry, tool) {
   }
   const sources = javaClassSources();
   for (const pair of pairs) {
-    const isBound = boundClasses.has(pair.className) && boundMethods.has(pair.method);
+    const isBound = boundPairs.has(`${pair.className}#${pair.method}`);
     if (isBound) continue;
     const label = `${pair.className}.${pair.method}`;
     if (!unverified.has(label)) {
@@ -712,6 +721,7 @@ export function validateMetadata(doc, fixture, tools) {
       outputFields: navigation.outputFields ?? [],
       boundClasses: navigation.boundClasses ?? [],
       boundMethods: navigation.boundMethods ?? [],
+      boundPairs: navigation.boundPairs ?? [],
       routes: navigation.routes,
     },
   ];
@@ -815,10 +825,22 @@ export function validateMetadata(doc, fixture, tools) {
       if (!['ok', 'rejected', 'unavailable'].includes(outcome)) {
         fail('E_OUTPUT_INSTANCE', `${entry.name}: example outcome "${outcome}" must be ok|rejected|unavailable`);
       }
-      if (example.fixture_kind !== 'shape_placeholder'
-        && example.fixture_kind !== 'rejection'
-        && example.fixture_kind !== 'contract_defect') {
+      const FIXTURE_KINDS = ['shape_placeholder', 'rejection', 'contract_defect', 'nullable_empty'];
+      if (!FIXTURE_KINDS.includes(example.fixture_kind)) {
         fail('E_OUTPUT_INSTANCE', `${entry.name}: example fixture_kind "${example.fixture_kind}" is not recognised`);
+      }
+      // An empty-state fixture is only meaningful where the registered output is
+      // actually nullable, and it must be an explicit null.
+      if (example.fixture_kind === 'nullable_empty') {
+        if (tool.nullableTopLevel !== true) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty used on a non-nullable output contract`);
+        }
+        if (!Object.prototype.hasOwnProperty.call(example, 'output') || example.output !== null) {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty must declare an explicit null output`);
+        }
+        if (example.outcome !== 'ok') {
+          fail('E_OUTPUT_INSTANCE', `${entry.name}: nullable_empty describes a valid empty state, so outcome must be ok`);
+        }
       }
       if (typeof example.fixture_source !== 'string' || !existsSync(join(REPO_ROOT, example.fixture_source))) {
         fail('E_OUTPUT_INSTANCE', `${entry.name}: example fixture_source must point at an existing file`);
@@ -844,7 +866,7 @@ export function validateMetadata(doc, fixture, tools) {
             `${entry.name}: outcome "ok" but the input is illegal (${inputError.message})`,
           );
         }
-        checkExampleOutput(tool, example.output, example.fixture_kind);
+        checkExampleOutput(tool, example.output, example.fixture_kind, Object.prototype.hasOwnProperty.call(example, 'output'));
         if (example.error) {
           fail('E_OUTPUT_INSTANCE', `${entry.name}: an "ok" example must not declare an error`);
         }
@@ -875,7 +897,7 @@ export function validateMetadata(doc, fixture, tools) {
         if (!example.error || typeof example.error.code !== 'string' || !example.error.message) {
           fail('E_OUTPUT_INSTANCE', `${entry.name}: an unavailable example must declare the real error`);
         }
-        checkExampleOutput(tool, example.output, example.fixture_kind);
+        checkExampleOutput(tool, example.output, example.fixture_kind, Object.prototype.hasOwnProperty.call(example, 'output'));
       }
     }
     if (contractDefect) {
@@ -1063,6 +1085,12 @@ function applyOps(doc, ops) {
       case 'delete_example_field': {
         const target = find(op.tool);
         for (const example of target.examples) delete example[op.field];
+        break;
+      }
+      case 'delete_all_example_field': {
+        for (const entry of mutated.tools) {
+          for (const example of entry.examples) delete example[op.field];
+        }
         break;
       }
       case 'set_example_field': {
