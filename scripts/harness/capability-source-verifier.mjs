@@ -9,8 +9,23 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
+const KNOWN_KEYWORDS = new Set([
+  '$schema', '$id', '$defs', '$ref', 'type', 'properties', 'required',
+  'additionalProperties', 'items', 'enum', 'const', 'default', 'description',
+  'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum',
+  'minLength', 'maxLength', 'pattern', 'format', 'minItems', 'maxItems',
+  'uniqueItems', 'anyOf', 'oneOf', 'allOf', 'not', 'if', 'then', 'else', 'title'
+]);
+
 function validateSchema(schema, data, path = '$', rootSchema = schema) {
   if (!schema || typeof schema !== 'object') return;
+
+  // 校验未知关键字，防止静默绕过
+  for (const k of Object.keys(schema)) {
+    if (!KNOWN_KEYWORDS.has(k)) {
+      throw new Error(`Schema 包含未知约束关键字: ${path}.${k}`);
+    }
+  }
 
   // 处理 $ref
   if (schema.$ref) {
@@ -24,6 +39,43 @@ function validateSchema(schema, data, path = '$', rootSchema = schema) {
     }
     validateSchema(target, data, path, rootSchema);
     return;
+  }
+
+  // oneOf 约束
+  if (Array.isArray(schema.oneOf)) {
+    const matches = schema.oneOf.filter(branch => {
+      try {
+        validateSchema(branch, data, path, rootSchema);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    if (matches.length !== 1) {
+      throw new Error(`值不满足 oneOf 约束: ${path} 匹配分支数 ${matches.length} (期望 1)`);
+    }
+  }
+
+  // anyOf 约束
+  if (Array.isArray(schema.anyOf)) {
+    const matches = schema.anyOf.filter(branch => {
+      try {
+        validateSchema(branch, data, path, rootSchema);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    if (matches.length === 0) {
+      throw new Error(`值不满足 anyOf 约束: ${path} 没有匹配任何分支`);
+    }
+  }
+
+  // allOf 约束
+  if (Array.isArray(schema.allOf)) {
+    for (let i = 0; i < schema.allOf.length; i++) {
+      validateSchema(schema.allOf[i], data, `${path}.allOf[${i}]`, rootSchema);
+    }
   }
 
   // enum 约束
@@ -84,6 +136,16 @@ function validateSchema(schema, data, path = '$', rootSchema = schema) {
     } else if (expectedType === 'array') {
       if (!Array.isArray(data)) {
         throw new Error(`类型错误: ${path} 期望 array，实际 ${typeof data}`);
+      }
+      if (schema.uniqueItems === true) {
+        const seen = new Set();
+        for (const item of data) {
+          const key = typeof item === 'object' && item !== null ? JSON.stringify(item) : String(item);
+          if (seen.has(key)) {
+            throw new Error(`数组元素重复，不满足 uniqueItems 约束: ${path} 重复项 ${JSON.stringify(item)}`);
+          }
+          seen.add(key);
+        }
       }
       if (schema.minItems !== undefined && data.length < schema.minItems) {
         throw new Error(`数组项数过少: ${path} 期望至少 ${schema.minItems} 项，实际 ${data.length}`);

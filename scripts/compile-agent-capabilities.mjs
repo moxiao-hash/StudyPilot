@@ -115,7 +115,43 @@ function checkForbiddenKeysRecursive(value, path = '$') {
 
 function validateValueAgainstSchema(schema, value, path = '$') {
   if (!schema || typeof schema !== 'object') return;
-  if (value === '<shape-placeholder>') return; // 占位符字符串在叶子值位置跳过深层标量校验
+
+  // oneOf 约束
+  if (Array.isArray(schema.oneOf)) {
+    const matches = schema.oneOf.filter(branch => {
+      try {
+        validateValueAgainstSchema(branch, value, path);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    if (matches.length !== 1) {
+      throw new Error(`值不满足 oneOf 约束: ${path} 匹配分支数 ${matches.length} (期望 1)`);
+    }
+  }
+
+  // anyOf 约束
+  if (Array.isArray(schema.anyOf)) {
+    const matches = schema.anyOf.filter(branch => {
+      try {
+        validateValueAgainstSchema(branch, value, path);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    if (matches.length === 0) {
+      throw new Error(`值不满足 anyOf 约束: ${path} 没有匹配任何分支`);
+    }
+  }
+
+  // allOf 约束
+  if (Array.isArray(schema.allOf)) {
+    for (let i = 0; i < schema.allOf.length; i++) {
+      validateValueAgainstSchema(schema.allOf[i], value, `${path}.allOf[${i}]`);
+    }
+  }
 
   // enum 约束
   if (Array.isArray(schema.enum)) {
@@ -199,6 +235,16 @@ function validateValueAgainstSchema(schema, value, path = '$') {
     if (!Array.isArray(value)) {
       throw new Error(`值类型不匹配: ${path} 期望 array，实际 ${typeof value}`);
     }
+    if (schema.uniqueItems === true) {
+      const seen = new Set();
+      for (const item of value) {
+        const key = typeof item === 'object' && item !== null ? JSON.stringify(item) : String(item);
+        if (seen.has(key)) {
+          throw new Error(`数组元素重复，不满足 uniqueItems 约束: ${path} 重复项 ${JSON.stringify(item)}`);
+        }
+        seen.add(key);
+      }
+    }
     if (schema.minItems !== undefined && value.length < schema.minItems) {
       throw new Error(`数组项数少于最小值: ${path} minItems ${schema.minItems}，实际 ${value.length}`);
     }
@@ -278,7 +324,7 @@ export function extractJavaBindings(sourceRoot = '.') {
   const writeSrc = readFileSync(writePath, 'utf8');
 
   const bindings = new Map();
-  bindings.set('navigation.resolve', 'NavigationToolHandler.resolve');
+  bindings.set('navigation.resolve', 'NavigationToolHandler.invoke');
 
   function parseConfig(src) {
     const beanBlocks = src.split('@Bean').slice(1);
@@ -407,15 +453,14 @@ export function compileCapabilities({
     if (!d.handler || typeof d.handler !== 'string' || !d.handler.trim()) {
       throw new Error(`工具 ${name} 缺少描述符 handler 绑定`);
     }
+
+    // 必须在 Java 源码注册集合中存在，严禁任何未注册工具或虚构绑定
+    if (!realBindings.has(name)) {
+      throw new Error(`工具 ${name} 未在 Java 源码配置中注册，属于非法/虚构工具`);
+    }
     const realJavaBinding = realBindings.get(name);
-    if (realJavaBinding) {
-      if (d.handler !== realJavaBinding) {
-        if (!(name === 'navigation.resolve' && d.handler.includes('NavigationToolHandler'))) {
-          throw new Error(`工具 ${name} 描述符声明了未在 Java 源码中注册的非法 handler: 源码真实绑定为 ${realJavaBinding}，实际声明 "${d.handler}"`);
-        }
-      }
-    } else if (d.handler.startsWith('Unregistered') || d.handler.includes('noSuchMethod')) {
-      throw new Error(`工具 ${name} 描述符声明了未在 Java 源码中注册的非法 handler: "${d.handler}"`);
+    if (d.handler !== realJavaBinding) {
+      throw new Error(`工具 ${name} 描述符声明了未在 Java 源码中注册的非法 handler: 源码真实绑定为 ${realJavaBinding}，实际声明 "${d.handler}"`);
     }
 
     // 必填元数据字段校验
@@ -443,6 +488,12 @@ export function compileCapabilities({
     }
     if (typeof m.cost_hint.local !== 'boolean') {
       throw new Error(`工具 ${name} cost_hint.local 必须是布尔值`);
+    }
+    if (m.cost_hint.external_dependency !== null && typeof m.cost_hint.external_dependency !== 'string') {
+      throw new Error(`工具 ${name} cost_hint.external_dependency 必须是字符串或 null`);
+    }
+    if (typeof m.cost_hint.notes !== 'string') {
+      throw new Error(`工具 ${name} cost_hint.notes 必须是字符串`);
     }
 
     // exposure 强校验
@@ -517,9 +568,7 @@ export function compileCapabilities({
       const meth = parts[1];
       const pattern = new RegExp(`\\b${cls}\\b.*?\\b${meth}\\b`);
       if (!pattern.test(declaredHandler)) {
-        if (!(name === 'navigation.resolve' && declaredHandler.includes('NavigationToolHandler'))) {
-          throw new Error(`工具 ${name} 来源绑定错误: 期望绑定 ${boundHandler}，实际声明 "${declaredHandler}"`);
-        }
+        throw new Error(`工具 ${name} 来源绑定错误: 期望绑定 ${boundHandler}，实际声明 "${declaredHandler}"`);
       }
     }
 
@@ -554,6 +603,19 @@ export function compileCapabilities({
         if (!ALLOWED_EXAMPLE_KEYS.has(k)) {
           throw new Error(`工具 ${name} example 包含未知字段: ${k}`);
         }
+      }
+
+      if (!ex.name || typeof ex.name !== 'string' || !ex.name.trim()) {
+        throw new Error(`工具 ${name} 示例缺少必填属性 name`);
+      }
+      if (!ex.input || typeof ex.input !== 'object' || Array.isArray(ex.input)) {
+        throw new Error(`工具 ${name} 示例缺少必填对象属性 input`);
+      }
+      if (!ex.expect || typeof ex.expect !== 'string' || !ex.expect.trim()) {
+        throw new Error(`工具 ${name} 示例缺少必填属性 expect`);
+      }
+      if (!['ok', 'rejected', 'unavailable'].includes(ex.outcome)) {
+        throw new Error(`工具 ${name} 示例缺少或包含非法的 outcome: ${JSON.stringify(ex.outcome)}`);
       }
 
       checkForbiddenKeysRecursive(ex.input, `${name}.examples[${ex.name}].input`);
@@ -650,6 +712,14 @@ export function compileCapabilities({
     tools: compiledTools
   };
 
+  // 生成产物前严格依据 manifest.schema.json 递归校验完整 Manifest 结构
+  const schemaPath = resolve(root, 'contracts/agent-capabilities/manifest.schema.json');
+  if (existsSync(schemaPath)) {
+    const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
+    // 递归验证 root schema 及各 defs 约束
+    validateManifestAgainstSchema(schema, manifest);
+  }
+
   if (outputPath) {
     const dir = dirname(outputPath);
     if (!existsSync(dir)) {
@@ -660,6 +730,77 @@ export function compileCapabilities({
   }
 
   return manifest;
+}
+
+function validateManifestAgainstSchema(schema, data, rootSchema = schema) {
+  if (!schema || typeof schema !== 'object') return;
+
+  if (schema.$ref) {
+    const refPath = schema.$ref.replace(/^#\//, '').split('/');
+    let target = rootSchema;
+    for (const seg of refPath) {
+      target = target?.[seg];
+    }
+    if (!target) throw new Error(`无法解析 Schema 引用: ${schema.$ref}`);
+    validateManifestAgainstSchema(target, data, rootSchema);
+    return;
+  }
+
+  if (Array.isArray(schema.enum) && !schema.enum.includes(data)) {
+    throw new Error(`枚举值非法: 值 ${JSON.stringify(data)} 不在 [${schema.enum.join(', ')}] 中`);
+  }
+
+  if (schema.const !== undefined && data !== schema.const) {
+    throw new Error(`常量值不匹配: 期望 ${JSON.stringify(schema.const)}，实际 ${JSON.stringify(data)}`);
+  }
+
+  const expectedType = schema.type;
+  if (expectedType === 'object') {
+    if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+      throw new Error(`类型错误: 期望 object，实际 ${typeof data}`);
+    }
+    if (schema.additionalProperties === false) {
+      const allowed = new Set(Object.keys(schema.properties || {}));
+      for (const k of Object.keys(data)) {
+        if (!allowed.has(k)) throw new Error(`未声明属性: "${k}"`);
+      }
+    }
+    if (Array.isArray(schema.required)) {
+      for (const req of schema.required) {
+        if (!Object.hasOwn(data, req)) throw new Error(`缺少必填属性: "${req}"`);
+      }
+    }
+    if (schema.properties) {
+      for (const [k, propSchema] of Object.entries(schema.properties)) {
+        if (Object.hasOwn(data, k)) {
+          validateManifestAgainstSchema(propSchema, data[k], rootSchema);
+        }
+      }
+    }
+  } else if (expectedType === 'array') {
+    if (!Array.isArray(data)) throw new Error(`类型错误: 期望 array，实际 ${typeof data}`);
+    if (schema.minItems !== undefined && data.length < schema.minItems) {
+      throw new Error(`数组项数过少: 期望 >= ${schema.minItems}`);
+    }
+    if (schema.items) {
+      data.forEach(item => validateManifestAgainstSchema(schema.items, item, rootSchema));
+    }
+  } else if (expectedType === 'string') {
+    if (typeof data !== 'string') throw new Error(`类型错误: 期望 string，实际 ${typeof data}`);
+    if (schema.minLength !== undefined && data.length < schema.minLength) {
+      throw new Error(`字符串长度不足: 期望 >= ${schema.minLength}`);
+    }
+    if (schema.pattern && !new RegExp(schema.pattern).test(data)) {
+      throw new Error(`正则匹配失败: 模式 "${schema.pattern}"，实际 "${data}"`);
+    }
+  } else if (expectedType === 'integer') {
+    if (!Number.isInteger(data)) throw new Error(`类型错误: 期望 integer，实际 ${typeof data}`);
+    if (schema.minimum !== undefined && data < schema.minimum) {
+      throw new Error(`数值过小: 期望 >= ${schema.minimum}`);
+    }
+  } else if (expectedType === 'boolean') {
+    if (typeof data !== 'boolean') throw new Error(`类型错误: 期望 boolean，实际 ${typeof data}`);
+  }
 }
 
 // CLI 执行入口

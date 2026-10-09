@@ -44,7 +44,7 @@
   "materials.list" : "MaterialService.list",
   "materials.text.import" : "MaterialService.createText",
   "materials.web.import" : "MaterialService.createWeb",
-  "navigation.resolve" : "NavigationToolHandler.resolve",
+  "navigation.resolve" : "NavigationToolHandler.invoke",
   "notifications.list" : "NotificationService.list",
   "notifications.mark_read" : "NotificationService.markRead",
   "roadmap.current.get" : "RoadmapQueryService.currentMapIfPresent",

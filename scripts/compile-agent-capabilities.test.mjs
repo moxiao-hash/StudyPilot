@@ -186,30 +186,30 @@ test('negative: compiler rejects unknown tool in metadata', () => {
 
 test('negative: compiler rejects governance conflict (e.g. HIGH risk with confirmation none)', () => {
   const descriptors = [{
-    name: 'test.high_risk_tool',
+    name: 'artifacts.submit',
     version: 1,
-    category: 'TEST',
+    category: 'WORKSPACE',
     effect: 'WRITE',
     riskLevel: 'HIGH',
-    requiredScope: 'TEST_SCOPE',
+    requiredScope: 'WORKSPACE_MANAGEMENT',
     idempotencyRequired: true,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
     timeoutMillis: 10000,
-    handler: 'TestService.testMethod'
+    handler: 'RoadmapArtifactService.submit'
   }];
   const metadata = {
     tools: [{
-      name: 'test.high_risk_tool',
-      description: 'test',
-      when_to_use: ['test'],
-      when_not_to_use: ['test'],
-      error_contract: ['test'],
+      name: 'artifacts.submit',
+      description: 'submit',
+      when_to_use: ['submit'],
+      when_not_to_use: ['submit'],
+      error_contract: ['submit'],
       cost_hint: { local: true, external_dependency: null, notes: '' },
-      exposure: { state: 'disabled', reason: 'test' },
+      exposure: { state: 'disabled', reason: 'submit' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'RoadmapArtifactService.submit', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -232,9 +232,9 @@ test('negative: compiler rejects governance conflict (e.g. HIGH risk with confir
 
 test('negative: compiler rejects example input carrying forbidden auth/secret fields', () => {
   const descriptors = [{
-    name: 'test.forbidden_fields_tool',
+    name: 'governance.health.get',
     version: 1,
-    category: 'TEST',
+    category: 'GOVERNANCE',
     effect: 'READ',
     riskLevel: 'NONE',
     requiredScope: null,
@@ -242,20 +242,20 @@ test('negative: compiler rejects example input carrying forbidden auth/secret fi
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
     timeoutMillis: 10000,
-    handler: 'TestService.testMethod'
+    handler: 'AssistantHealthService.summarize'
   }];
   const metadata = {
     tools: [{
-      name: 'test.forbidden_fields_tool',
-      description: 'test',
-      when_to_use: ['test'],
-      when_not_to_use: ['test'],
-      error_contract: ['test'],
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
       cost_hint: { local: true, external_dependency: null, notes: '' },
-      exposure: { state: 'allowed', reason: 'test' },
+      exposure: { state: 'allowed', reason: 'health' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: { ownerId: 'injected_user' }, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -278,9 +278,9 @@ test('negative: compiler rejects example input carrying forbidden auth/secret fi
 
 test('negative: compiler rejects ok example missing output field', () => {
   const descriptors = [{
-    name: 'test.missing_output_tool',
+    name: 'governance.health.get',
     version: 1,
-    category: 'TEST',
+    category: 'GOVERNANCE',
     effect: 'READ',
     riskLevel: 'NONE',
     requiredScope: null,
@@ -288,20 +288,20 @@ test('negative: compiler rejects ok example missing output field', () => {
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
     timeoutMillis: 10000,
-    handler: 'TestService.testMethod'
+    handler: 'AssistantHealthService.summarize'
   }];
   const metadata = {
     tools: [{
-      name: 'test.missing_output_tool',
-      description: 'test',
-      when_to_use: ['test'],
-      when_not_to_use: ['test'],
-      error_contract: ['test'],
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
       cost_hint: { local: true, external_dependency: null, notes: '' },
-      exposure: { state: 'allowed', reason: 'test' },
+      exposure: { state: 'allowed', reason: 'health' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok' }], // 缺失 output 字段
-      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -324,9 +324,9 @@ test('negative: compiler rejects ok example missing output field', () => {
 
 test('negative: compiler rejects non-nullable tool having null output for ok example', () => {
   const descriptors = [{
-    name: 'test.non_nullable_tool',
+    name: 'governance.health.get',
     version: 1,
-    category: 'TEST',
+    category: 'GOVERNANCE',
     effect: 'READ',
     riskLevel: 'NONE',
     requiredScope: null,
@@ -334,20 +334,20 @@ test('negative: compiler rejects non-nullable tool having null output for ok exa
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' }, // 非 nullable
     timeoutMillis: 10000,
-    handler: 'TestService.testMethod'
+    handler: 'AssistantHealthService.summarize'
   }];
   const metadata = {
     tools: [{
-      name: 'test.non_nullable_tool',
-      description: 'test',
-      when_to_use: ['test'],
-      when_not_to_use: ['test'],
-      error_contract: ['test'],
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
       cost_hint: { local: true, external_dependency: null, notes: '' },
-      exposure: { state: 'allowed', reason: 'test' },
+      exposure: { state: 'allowed', reason: 'health' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: null }], // 错误声明为 null
-      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -371,9 +371,9 @@ test('negative: compiler rejects non-nullable tool having null output for ok exa
 
 test('negative: compiler rejects missing description', () => {
   const descriptors = [{
-    name: 'test.missing_desc',
+    name: 'governance.health.get',
     version: 1,
-    category: 'TEST',
+    category: 'GOVERNANCE',
     effect: 'READ',
     riskLevel: 'NONE',
     requiredScope: null,
@@ -381,20 +381,20 @@ test('negative: compiler rejects missing description', () => {
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
     timeoutMillis: 10000,
-    handler: 'TestService.testMethod'
+    handler: 'AssistantHealthService.summarize'
   }];
   const metadata = {
     tools: [{
-      name: 'test.missing_desc',
+      name: 'governance.health.get',
       // missing description
-      when_to_use: ['test'],
-      when_not_to_use: ['test'],
-      error_contract: ['test'],
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
       cost_hint: { local: true, external_dependency: null, notes: '' },
       exposure: { state: 'allowed', reason: 'test' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'hand', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -411,9 +411,9 @@ test('negative: compiler rejects missing description', () => {
 
 test('negative: compiler rejects fictional handler binding', () => {
   const descriptors = [{
-    name: 'test.fictional_binding',
+    name: 'governance.health.get',
     version: 1,
-    category: 'TEST',
+    category: 'GOVERNANCE',
     effect: 'READ',
     riskLevel: 'NONE',
     requiredScope: null,
@@ -421,15 +421,15 @@ test('negative: compiler rejects fictional handler binding', () => {
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
     timeoutMillis: 10000,
-    handler: 'RealService.realMethod'
+    handler: 'AssistantHealthService.summarize'
   }];
   const metadata = {
     tools: [{
-      name: 'test.fictional_binding',
-      description: 'test',
-      when_to_use: ['test'],
-      when_not_to_use: ['test'],
-      error_contract: ['test'],
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
       cost_hint: { local: true, external_dependency: null, notes: '' },
       exposure: { state: 'allowed', reason: 'test' },
       authoritative_facts: [],
@@ -451,30 +451,30 @@ test('negative: compiler rejects fictional handler binding', () => {
 
 test('negative: compiler rejects write tool exposure as allowed', () => {
   const descriptors = [{
-    name: 'test.write_tool',
+    name: 'artifacts.submit',
     version: 1,
-    category: 'TEST',
+    category: 'WORKSPACE',
     effect: 'WRITE',
     riskLevel: 'HIGH',
-    requiredScope: 'TEST_SCOPE',
+    requiredScope: 'WORKSPACE_MANAGEMENT',
     idempotencyRequired: true,
     inputSchema: { type: 'object' },
     outputSchema: { type: 'object' },
     timeoutMillis: 10000,
-    handler: 'TestService.testMethod'
+    handler: 'RoadmapArtifactService.submit'
   }];
   const metadata = {
     tools: [{
-      name: 'test.write_tool',
-      description: 'test',
-      when_to_use: ['test'],
-      when_not_to_use: ['test'],
-      error_contract: ['test'],
+      name: 'artifacts.submit',
+      description: 'submit',
+      when_to_use: ['submit'],
+      when_not_to_use: ['submit'],
+      error_contract: ['submit'],
       cost_hint: { local: true, external_dependency: null, notes: '' },
       exposure: { state: 'allowed', reason: 'allow' },
       authoritative_facts: [],
       examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
-      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
+      source_provenance: { registration: 'reg', handler: 'RoadmapArtifactService.submit', output_schema: 'out' },
       confirmation: { mode: 'always_user_confirmation', waiting_status: 'WAITING_CONFIRMATION', notes: '' }
     }]
   };
@@ -531,30 +531,30 @@ test('negative: compiler rejects coding/runner tool exposure as allowed', () => 
 
 test('negative: compiler rejects fictional authoritative fact', () => {
   const descriptors = [{
-    name: 'test.fact_tool',
+    name: 'governance.health.get',
     version: 1,
-    category: 'TEST',
+    category: 'GOVERNANCE',
     effect: 'READ',
     riskLevel: 'NONE',
     requiredScope: null,
     idempotencyRequired: false,
     inputSchema: { type: 'object' },
-    outputSchema: { type: 'object', properties: { realField: { type: 'string' } } },
+    outputSchema: { type: 'object', properties: { totalExecutions: { type: 'integer' } } },
     timeoutMillis: 10000,
-    handler: 'TestService.testMethod'
+    handler: 'AssistantHealthService.summarize'
   }];
   const metadata = {
     tools: [{
-      name: 'test.fact_tool',
-      description: 'test',
-      when_to_use: ['test'],
-      when_not_to_use: ['test'],
-      error_contract: ['test'],
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
       cost_hint: { local: true, external_dependency: null, notes: '' },
       exposure: { state: 'allowed', reason: 'allow' },
       authoritative_facts: [{ fact: 'fictionalField', meaning: 'invented' }],
-      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: { realField: 'val' } }],
-      source_provenance: { registration: 'reg', handler: 'TestService.testMethod', output_schema: 'out' },
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: { totalExecutions: 1 } }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
       confirmation: { mode: 'none', waiting_status: null, notes: '' }
     }]
   };
@@ -1006,6 +1006,286 @@ test('negative: compiler rejects compilation when Java source files are missing'
   assert.throws(() => {
     compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta, sourceRoot: '/tmp' });
   }, /缺少 Java 源码/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects unknown jointly added tool not in Java real registration set', () => {
+  const descriptors = [{
+    name: 'imaginary.query.get',
+    version: 1,
+    category: 'IMAGINARY',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'ImaginaryLearningService.computeEverything'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'imaginary.query.get',
+      description: 'imaginary',
+      when_to_use: ['imaginary'],
+      when_not_to_use: ['imaginary'],
+      error_contract: ['imaginary'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'imaginary' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'ImaginaryLearningService.computeEverything', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-jointunk.json';
+  const tmpMeta = '/tmp/test-meta-jointunk.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /未在 Java 源码配置中注册|非法.*工具|未注册/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects fake method on navigation.resolve even if class matches', () => {
+  const descriptors = [{
+    name: 'navigation.resolve',
+    version: 1,
+    category: 'NAVIGATION',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'NavigationToolHandler.imaginaryMethod'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'navigation.resolve',
+      description: 'nav',
+      when_to_use: ['nav'],
+      when_not_to_use: ['nav'],
+      error_contract: ['nav'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'nav' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'NavigationToolHandler.imaginaryMethod', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-navfake.json';
+  const tmpMeta = '/tmp/test-meta-navfake.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /来源绑定错误|声明了未在 Java 源码中注册的非法 handler/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects scalar placeholder string violating type or constraint', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: { limit: { type: 'integer', minimum: 1 } } },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: { limit: '<shape-placeholder>' }, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-scalpl.json';
+  const tmpMeta = '/tmp/test-meta-scalpl.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /值类型不匹配|期望 integer/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler enforces oneOf constraint on examples', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: { limit: { oneOf: [{ type: 'integer' }] } } },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: { limit: 'bad-integer' }, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-oneof.json';
+  const tmpMeta = '/tmp/test-meta-oneof.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /oneOf/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler enforces uniqueItems constraint on examples', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: { tags: { type: 'array', uniqueItems: true, items: { type: 'string' } } } },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: { tags: ['a', 'a'] }, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-uniq.json';
+  const tmpMeta = '/tmp/test-meta-uniq.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /uniqueItems|重复/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects example missing outcome field', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: null, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp' }], // 缺少 outcome
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-nooutcome.json';
+  const tmpMeta = '/tmp/test-meta-nooutcome.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /缺少或包含非法的 outcome/);
+  unlinkSync(tmpDesc);
+  unlinkSync(tmpMeta);
+});
+
+test('negative: compiler rejects invalid external_dependency type in cost_hint', () => {
+  const descriptors = [{
+    name: 'governance.health.get',
+    version: 1,
+    category: 'GOVERNANCE',
+    effect: 'READ',
+    riskLevel: 'NONE',
+    requiredScope: null,
+    idempotencyRequired: false,
+    inputSchema: { type: 'object', properties: {} },
+    outputSchema: { type: 'object', properties: {} },
+    timeoutMillis: 5000,
+    handler: 'AssistantHealthService.summarize'
+  }];
+  const metadata = {
+    tools: [{
+      name: 'governance.health.get',
+      description: 'health',
+      when_to_use: ['health'],
+      when_not_to_use: ['health'],
+      error_contract: ['health'],
+      cost_hint: { local: true, external_dependency: { not: 'string' }, notes: '' },
+      exposure: { state: 'allowed', reason: 'health' },
+      authoritative_facts: [],
+      examples: [{ name: 'ex', input: {}, expect: 'exp', outcome: 'ok', output: {} }],
+      source_provenance: { registration: 'reg', handler: 'AssistantHealthService.summarize', output_schema: 'out' },
+      confirmation: { mode: 'none', waiting_status: null, notes: '' }
+    }]
+  };
+  const tmpDesc = '/tmp/test-desc-badcosttype.json';
+  const tmpMeta = '/tmp/test-meta-badcosttype.yaml';
+  writeFileSync(tmpDesc, JSON.stringify(descriptors));
+  writeFileSync(tmpMeta, JSON.stringify(metadata));
+  assert.throws(() => {
+    compileCapabilities({ descriptorsPath: tmpDesc, metadataPath: tmpMeta });
+  }, /external_dependency.*字符串或 null/);
   unlinkSync(tmpDesc);
   unlinkSync(tmpMeta);
 });

@@ -1595,17 +1595,17 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
+      "message" : {
+        "type" : "string"
+      },
       "paths" : {
         "type" : "array"
       },
       "workspaceId" : {
         "type" : "string"
-      },
-      "message" : {
-        "type" : "string"
       }
     },
-    "required" : [ "paths", "workspaceId", "message" ]
+    "required" : [ "message", "paths", "workspaceId" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -2012,6 +2012,9 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
+      "explanation" : {
+        "type" : "string"
+      },
       "workspaceId" : {
         "type" : "string"
       },
@@ -2022,9 +2025,6 @@
         "type" : "string"
       },
       "targetFile" : {
-        "type" : "string"
-      },
-      "explanation" : {
         "type" : "string"
       }
     },
@@ -2081,17 +2081,17 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
+      "diff" : {
+        "type" : "string"
+      },
       "targetFile" : {
         "type" : "string"
       },
       "workspaceId" : {
         "type" : "string"
-      },
-      "diff" : {
-        "type" : "string"
       }
     },
-    "required" : [ "targetFile", "workspaceId", "diff" ]
+    "required" : [ "diff", "targetFile", "workspaceId" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -2793,17 +2793,17 @@
     "type" : "object",
     "additionalProperties" : false,
     "properties" : {
+      "targetDate" : {
+        "type" : "string"
+      },
       "weeklyStudyHours" : {
         "type" : "integer"
       },
       "title" : {
         "type" : "string"
-      },
-      "targetDate" : {
-        "type" : "string"
       }
     },
-    "required" : [ "weeklyStudyHours", "title", "targetDate" ]
+    "required" : [ "targetDate", "weeklyStudyHours", "title" ]
   },
   "outputSchema" : {
     "type" : "object",
@@ -3557,7 +3557,7 @@
     "required" : [ "routeKey", "params" ]
   },
   "timeoutMillis" : 15000,
-  "handler" : "NavigationToolHandler.resolve"
+  "handler" : "NavigationToolHandler.invoke"
 }, {
   "name" : "notifications.list",
   "version" : 1,
@@ -4562,7 +4562,7 @@
         "type" : "string"
       }
     },
-    "required" : [ "templateType", "workspaceId", "idempotencyKey" ]
+    "required" : [ "idempotencyKey", "templateType", "workspaceId" ]
   },
   "outputSchema" : {
     "type" : "object",

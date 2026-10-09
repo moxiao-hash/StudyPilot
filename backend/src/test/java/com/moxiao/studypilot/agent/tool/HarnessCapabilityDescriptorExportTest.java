@@ -86,7 +86,7 @@ class HarnessCapabilityDescriptorExportTest {
 
     private Map<String, String> extractVerifiedHandlerBindingsFromSource() throws Exception {
         Map<String, String> bindings = new TreeMap<>();
-        bindings.put("navigation.resolve", "NavigationToolHandler.resolve");
+        bindings.put("navigation.resolve", "NavigationToolHandler.invoke");
 
         Path readCfg = Paths.get("src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java");
         Path writeCfg = Paths.get("src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java");
