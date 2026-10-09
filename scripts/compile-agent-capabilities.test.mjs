@@ -424,3 +424,53 @@ test('negative: compiler fails closed when manifest.schema.json is missing', () 
     rmSync(tmpRoot, { recursive: true, force: true });
   }
 });
+
+test('negative: compiler rejects local $ref invalid value', () => {
+  assert.throws(() => {
+    testMutation((d, m) => {
+      const [x, y] = pair(d, m);
+      x.inputSchema.$defs = { N: { type: 'integer' } };
+      x.inputSchema.properties.n = { $ref: '#/$defs/N' };
+      y.examples[0].input.n = 'wrong';
+    });
+  }, /值类型不匹配.*期望 integer/);
+});
+
+test('negative: compiler rejects unresolved $ref', () => {
+  assert.throws(() => {
+    testMutation((d, m) => {
+      const [x, y] = pair(d, m);
+      x.inputSchema.properties.n = { $ref: '#/$defs/missing' };
+      y.examples[0].input.n = 1;
+    });
+  }, /未解析的 Schema 引用/);
+});
+
+test('negative: compiler rejects schema additionalProperties invalid value', () => {
+  assert.throws(() => {
+    testMutation((d, m) => {
+      const [x, y] = pair(d, m);
+      x.inputSchema.additionalProperties = { type: 'integer' };
+      y.examples[0].input.extra = 'wrong';
+    });
+  }, /值类型不匹配.*期望 integer/);
+});
+
+test('control: compiler accepts valid value resolved through local $ref', () => {
+  const res = testMutation((d, m) => {
+    const [x, y] = pair(d, m);
+    x.inputSchema.$defs = { N: { type: 'integer' } };
+    x.inputSchema.properties.n = { $ref: '#/$defs/N' };
+    y.examples[0].input.n = 42;
+  });
+  assert.equal(res.tools.length, 65);
+});
+
+test('control: compiler accepts valid value conforming to schema additionalProperties', () => {
+  const res = testMutation((d, m) => {
+    const [x, y] = pair(d, m);
+    x.inputSchema.additionalProperties = { type: 'integer' };
+    y.examples[0].input.extra = 42;
+  });
+  assert.equal(res.tools.length, 65);
+});

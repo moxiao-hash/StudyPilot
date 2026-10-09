@@ -42,3 +42,38 @@ test('verifyManifestStructure rejects invalid version type and illegal enum valu
 
   unlinkSync(tmpPath);
 });
+
+test('verifyManifestStructure rejects tool violating additionalProperties schema', () => {
+  const manifestPath = resolve('contracts/agent-capabilities/generated/manifest.json');
+  const schemaPath = resolve('contracts/agent-capabilities/manifest.schema.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+
+  manifest.tools[0].input_schema.additionalProperties = { type: 'integer' };
+  manifest.tools[0].examples[0].input.extra = 'wrong';
+  const tmpPath = '/tmp/test-manifest-addl-props.json';
+  writeFileSync(tmpPath, JSON.stringify(manifest));
+
+  assert.throws(() => {
+    verifyManifestStructure(tmpPath, schemaPath);
+  }, /值类型不匹配.*期望 integer/);
+
+  unlinkSync(tmpPath);
+});
+
+test('verifyManifestStructure rejects tool violating local $ref schema', () => {
+  const manifestPath = resolve('contracts/agent-capabilities/generated/manifest.json');
+  const schemaPath = resolve('contracts/agent-capabilities/manifest.schema.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+
+  manifest.tools[0].input_schema.$defs = { N: { type: 'integer' } };
+  manifest.tools[0].input_schema.properties.n = { $ref: '#/$defs/N' };
+  manifest.tools[0].examples[0].input.n = 'wrong';
+  const tmpPath = '/tmp/test-manifest-local-ref.json';
+  writeFileSync(tmpPath, JSON.stringify(manifest));
+
+  assert.throws(() => {
+    verifyManifestStructure(tmpPath, schemaPath);
+  }, /值类型不匹配.*期望 integer/);
+
+  unlinkSync(tmpPath);
+});

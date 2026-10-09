@@ -154,6 +154,13 @@ function validateSchema(schema, data, path = '$', rootSchema = schema) {
             throw new Error(`未声明属性: ${path} 包含未允许属性 "${k}"`);
           }
         }
+      } else if (typeof schema.additionalProperties === 'object' && schema.additionalProperties !== null) {
+        const allowedProps = new Set(Object.keys(schema.properties || {}));
+        for (const k of Object.keys(data)) {
+          if (!allowedProps.has(k)) {
+            validateSchema(schema.additionalProperties, data[k], `${path}.${k}`, rootSchema);
+          }
+        }
       }
 
       if (Array.isArray(schema.required)) {
@@ -209,12 +216,28 @@ function validateSchema(schema, data, path = '$', rootSchema = schema) {
       if (schema.pattern && !new RegExp(schema.pattern).test(data)) {
         throw new Error(`正则匹配失败: ${path} 模式 "${schema.pattern}"，实际 "${data}"`);
       }
+      if (schema.format !== undefined) {
+        if (schema.format === 'date-time') {
+          const dtRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+          if (!dtRegex.test(data) || isNaN(Date.parse(data))) {
+            throw new Error(`字符串格式不符合 date-time 约束: ${path} 实际 "${data}"`);
+          }
+        } else if (schema.format === 'uri') {
+          try {
+            new URL(data);
+          } catch {
+            throw new Error(`字符串格式不符合 uri 约束: ${path} 实际 "${data}"`);
+          }
+        } else {
+          throw new Error(`不支持的 format 格式: ${schema.format}`);
+        }
+      }
     } else if (expectedType === 'integer') {
       if (!Number.isInteger(data)) {
         if (path.endsWith('.version')) {
           throw new Error(`工具 ${path} version 必须是 >= 1 的整数，实际: ${data}`);
         }
-        throw new Error(`类型错误: ${path} 期望 integer，实际 ${typeof data} (${data})`);
+        throw new Error(`值类型不匹配: ${path} 期望 integer，实际 ${typeof data}`);
       }
       if (schema.minimum !== undefined && data < schema.minimum) {
         if (path.endsWith('.version')) {
@@ -227,14 +250,14 @@ function validateSchema(schema, data, path = '$', rootSchema = schema) {
       }
     } else if (expectedType === 'number') {
       if (typeof data !== 'number') {
-        throw new Error(`类型错误: ${path} 期望 number，实际 ${typeof data}`);
+        throw new Error(`值类型不匹配: ${path} 期望 number，实际 ${typeof data}`);
       }
       if (schema.minimum !== undefined && data < schema.minimum) {
         throw new Error(`数值过小: ${path} 期望 >= ${schema.minimum}，实际 ${data}`);
       }
     } else if (expectedType === 'boolean') {
       if (typeof data !== 'boolean') {
-        throw new Error(`类型错误: ${path} 期望 boolean，实际 ${typeof data}`);
+        throw new Error(`值类型不匹配: ${path} 期望 boolean，实际 ${typeof data}`);
       }
     }
   }
@@ -252,6 +275,18 @@ export function verifyManifestStructure(manifestPath, schemaPath) {
 
   if (manifest.tools.length !== 65) {
     throw new Error(`tools 必须为恰好 65 个工具，实际: ${manifest.tools?.length}`);
+  }
+
+  // 严格验证每个工具的 examples 与其 input_schema / output_schema 的一致性
+  for (const tool of manifest.tools) {
+    if (Array.isArray(tool.examples)) {
+      for (const ex of tool.examples) {
+        validateSchema(tool.input_schema, ex.input, `${tool.name}.examples[${ex.name}].input`, tool.input_schema);
+        if (ex.outcome === 'ok' && ex.output !== null) {
+          validateSchema(tool.output_schema, ex.output, `${tool.name}.examples[${ex.name}].output`, tool.output_schema);
+        }
+      }
+    }
   }
 
   // 严格验证 tools 按 name 升序排序

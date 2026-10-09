@@ -116,18 +116,40 @@ function checkForbiddenKeysRecursive(value, path = '$') {
   }
 }
 
-function validateValueAgainstSchema(schema, value, path = '$') {
+function resolveRef(ref, rootSchema) {
+  if (typeof ref !== 'string' || !ref.startsWith('#/')) {
+    throw new Error(`不支持的 Schema 引用格式 (仅支持以 #/ 开头的本地引用): ${ref}`);
+  }
+  const refPath = ref.replace(/^#\//, '').split('/');
+  let target = rootSchema;
+  for (const seg of refPath) {
+    if (!target || typeof target !== 'object' || !Object.hasOwn(target, seg)) {
+      throw new Error(`未解析的 Schema 引用: ${ref} (在路径 "${seg}" 无法解析)`);
+    }
+    target = target[seg];
+  }
+  return target;
+}
+
+function validateValueAgainstSchema(schema, value, path = '$', rootSchema = schema) {
   if (schema === true) return;
   if (schema === false) {
     throw new Error(`Schema 为 false，任何值均不允许: ${path}`);
   }
   if (!schema || typeof schema !== 'object') return;
 
+  // $ref 引用解析与执行
+  if (schema.$ref !== undefined) {
+    const target = resolveRef(schema.$ref, rootSchema);
+    validateValueAgainstSchema(target, value, `${path}->$ref(${schema.$ref})`, rootSchema);
+    return;
+  }
+
   // not 约束
   if (schema.not !== undefined) {
     let notMatched = false;
     try {
-      validateValueAgainstSchema(schema.not, value, `${path}.not`);
+      validateValueAgainstSchema(schema.not, value, `${path}.not`, rootSchema);
       notMatched = true;
     } catch {
       notMatched = false;
@@ -141,18 +163,18 @@ function validateValueAgainstSchema(schema, value, path = '$') {
   if (schema.if !== undefined) {
     let ifPassed = false;
     try {
-      validateValueAgainstSchema(schema.if, value, `${path}.if`);
+      validateValueAgainstSchema(schema.if, value, `${path}.if`, rootSchema);
       ifPassed = true;
     } catch {
       ifPassed = false;
     }
     if (ifPassed) {
       if (schema.then !== undefined) {
-        validateValueAgainstSchema(schema.then, value, `${path}.then`);
+        validateValueAgainstSchema(schema.then, value, `${path}.then`, rootSchema);
       }
     } else {
       if (schema.else !== undefined) {
-        validateValueAgainstSchema(schema.else, value, `${path}.else`);
+        validateValueAgainstSchema(schema.else, value, `${path}.else`, rootSchema);
       }
     }
   }
@@ -161,7 +183,7 @@ function validateValueAgainstSchema(schema, value, path = '$') {
   if (Array.isArray(schema.oneOf)) {
     const matches = schema.oneOf.filter(branch => {
       try {
-        validateValueAgainstSchema(branch, value, path);
+        validateValueAgainstSchema(branch, value, path, rootSchema);
         return true;
       } catch {
         return false;
@@ -176,7 +198,7 @@ function validateValueAgainstSchema(schema, value, path = '$') {
   if (Array.isArray(schema.anyOf)) {
     const matches = schema.anyOf.filter(branch => {
       try {
-        validateValueAgainstSchema(branch, value, path);
+        validateValueAgainstSchema(branch, value, path, rootSchema);
         return true;
       } catch {
         return false;
@@ -190,7 +212,7 @@ function validateValueAgainstSchema(schema, value, path = '$') {
   // allOf 约束
   if (Array.isArray(schema.allOf)) {
     for (let i = 0; i < schema.allOf.length; i++) {
-      validateValueAgainstSchema(schema.allOf[i], value, `${path}.allOf[${i}]`);
+      validateValueAgainstSchema(schema.allOf[i], value, `${path}.allOf[${i}]`, rootSchema);
     }
   }
 
@@ -224,7 +246,7 @@ function validateValueAgainstSchema(schema, value, path = '$') {
     }
   }
 
-  // 字符串长度与模式约束
+  // 字符串长度与模式与格式约束
   if (typeof value === 'string') {
     if (schema.minLength !== undefined && value.length < schema.minLength) {
       throw new Error(`字符串长度小于最小限制: ${path} 最小长度 ${schema.minLength}，实际 ${value.length}`);
@@ -235,6 +257,22 @@ function validateValueAgainstSchema(schema, value, path = '$') {
     if (schema.pattern !== undefined && !new RegExp(schema.pattern).test(value)) {
       throw new Error(`字符串不匹配正则表达式: ${path} pattern "${schema.pattern}"，实际 "${value}"`);
     }
+    if (schema.format !== undefined) {
+      if (schema.format === 'date-time') {
+        const dtRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+        if (!dtRegex.test(value) || isNaN(Date.parse(value))) {
+          throw new Error(`字符串格式不符合 date-time 约束: ${path} 实际 "${value}"`);
+        }
+      } else if (schema.format === 'uri') {
+        try {
+          new URL(value);
+        } catch {
+          throw new Error(`字符串格式不符合 uri 约束: ${path} 实际 "${value}"`);
+        }
+      } else {
+        throw new Error(`不支持的 format 格式: ${schema.format}`);
+      }
+    }
   }
 
   const schemaType = schema.type;
@@ -243,7 +281,7 @@ function validateValueAgainstSchema(schema, value, path = '$') {
     if (value === null && schemaType.includes('null')) return;
     const nonNullType = schemaType.find(t => t !== 'null');
     if (nonNullType) {
-      validateValueAgainstSchema({ ...schema, type: nonNullType }, value, path);
+      validateValueAgainstSchema({ ...schema, type: nonNullType }, value, path, rootSchema);
     }
     return;
   }
@@ -259,7 +297,16 @@ function validateValueAgainstSchema(schema, value, path = '$') {
           throw new Error(`对象包含未允许属性: ${path}.${k}`);
         }
       }
+    } else if (typeof schema.additionalProperties === 'object' && schema.additionalProperties !== null) {
+      for (const k of Object.keys(value)) {
+        if (!Object.hasOwn(props, k)) {
+          validateValueAgainstSchema(schema.additionalProperties, value[k], `${path}.${k}`, rootSchema);
+        }
+      }
+    } else if (schema.additionalProperties !== undefined && schema.additionalProperties !== true) {
+      throw new Error(`不支持的 additionalProperties 类型: ${typeof schema.additionalProperties}`);
     }
+
     if (Array.isArray(schema.required)) {
       for (const req of schema.required) {
         if (!Object.hasOwn(value, req)) {
@@ -269,7 +316,7 @@ function validateValueAgainstSchema(schema, value, path = '$') {
     }
     for (const [k, v] of Object.entries(value)) {
       if (props[k] !== undefined) {
-        validateValueAgainstSchema(props[k], v, `${path}.${k}`);
+        validateValueAgainstSchema(props[k], v, `${path}.${k}`, rootSchema);
       }
     }
   } else if (schemaType === 'array') {
@@ -293,7 +340,7 @@ function validateValueAgainstSchema(schema, value, path = '$') {
       throw new Error(`数组项数超出最大值: ${path} maxItems ${schema.maxItems}，实际 ${value.length}`);
     }
     if (schema.items) {
-      value.forEach((item, idx) => validateValueAgainstSchema(schema.items, item, `${path}[${idx}]`));
+      value.forEach((item, idx) => validateValueAgainstSchema(schema.items, item, `${path}[${idx}]`, rootSchema));
     }
   } else if (schemaType === 'string') {
     if (typeof value !== 'string') {
@@ -700,7 +747,7 @@ export function compileCapabilities({
       }
 
       checkForbiddenKeysRecursive(ex.input, `${name}.examples[${ex.name}].input`);
-      validateValueAgainstSchema(d.inputSchema, ex.input, `${name}.examples[${ex.name}].input`);
+      validateValueAgainstSchema(d.inputSchema, ex.input, `${name}.examples[${ex.name}].input`, d.inputSchema);
 
       if (ex.outcome === 'ok') {
         if (!Object.hasOwn(ex, 'output')) {
@@ -717,7 +764,7 @@ export function compileCapabilities({
               throw new Error(`工具 ${name} 示例输出类型错误: 期望 ${expectedType.join('|')}，实际 ${typeof ex.output}`);
             }
           }
-          validateValueAgainstSchema(d.outputSchema, ex.output, `${name}.examples[${ex.name}].output`);
+          validateValueAgainstSchema(d.outputSchema, ex.output, `${name}.examples[${ex.name}].output`, d.outputSchema);
         }
       }
     }
@@ -800,7 +847,7 @@ export function compileCapabilities({
   }
   const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
   // 递归验证 root schema 及各 defs 约束
-  validateManifestAgainstSchema(schema, manifest);
+  validateValueAgainstSchema(schema, manifest, '$', schema);
 
   if (outputPath) {
     const dir = dirname(outputPath);
@@ -815,74 +862,7 @@ export function compileCapabilities({
 }
 
 function validateManifestAgainstSchema(schema, data, rootSchema = schema) {
-  if (!schema || typeof schema !== 'object') return;
-
-  if (schema.$ref) {
-    const refPath = schema.$ref.replace(/^#\//, '').split('/');
-    let target = rootSchema;
-    for (const seg of refPath) {
-      target = target?.[seg];
-    }
-    if (!target) throw new Error(`无法解析 Schema 引用: ${schema.$ref}`);
-    validateManifestAgainstSchema(target, data, rootSchema);
-    return;
-  }
-
-  if (Array.isArray(schema.enum) && !schema.enum.includes(data)) {
-    throw new Error(`枚举值非法: 值 ${JSON.stringify(data)} 不在 [${schema.enum.join(', ')}] 中`);
-  }
-
-  if (schema.const !== undefined && data !== schema.const) {
-    throw new Error(`常量值不匹配: 期望 ${JSON.stringify(schema.const)}，实际 ${JSON.stringify(data)}`);
-  }
-
-  const expectedType = schema.type;
-  if (expectedType === 'object') {
-    if (data === null || typeof data !== 'object' || Array.isArray(data)) {
-      throw new Error(`类型错误: 期望 object，实际 ${typeof data}`);
-    }
-    if (schema.additionalProperties === false) {
-      const allowed = new Set(Object.keys(schema.properties || {}));
-      for (const k of Object.keys(data)) {
-        if (!allowed.has(k)) throw new Error(`未声明属性: "${k}"`);
-      }
-    }
-    if (Array.isArray(schema.required)) {
-      for (const req of schema.required) {
-        if (!Object.hasOwn(data, req)) throw new Error(`缺少必填属性: "${req}"`);
-      }
-    }
-    if (schema.properties) {
-      for (const [k, propSchema] of Object.entries(schema.properties)) {
-        if (Object.hasOwn(data, k)) {
-          validateManifestAgainstSchema(propSchema, data[k], rootSchema);
-        }
-      }
-    }
-  } else if (expectedType === 'array') {
-    if (!Array.isArray(data)) throw new Error(`类型错误: 期望 array，实际 ${typeof data}`);
-    if (schema.minItems !== undefined && data.length < schema.minItems) {
-      throw new Error(`数组项数过少: 期望 >= ${schema.minItems}`);
-    }
-    if (schema.items) {
-      data.forEach(item => validateManifestAgainstSchema(schema.items, item, rootSchema));
-    }
-  } else if (expectedType === 'string') {
-    if (typeof data !== 'string') throw new Error(`类型错误: 期望 string，实际 ${typeof data}`);
-    if (schema.minLength !== undefined && data.length < schema.minLength) {
-      throw new Error(`字符串长度不足: 期望 >= ${schema.minLength}`);
-    }
-    if (schema.pattern && !new RegExp(schema.pattern).test(data)) {
-      throw new Error(`正则匹配失败: 模式 "${schema.pattern}"，实际 "${data}"`);
-    }
-  } else if (expectedType === 'integer') {
-    if (!Number.isInteger(data)) throw new Error(`类型错误: 期望 integer，实际 ${typeof data}`);
-    if (schema.minimum !== undefined && data < schema.minimum) {
-      throw new Error(`数值过小: 期望 >= ${schema.minimum}`);
-    }
-  } else if (expectedType === 'boolean') {
-    if (typeof data !== 'boolean') throw new Error(`类型错误: 期望 boolean，实际 ${typeof data}`);
-  }
+  validateValueAgainstSchema(schema, data, '$', rootSchema);
 }
 
 // CLI 执行入口
