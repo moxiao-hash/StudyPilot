@@ -2,7 +2,7 @@
  * Capability Manifest Consumer Validation Engine (ZCode H02)
  *
  * Implements strict consumer-side checks for tool exposure, governance boundaries,
- * authoritative fact provenance, schema conformity, and user-exclusive action isolation.
+ * authoritative fact provenance, schema conformity, exact handler pairing, and user-exclusive action isolation.
  */
 
 export const FROZEN_JAVA_REGISTERED_TOOLS = new Set([
@@ -57,37 +57,73 @@ export const KNOWN_TOOL_KEYS = new Set([
   'authoritative_facts', 'examples', 'source_provenance'
 ]);
 
-export const KNOWN_SERVICE_HANDLERS = new Set([
-  'AgentGovernanceService',
-  'AgentLearningContextService',
-  'AgentToolHandler',
-  'AiCredentialService',
-  'AssistantAutomationService',
-  'AssistantHealthService',
-  'CreateLearningGoalService',
-  'FunctionalAgentToolHandler',
-  'GovernedFunctionalAgentToolHandler',
-  'LearningPlanService',
-  'LearningTaskService',
-  'LocalInterfaceFallbackService',
-  'MaterialService',
-  'NavigationToolHandler',
-  'NotificationService',
-  'QuizService',
-  'QuizAttemptService',
-  'RoadmapArtifactService',
-  'RoadmapEnrollmentService',
-  'RoadmapLearningLoopService',
-  'RoadmapQueryService',
-  'RoadmapScheduleService',
-  'RoadmapService',
-  'RoadmapUpgradeService',
-  'RunnerGovernanceService',
-  'UserSettingsService',
-  'WorkspaceDeveloperService',
-  'WrongQuestionReviewService',
-  'WrongQuestionService'
-]);
+export const VERIFIED_HANDLER_BINDINGS: Record<string, string> = {
+  'artifacts.evaluate': 'RoadmapArtifactService.evaluate',
+  'artifacts.get': 'RoadmapArtifactService.artifact',
+  'artifacts.list': 'RoadmapArtifactService.artifacts',
+  'artifacts.submit': 'RoadmapArtifactService.submit',
+  'assessment.attempt.get': 'QuizService.getAttempt',
+  'assessment.mastery.list': 'QuizService.listMastery',
+  'assessment.node_quiz.generate': 'RoadmapLearningLoopService.retryQuiz',
+  'assessment.node_quiz.retry': 'RoadmapLearningLoopService.retryQuiz',
+  'assessment.node_quiz_status.get': 'RoadmapLearningLoopService.quiz',
+  'assessment.quiz.get': 'QuizService.get',
+  'assessment.wrong_question_review.create': 'WrongQuestionReviewService.create',
+  'assessment.wrong_questions.list': 'WrongQuestionService.list',
+  'assessment.wrong_questions.summary': 'WrongQuestionService.summary',
+  'automation.rules.list': 'AssistantAutomationService.list',
+  'automation.settings.get': 'AssistantAutomationService.settings',
+  'developer.code.search': 'WorkspaceDeveloperService.searchCode',
+  'developer.file.read': 'WorkspaceDeveloperService.readFile',
+  'developer.file_tree.get': 'WorkspaceDeveloperService.getFileTree',
+  'developer.git.commit': 'WorkspaceDeveloperService.commitConfirmed',
+  'developer.git.commit.preview': 'WorkspaceDeveloperService.previewGitCommit',
+  'developer.git.diff': 'WorkspaceDeveloperService.getGitDiff',
+  'developer.git.log': 'WorkspaceDeveloperService.getGitLog',
+  'developer.git.push': 'WorkspaceDeveloperService.pushConfirmed',
+  'developer.git.push.preview': 'WorkspaceDeveloperService.previewGitPush',
+  'developer.git.status': 'WorkspaceDeveloperService.getGitStatus',
+  'developer.interface_fallback.execute': 'LocalInterfaceFallbackService.execute',
+  'developer.interface_fallback.preview': 'InterfaceFallbackPolicy.preview',
+  'developer.patch.apply': 'WorkspaceDeveloperService.applyConfirmedPatch',
+  'developer.patch.preview': 'WorkspaceDeveloperService.previewPatch',
+  'developer.tests.recommend': 'WorkspaceDeveloperService.recommendTests',
+  'governance.audit.list': 'AgentGovernanceService.listAuditLogs',
+  'governance.executions.list': 'AgentGovernanceService.listExecutions',
+  'governance.health.get': 'AssistantHealthService.summarize',
+  'learning.context.get': 'AgentLearningContextService.get',
+  'learning.goal.create': 'CreateLearningGoalService.create',
+  'learning.goals.list': 'CreateLearningGoalService.list',
+  'learning.plan.create': 'LearningPlanService.create',
+  'learning.plan.get': 'LearningPlanService.requireOwnedPlan',
+  'learning.plans.list': 'LearningPlanService.list',
+  'learning.task.update': 'LearningTaskService.changeStatusIdempotently',
+  'learning.tasks.list': 'LearningTaskService.list',
+  'materials.get': 'MaterialService.get',
+  'materials.list': 'MaterialService.list',
+  'materials.text.import': 'MaterialService.createText',
+  'materials.web.import': 'MaterialService.createWeb',
+  'navigation.resolve': 'NavigationToolHandler.invoke',
+  'notifications.list': 'NotificationService.list',
+  'notifications.mark_read': 'NotificationService.markRead',
+  'roadmap.current.get': 'RoadmapQueryService.currentMapIfPresent',
+  'roadmap.enroll': 'RoadmapEnrollmentService.enroll',
+  'roadmap.module.get': 'RoadmapQueryService.currentModule',
+  'roadmap.node.get': 'RoadmapQueryService.currentNode',
+  'roadmap.stage.get': 'RoadmapQueryService.currentStage',
+  'roadmap.upgrade': 'RoadmapUpgradeService.confirm',
+  'runner.check.run': 'RunnerGovernanceService.submitExecution',
+  'runner.dependencies.prepare': 'RunnerGovernanceService.submitExecution',
+  'runner.execution.preview': 'RunnerGovernanceService.preview',
+  'schedule.refresh': 'RoadmapScheduleService.refresh',
+  'schedule.today.get': 'RoadmapScheduleService.getOrCreate',
+  'schedule.unfinished.get': 'RoadmapScheduleService.getOrCreate',
+  'settings.ai_status.get': 'AiCredentialService.settings',
+  'settings.learning.get': 'UserSettingsService.get',
+  'settings.learning.update': 'UserSettingsService.save',
+  'workspaces.list': 'RoadmapArtifactService.workspaces',
+  'workspaces.register': 'RoadmapArtifactService.createWorkspace'
+};
 
 export const ROUTE_PATH_MAP: Record<string, string> = {
   login: '/login',
@@ -193,13 +229,14 @@ export interface CapabilityManifest {
     descriptor_count?: number;
     descriptors_hash?: string;
     metadata_hash?: string;
+    commit?: string;
     [key: string]: unknown;
   };
   tools: CapabilityToolEntry[];
   [key: string]: unknown;
 }
 
-function findForbiddenField(
+export function findForbiddenField(
   obj: unknown,
   forbidden: Set<string> = new Set(['ownerId', 'token', 'password', 'secret', 'credential'])
 ): string | null {
@@ -215,7 +252,7 @@ function findForbiddenField(
 }
 
 /* ------------------------------------------------------------------ *
- * Lightweight Recursive JSON Schema Validator (Draft 2020-12 subset)
+ * Recursive JSON Schema Validator (Draft 2020-12 subset)
  * ------------------------------------------------------------------ */
 function resolveRef(root: Record<string, unknown>, ref: string): Record<string, unknown> {
   if (!ref.startsWith('#/')) throw new Error(`Only local $ref supported: ${ref}`);
@@ -235,7 +272,8 @@ function typeOf(value: unknown): string {
   return typeof value;
 }
 
-function matchesType(value: unknown, expected: string): boolean {
+function matchesType(value: unknown, expected: string, allowPlaceholder = false): boolean {
+  if (allowPlaceholder && value === '<shape-placeholder>') return true;
   const actual = typeOf(value);
   if (expected === 'number') return actual === 'number' || actual === 'integer';
   return actual === expected;
@@ -246,13 +284,47 @@ export function validateNodeAgainstSchema(
   schema: Record<string, unknown>,
   value: unknown,
   path = '$',
-  errors: string[] = []
+  errors: string[] = [],
+  allowShapePlaceholder = false
 ): void {
   if (!schema || typeof schema !== 'object') return;
 
   if (schema.$ref && typeof schema.$ref === 'string') {
-    validateNodeAgainstSchema(rootSchema, resolveRef(rootSchema, schema.$ref), value, path, errors);
+    validateNodeAgainstSchema(rootSchema, resolveRef(rootSchema, schema.$ref), value, path, errors, allowShapePlaceholder);
     return;
+  }
+
+  // allOf
+  if (Array.isArray(schema.allOf)) {
+    for (const sub of schema.allOf) {
+      validateNodeAgainstSchema(rootSchema, sub as Record<string, unknown>, value, path, errors, allowShapePlaceholder);
+    }
+  }
+
+  // anyOf
+  if (Array.isArray(schema.anyOf)) {
+    let matchCount = 0;
+    for (const sub of schema.anyOf) {
+      const subErrors: string[] = [];
+      validateNodeAgainstSchema(rootSchema, sub as Record<string, unknown>, value, path, subErrors, allowShapePlaceholder);
+      if (subErrors.length === 0) matchCount++;
+    }
+    if (matchCount === 0) {
+      errors.push(`SCHEMA: ${path} must match at least one anyOf branch`);
+    }
+  }
+
+  // oneOf
+  if (Array.isArray(schema.oneOf)) {
+    let matchCount = 0;
+    for (const sub of schema.oneOf) {
+      const subErrors: string[] = [];
+      validateNodeAgainstSchema(rootSchema, sub as Record<string, unknown>, value, path, subErrors, allowShapePlaceholder);
+      if (subErrors.length === 0) matchCount++;
+    }
+    if (matchCount !== 1) {
+      errors.push(`SCHEMA: ${path} must match exactly one oneOf branch, matched ${matchCount}`);
+    }
   }
 
   if (schema.const !== undefined && value !== schema.const) {
@@ -263,16 +335,34 @@ export function validateNodeAgainstSchema(
   }
 
   if (schema.type !== undefined) {
-    const expected = Array.isArray(schema.type) ? schema.type : [schema.type as string];
-    if (!expected.some((one) => matchesType(value, one))) {
+    const expected = Array.isArray(schema.type) ? (schema.type as string[]) : [schema.type as string];
+    if (!expected.some((one) => matchesType(value, one, allowShapePlaceholder))) {
       errors.push(`SCHEMA: ${path} type must be ${expected.join('|')}, got ${typeOf(value)}`);
       return;
+    }
+  }
+
+  if (typeof value === 'number') {
+    if (typeof schema.minimum === 'number' && value < schema.minimum) {
+      errors.push(`SCHEMA: ${path} value (${value}) < minimum (${schema.minimum})`);
+    }
+    if (typeof schema.maximum === 'number' && value > schema.maximum) {
+      errors.push(`SCHEMA: ${path} value (${value}) > maximum (${schema.maximum})`);
+    }
+    if (typeof schema.exclusiveMinimum === 'number' && value <= schema.exclusiveMinimum) {
+      errors.push(`SCHEMA: ${path} value (${value}) <= exclusiveMinimum (${schema.exclusiveMinimum})`);
+    }
+    if (typeof schema.exclusiveMaximum === 'number' && value >= schema.exclusiveMaximum) {
+      errors.push(`SCHEMA: ${path} value (${value}) >= exclusiveMaximum (${schema.exclusiveMaximum})`);
     }
   }
 
   if (typeof value === 'string') {
     if (typeof schema.minLength === 'number' && value.length < schema.minLength) {
       errors.push(`SCHEMA: ${path} length < ${schema.minLength}`);
+    }
+    if (typeof schema.maxLength === 'number' && value.length > schema.maxLength) {
+      errors.push(`SCHEMA: ${path} length > ${schema.maxLength}`);
     }
     if (typeof schema.pattern === 'string' && !new RegExp(schema.pattern).test(value)) {
       errors.push(`SCHEMA: ${path} does not match pattern ${schema.pattern}`);
@@ -283,9 +373,23 @@ export function validateNodeAgainstSchema(
     if (typeof schema.minItems === 'number' && value.length < schema.minItems) {
       errors.push(`SCHEMA: ${path} items count (${value.length}) < ${schema.minItems}`);
     }
+    if (typeof schema.maxItems === 'number' && value.length > schema.maxItems) {
+      errors.push(`SCHEMA: ${path} items count (${value.length}) > ${schema.maxItems}`);
+    }
+    if (schema.uniqueItems === true) {
+      const seen = new Set<string>();
+      for (const item of value) {
+        const repr = JSON.stringify(item);
+        if (seen.has(repr)) {
+          errors.push(`SCHEMA: ${path} contains duplicate items with uniqueItems: true (${repr})`);
+          break;
+        }
+        seen.add(repr);
+      }
+    }
     if (schema.items && typeof schema.items === 'object') {
       value.forEach((item, idx) => {
-        validateNodeAgainstSchema(rootSchema, schema.items as Record<string, unknown>, item, `${path}[${idx}]`, errors);
+        validateNodeAgainstSchema(rootSchema, schema.items as Record<string, unknown>, item, `${path}[${idx}]`, errors, allowShapePlaceholder);
       });
     }
   }
@@ -310,7 +414,7 @@ export function validateNodeAgainstSchema(
     if (schema.properties && typeof schema.properties === 'object') {
       for (const [k, propSchema] of Object.entries(schema.properties as Record<string, unknown>)) {
         if (Object.prototype.hasOwnProperty.call(obj, k)) {
-          validateNodeAgainstSchema(rootSchema, propSchema as Record<string, unknown>, obj[k], `${path}.${k}`, errors);
+          validateNodeAgainstSchema(rootSchema, propSchema as Record<string, unknown>, obj[k], `${path}.${k}`, errors, allowShapePlaceholder);
         }
       }
     }
@@ -319,7 +423,8 @@ export function validateNodeAgainstSchema(
 
 export function validateCapabilityManifest(
   doc: CapabilityManifest,
-  registeredToolsSet: Set<string> = FROZEN_JAVA_REGISTERED_TOOLS
+  registeredToolsSet: Set<string> = FROZEN_JAVA_REGISTERED_TOOLS,
+  verifiedBindings: Record<string, string> = VERIFIED_HANDLER_BINDINGS
 ): { ok: boolean; toolCount: number } {
   if (!doc || typeof doc !== 'object') {
     throw new Error('Manifest must be a non-null object');
@@ -401,14 +506,14 @@ export function validateCapabilityManifest(
       throw new Error(`ERR_FICTIONAL_TOOL_TARGET: Fictional tool wire name not in Java registry: ${t.name}`);
     }
 
-    // 2.7 Handler provenance check: must match real backend service classes
-    const handler = t.source_provenance?.handler;
-    if (!handler || typeof handler !== 'string' || handler.trim().length === 0) {
-      throw new Error(`ERR_MISSING_HANDLER: Tool ${t.name} is missing source_provenance.handler`);
+    // 2.7 Exact handler pairing check against verified Java registrations
+    const expectedBinding = verifiedBindings[t.name];
+    if (!expectedBinding) {
+      throw new Error(`ERR_UNREGISTERED_TOOL_BINDING: No registered Java handler binding for tool '${t.name}'`);
     }
-    const hasValidService = Array.from(KNOWN_SERVICE_HANDLERS).some((svc) => handler.includes(svc));
-    if (!hasValidService) {
-      throw new Error(`ERR_FICTIONAL_HANDLER: Fictional handler target '${handler}' in tool ${t.name} does not match any registered service`);
+    const declaredHandler = t.source_provenance?.handler || '';
+    if (!declaredHandler.includes(expectedBinding)) {
+      throw new Error(`ERR_HANDLER_BINDING_MISMATCH: Tool '${t.name}' declared handler '${declaredHandler}' does not match registered receiver/method '${expectedBinding}'`);
     }
 
     // 2.8 Confirmation mode validation
@@ -433,7 +538,7 @@ export function validateCapabilityManifest(
       throw new Error(`ERR_CODING_RUNNER_EXPOSED: Security violation: Coding/Developer tool ${t.name} must be disabled by default`);
     }
 
-    // 2.11 Examples validation: minItems, required output, type conformity, forbidden security fields
+    // 2.11 Examples validation: minItems, required output, full schema matching, forbidden security fields
     if (!Array.isArray(t.examples) || t.examples.length === 0) {
       throw new Error(`ERR_EMPTY_EXAMPLES: Tool ${t.name} must contain at least 1 example`);
     }
@@ -448,64 +553,39 @@ export function validateCapabilityManifest(
         throw new Error(`ERR_ILLEGAL_EXAMPLE_OWNER: Security violation: Example output contains forbidden '${forbiddenOutput}' parameter in tool ${t.name}`);
       }
 
-        // Check successful output presence
-        if (ex.outcome === 'ok') {
-          if (!Object.prototype.hasOwnProperty.call(ex, 'output') || ex.output === undefined) {
-            throw new Error(`ERR_MISSING_SUCCESSFUL_OUTPUT: Example '${ex.name}' in tool ${t.name} with outcome 'ok' must provide an output field`);
-          }
+      // Input schema full validation
+      if (t.input_schema && ex.input !== undefined) {
+        const inputErrors: string[] = [];
+        validateNodeAgainstSchema(
+          t.input_schema as Record<string, unknown>,
+          t.input_schema as Record<string, unknown>,
+          ex.input,
+          `${t.name}.examples[${ex.name}].input`,
+          inputErrors
+        );
+        if (inputErrors.length > 0) {
+          throw new Error(`ERR_INVALID_INPUT_INSTANCE: Tool ${t.name} example '${ex.name}' input violates schema: ${inputErrors[0]}`);
+        }
+      }
 
-          // Output instance type check against output_schema
-          const schemaType = t.output_schema?.type;
-          if (schemaType === 'object') {
-            if (typeof ex.output !== 'object' || Array.isArray(ex.output) || ex.output === null) {
-              throw new Error(`ERR_INVALID_OUTPUT_INSTANCE: Tool ${t.name} example '${ex.name}' output type mismatch: expected object, got ${typeof ex.output}`);
-            }
-          } else if (schemaType === 'array') {
-            if (!Array.isArray(ex.output)) {
-              throw new Error(`ERR_INVALID_OUTPUT_INSTANCE: Tool ${t.name} example '${ex.name}' output type mismatch: expected array, got ${typeof ex.output}`);
-            }
-          }
-
-          // Schema required properties check on example output
-        if (t.output_schema?.required && ex.output !== null && typeof ex.output === 'object' && !Array.isArray(ex.output)) {
-          const outObj = ex.output as Record<string, unknown>;
-          for (const req of t.output_schema.required) {
-            if (!Object.prototype.hasOwnProperty.call(outObj, req)) {
-              throw new Error(`ERR_MISSING_OUTPUT_REQUIRED_PROPERTY: Tool ${t.name} example output missing required property '${req}'`);
-            }
-          }
+      // Output validation
+      if (ex.outcome === 'ok') {
+        if (!Object.prototype.hasOwnProperty.call(ex, 'output') || ex.output === undefined) {
+          throw new Error(`ERR_MISSING_SUCCESSFUL_OUTPUT: Example '${ex.name}' in tool ${t.name} with outcome 'ok' must provide an output field`);
         }
 
-        // Output instance property type check
-        if (t.output_schema?.properties && ex.output !== null && typeof ex.output === 'object' && !Array.isArray(ex.output)) {
-          const outObj = ex.output as Record<string, unknown>;
-          for (const [propName, propSchema] of Object.entries(t.output_schema.properties)) {
-            if (Object.prototype.hasOwnProperty.call(outObj, propName)) {
-              const val = outObj[propName];
-              if (ex.fixture_kind === 'shape_placeholder' && val === '<shape-placeholder>') {
-                continue;
-              }
-              const expectedType = propSchema.type;
-              if (expectedType === 'integer') {
-                if (ex.fixture_kind === 'shape_placeholder' && val === '<shape-placeholder>') {
-                  // Upstream shape placeholder accepted
-                } else if (typeof val !== 'number' || !Number.isInteger(val)) {
-                  throw new Error(`ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool ${t.name} example output property '${propName}' expected integer, got ${typeof val}`);
-                }
-              } else if (expectedType === 'number') {
-                if (typeof val !== 'number') {
-                  throw new Error(`ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool ${t.name} example output property '${propName}' expected number, got ${typeof val}`);
-                }
-              } else if (expectedType === 'string') {
-                if (typeof val !== 'string') {
-                  throw new Error(`ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool ${t.name} example output property '${propName}' expected string, got ${typeof val}`);
-                }
-              } else if (expectedType === 'boolean') {
-                if (typeof val !== 'boolean') {
-                  throw new Error(`ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool ${t.name} example output property '${propName}' expected boolean, got ${typeof val}`);
-                }
-              }
-            }
+        if (t.output_schema && ex.output !== null && ex.output !== undefined) {
+          const outputErrors: string[] = [];
+          validateNodeAgainstSchema(
+            t.output_schema as Record<string, unknown>,
+            t.output_schema as Record<string, unknown>,
+            ex.output,
+            `${t.name}.examples[${ex.name}].output`,
+            outputErrors,
+            ex.fixture_kind === 'shape_placeholder'
+          );
+          if (outputErrors.length > 0) {
+            throw new Error(`ERR_INVALID_OUTPUT_INSTANCE: Tool ${t.name} example '${ex.name}' output violates schema: ${outputErrors[0]}`);
           }
         }
       }

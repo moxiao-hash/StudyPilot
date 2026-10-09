@@ -71,7 +71,7 @@
         ],
         "source_provenance": {
           "registration": "AgentReadToolConfiguration.java",
-          "handler": "RoadmapService.getCurrentRoadmap",
+          "handler": "RoadmapQueryService.currentMapIfPresent",
           "output_schema": "AgentToolOutputSchemas.java"
         }
       }

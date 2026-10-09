@@ -101,71 +101,134 @@ const KNOWN_TOOL_KEYS = new Set([
   'authoritative_facts', 'examples', 'source_provenance'
 ]);
 
-const KNOWN_SERVICE_HANDLERS = new Set([
-  'AgentGovernanceService',
-  'AgentLearningContextService',
-  'AgentToolHandler',
-  'AiCredentialService',
-  'AssistantAutomationService',
-  'AssistantHealthService',
-  'CreateLearningGoalService',
-  'FunctionalAgentToolHandler',
-  'GovernedFunctionalAgentToolHandler',
-  'LearningPlanService',
-  'LearningTaskService',
-  'LocalInterfaceFallbackService',
-  'MaterialService',
-  'NavigationToolHandler',
-  'NotificationService',
-  'QuizService',
-  'QuizAttemptService',
-  'RoadmapArtifactService',
-  'RoadmapEnrollmentService',
-  'RoadmapLearningLoopService',
-  'RoadmapQueryService',
-  'RoadmapScheduleService',
-  'RoadmapService',
-  'RoadmapUpgradeService',
-  'RunnerGovernanceService',
-  'UserSettingsService',
-  'WorkspaceDeveloperService',
-  'WrongQuestionReviewService',
-  'WrongQuestionService'
-]);
-
-const ROUTE_PATH_MAP = {
-  login: '/login',
-  register: '/register',
-  'not-found': '/:pathMatch(.*)*',
-  assistant: '/',
-  dashboard: '/dashboard',
-  roadmap: '/roadmap',
-  'roadmap-stage': '/roadmap/stages/:id',
-  'roadmap-module': '/roadmap/modules/:id',
-  'roadmap-node': '/roadmap/nodes/:id',
-  goals: '/goals',
-  plans: '/plans',
-  'plan-detail': '/plans/:id',
-  today: '/today',
-  materials: '/materials',
-  'material-detail': '/materials/:id',
-  quiz: '/quizzes/:id',
-  attempt: '/attempts/:id',
-  'wrong-questions': '/wrong-questions',
-  mastery: '/mastery',
-  courses: '/courses',
-  'course-detail': '/courses/:slug',
-  lesson: '/lessons/:lessonId',
-  knowledge: '/knowledge',
-  'agent-plan': '/agent/plan',
-  'agent-tasks': '/agent/tasks',
-  activity: '/activity',
-  'assistant-health': '/assistant/health',
-  notifications: '/notifications',
-  settings: '/settings',
-  'settings-ai': '/settings/ai',
-  'workspace-artifacts': '/workspaces'
+const FALLBACK_HANDLER_BINDINGS = {
+  'artifacts.evaluate': 'RoadmapArtifactService.evaluate',
+  'artifacts.get': 'RoadmapArtifactService.artifact',
+  'artifacts.list': 'RoadmapArtifactService.artifacts',
+  'artifacts.submit': 'RoadmapArtifactService.submit',
+  'assessment.attempt.get': 'QuizService.getAttempt',
+  'assessment.mastery.list': 'QuizService.listMastery',
+  'assessment.node_quiz.generate': 'RoadmapLearningLoopService.retryQuiz',
+  'assessment.node_quiz.retry': 'RoadmapLearningLoopService.retryQuiz',
+  'assessment.node_quiz_status.get': 'RoadmapLearningLoopService.quiz',
+  'assessment.quiz.get': 'QuizService.get',
+  'assessment.wrong_question_review.create': 'WrongQuestionReviewService.create',
+  'assessment.wrong_questions.list': 'WrongQuestionService.list',
+  'assessment.wrong_questions.summary': 'WrongQuestionService.summary',
+  'automation.rules.list': 'AssistantAutomationService.list',
+  'automation.settings.get': 'AssistantAutomationService.settings',
+  'developer.code.search': 'WorkspaceDeveloperService.searchCode',
+  'developer.file.read': 'WorkspaceDeveloperService.readFile',
+  'developer.file_tree.get': 'WorkspaceDeveloperService.getFileTree',
+  'developer.git.commit': 'WorkspaceDeveloperService.commitConfirmed',
+  'developer.git.commit.preview': 'WorkspaceDeveloperService.previewGitCommit',
+  'developer.git.diff': 'WorkspaceDeveloperService.getGitDiff',
+  'developer.git.log': 'WorkspaceDeveloperService.getGitLog',
+  'developer.git.push': 'WorkspaceDeveloperService.pushConfirmed',
+  'developer.git.push.preview': 'WorkspaceDeveloperService.previewGitPush',
+  'developer.git.status': 'WorkspaceDeveloperService.getGitStatus',
+  'developer.interface_fallback.execute': 'LocalInterfaceFallbackService.execute',
+  'developer.interface_fallback.preview': 'InterfaceFallbackPolicy.preview',
+  'developer.patch.apply': 'WorkspaceDeveloperService.applyConfirmedPatch',
+  'developer.patch.preview': 'WorkspaceDeveloperService.previewPatch',
+  'developer.tests.recommend': 'WorkspaceDeveloperService.recommendTests',
+  'governance.audit.list': 'AgentGovernanceService.listAuditLogs',
+  'governance.executions.list': 'AgentGovernanceService.listExecutions',
+  'governance.health.get': 'AssistantHealthService.summarize',
+  'learning.context.get': 'AgentLearningContextService.get',
+  'learning.goal.create': 'CreateLearningGoalService.create',
+  'learning.goals.list': 'CreateLearningGoalService.list',
+  'learning.plan.create': 'LearningPlanService.create',
+  'learning.plan.get': 'LearningPlanService.requireOwnedPlan',
+  'learning.plans.list': 'LearningPlanService.list',
+  'learning.task.update': 'LearningTaskService.changeStatusIdempotently',
+  'learning.tasks.list': 'LearningTaskService.list',
+  'materials.get': 'MaterialService.get',
+  'materials.list': 'MaterialService.list',
+  'materials.text.import': 'MaterialService.createText',
+  'materials.web.import': 'MaterialService.createWeb',
+  'navigation.resolve': 'NavigationToolHandler.invoke',
+  'notifications.list': 'NotificationService.list',
+  'notifications.mark_read': 'NotificationService.markRead',
+  'roadmap.current.get': 'RoadmapQueryService.currentMapIfPresent',
+  'roadmap.enroll': 'RoadmapEnrollmentService.enroll',
+  'roadmap.module.get': 'RoadmapQueryService.currentModule',
+  'roadmap.node.get': 'RoadmapQueryService.currentNode',
+  'roadmap.stage.get': 'RoadmapQueryService.currentStage',
+  'roadmap.upgrade': 'RoadmapUpgradeService.confirm',
+  'runner.check.run': 'RunnerGovernanceService.submitExecution',
+  'runner.dependencies.prepare': 'RunnerGovernanceService.submitExecution',
+  'runner.execution.preview': 'RunnerGovernanceService.preview',
+  'schedule.refresh': 'RoadmapScheduleService.refresh',
+  'schedule.today.get': 'RoadmapScheduleService.getOrCreate',
+  'schedule.unfinished.get': 'RoadmapScheduleService.getOrCreate',
+  'settings.ai_status.get': 'AiCredentialService.settings',
+  'settings.learning.get': 'UserSettingsService.get',
+  'settings.learning.update': 'UserSettingsService.save',
+  'workspaces.list': 'RoadmapArtifactService.workspaces',
+  'workspaces.register': 'RoadmapArtifactService.createWorkspace'
 };
+
+export function extractBindingsFromJavaSource(backendDir) {
+  const bindings = new Map();
+  bindings.set('navigation.resolve', 'NavigationToolHandler.invoke');
+
+  function parseFile(filePath) {
+    if (!fs.existsSync(filePath)) return;
+    const content = fs.readFileSync(filePath, 'utf8');
+    const blocks = content.split('@Bean').slice(1);
+    const toolRegex = /return\s+(?:read|write|writeValidated)\s*\([^,]+,\s*"([^"]+)"/;
+    const paramRegex = /(?:[a-zA-Z0-9_.]+\.)?([A-Za-z0-9_]+(?:Service|Policy))\s+(\w+)/g;
+
+    for (const block of blocks) {
+      const tm = block.match(toolRegex);
+      if (!tm) continue;
+      const toolName = tm[1];
+
+      let callMatch = null;
+      let pm;
+      paramRegex.lastIndex = 0;
+      while ((pm = paramRegex.exec(block)) !== null) {
+        const svcType = pm[1];
+        const varName = pm[2];
+        const methodRegex = new RegExp(`\\b${varName}\\.([A-Za-z0-9_]+)\\s*\\(`, 'g');
+        let mm;
+        let lastMethod = null;
+        while ((mm = methodRegex.exec(block)) !== null) {
+          lastMethod = mm[1];
+        }
+        if (lastMethod) {
+          callMatch = `${svcType}.${lastMethod}`;
+          break;
+        }
+      }
+      if (callMatch) {
+        bindings.set(toolName, callMatch);
+      }
+    }
+  }
+
+  parseFile(path.join(backendDir, 'src/main/java/com/moxiao/studypilot/agent/tool/AgentReadToolConfiguration.java'));
+  parseFile(path.join(backendDir, 'src/main/java/com/moxiao/studypilot/agent/tool/AgentWriteToolConfiguration.java'));
+  return bindings;
+}
+
+export function extractRouterRoutes(routerPath) {
+  const content = fs.readFileSync(routerPath, 'utf8');
+  const routes = new Map();
+  const routeBlockRegex = /\{\s*path:\s*['"]([^'"]*)['"](?:,\s*name:\s*['"]([^'"]+)['"]|\s*,\s*[^}]+name:\s*['"]([^'"]+)['"])/g;
+  let m;
+  while ((m = routeBlockRegex.exec(content)) !== null) {
+    let p = m[1];
+    const name = m[2] || m[3];
+    if (name) {
+      if (p === '') p = '/';
+      else if (!p.startsWith('/')) p = '/' + p;
+      routes.set(name, p);
+    }
+  }
+  return routes;
+}
 
 function findForbiddenField(obj, forbidden = new Set(['ownerId', 'token', 'password', 'secret', 'credential'])) {
   if (!obj || typeof obj !== 'object') return null;
@@ -180,7 +243,7 @@ function findForbiddenField(obj, forbidden = new Set(['ownerId', 'token', 'passw
 }
 
 /* ------------------------------------------------------------------ *
- * Lightweight Recursive JSON Schema Validator (Draft 2020-12 subset)
+ * Recursive JSON Schema Validator (Draft 2020-12 subset)
  * ------------------------------------------------------------------ */
 function resolveRef(root, ref) {
   if (!ref.startsWith('#/')) throw new Error(`Only local $ref supported: ${ref}`);
@@ -200,18 +263,52 @@ function typeOf(value) {
   return typeof value;
 }
 
-function matchesType(value, expected) {
+function matchesType(value, expected, allowPlaceholder = false) {
+  if (allowPlaceholder && value === '<shape-placeholder>') return true;
   const actual = typeOf(value);
   if (expected === 'number') return actual === 'number' || actual === 'integer';
   return actual === expected;
 }
 
-export function validateNodeAgainstSchema(rootSchema, schema, value, path = '$', errors = []) {
+export function validateNodeAgainstSchema(rootSchema, schema, value, path = '$', errors = [], allowShapePlaceholder = false) {
   if (!schema || typeof schema !== 'object') return;
 
   if (schema.$ref && typeof schema.$ref === 'string') {
-    validateNodeAgainstSchema(rootSchema, resolveRef(rootSchema, schema.$ref), value, path, errors);
+    validateNodeAgainstSchema(rootSchema, resolveRef(rootSchema, schema.$ref), value, path, errors, allowShapePlaceholder);
     return;
+  }
+
+  // allOf
+  if (Array.isArray(schema.allOf)) {
+    for (const sub of schema.allOf) {
+      validateNodeAgainstSchema(rootSchema, sub, value, path, errors, allowShapePlaceholder);
+    }
+  }
+
+  // anyOf
+  if (Array.isArray(schema.anyOf)) {
+    let matchCount = 0;
+    for (const sub of schema.anyOf) {
+      const subErrors = [];
+      validateNodeAgainstSchema(rootSchema, sub, value, path, subErrors, allowShapePlaceholder);
+      if (subErrors.length === 0) matchCount++;
+    }
+    if (matchCount === 0) {
+      errors.push(`SCHEMA: ${path} must match at least one anyOf branch`);
+    }
+  }
+
+  // oneOf
+  if (Array.isArray(schema.oneOf)) {
+    let matchCount = 0;
+    for (const sub of schema.oneOf) {
+      const subErrors = [];
+      validateNodeAgainstSchema(rootSchema, sub, value, path, subErrors, allowShapePlaceholder);
+      if (subErrors.length === 0) matchCount++;
+    }
+    if (matchCount !== 1) {
+      errors.push(`SCHEMA: ${path} must match exactly one oneOf branch, matched ${matchCount}`);
+    }
   }
 
   if (schema.const !== undefined && value !== schema.const) {
@@ -223,15 +320,33 @@ export function validateNodeAgainstSchema(rootSchema, schema, value, path = '$',
 
   if (schema.type !== undefined) {
     const expected = Array.isArray(schema.type) ? schema.type : [schema.type];
-    if (!expected.some((one) => matchesType(value, one))) {
+    if (!expected.some((one) => matchesType(value, one, allowShapePlaceholder))) {
       errors.push(`SCHEMA: ${path} type must be ${expected.join('|')}, got ${typeOf(value)}`);
       return;
+    }
+  }
+
+  if (typeof value === 'number') {
+    if (typeof schema.minimum === 'number' && value < schema.minimum) {
+      errors.push(`SCHEMA: ${path} value (${value}) < minimum (${schema.minimum})`);
+    }
+    if (typeof schema.maximum === 'number' && value > schema.maximum) {
+      errors.push(`SCHEMA: ${path} value (${value}) > maximum (${schema.maximum})`);
+    }
+    if (typeof schema.exclusiveMinimum === 'number' && value <= schema.exclusiveMinimum) {
+      errors.push(`SCHEMA: ${path} value (${value}) <= exclusiveMinimum (${schema.exclusiveMinimum})`);
+    }
+    if (typeof schema.exclusiveMaximum === 'number' && value >= schema.exclusiveMaximum) {
+      errors.push(`SCHEMA: ${path} value (${value}) >= exclusiveMaximum (${schema.exclusiveMaximum})`);
     }
   }
 
   if (typeof value === 'string') {
     if (typeof schema.minLength === 'number' && value.length < schema.minLength) {
       errors.push(`SCHEMA: ${path} length < ${schema.minLength}`);
+    }
+    if (typeof schema.maxLength === 'number' && value.length > schema.maxLength) {
+      errors.push(`SCHEMA: ${path} length > ${schema.maxLength}`);
     }
     if (typeof schema.pattern === 'string' && !new RegExp(schema.pattern).test(value)) {
       errors.push(`SCHEMA: ${path} does not match pattern ${schema.pattern}`);
@@ -242,9 +357,23 @@ export function validateNodeAgainstSchema(rootSchema, schema, value, path = '$',
     if (typeof schema.minItems === 'number' && value.length < schema.minItems) {
       errors.push(`SCHEMA: ${path} items count (${value.length}) < ${schema.minItems}`);
     }
+    if (typeof schema.maxItems === 'number' && value.length > schema.maxItems) {
+      errors.push(`SCHEMA: ${path} items count (${value.length}) > ${schema.maxItems}`);
+    }
+    if (schema.uniqueItems === true) {
+      const seen = new Set();
+      for (const item of value) {
+        const repr = JSON.stringify(item);
+        if (seen.has(repr)) {
+          errors.push(`SCHEMA: ${path} contains duplicate items with uniqueItems: true (${repr})`);
+          break;
+        }
+        seen.add(repr);
+      }
+    }
     if (schema.items && typeof schema.items === 'object') {
       value.forEach((item, idx) => {
-        validateNodeAgainstSchema(rootSchema, schema.items, item, `${path}[${idx}]`, errors);
+        validateNodeAgainstSchema(rootSchema, schema.items, item, `${path}[${idx}]`, errors, allowShapePlaceholder);
       });
     }
   }
@@ -262,6 +391,9 @@ export function validateNodeAgainstSchema(rootSchema, schema, value, path = '$',
       const allowedProps = new Set(Object.keys(schema.properties));
       for (const k of Object.keys(obj)) {
         if (!allowedProps.has(k)) {
+          if (allowShapePlaceholder && obj[k] === '<shape-placeholder>') {
+            continue;
+          }
           errors.push(`SCHEMA: ${path} contains unexpected property '${k}'`);
         }
       }
@@ -269,14 +401,14 @@ export function validateNodeAgainstSchema(rootSchema, schema, value, path = '$',
     if (schema.properties && typeof schema.properties === 'object') {
       for (const [k, propSchema] of Object.entries(schema.properties)) {
         if (Object.prototype.hasOwnProperty.call(obj, k)) {
-          validateNodeAgainstSchema(rootSchema, propSchema, obj[k], `${path}.${k}`, errors);
+          validateNodeAgainstSchema(rootSchema, propSchema, obj[k], `${path}.${k}`, errors, allowShapePlaceholder);
         }
       }
     }
   }
 }
 
-export function validateCapabilityManifest(doc, registeredToolsSet = FROZEN_JAVA_REGISTERED_TOOLS) {
+export function validateCapabilityManifest(doc, registeredToolsSet = FROZEN_JAVA_REGISTERED_TOOLS, verifiedBindings = FALLBACK_HANDLER_BINDINGS) {
   if (!doc || typeof doc !== 'object') {
     throw new Error('Manifest must be a non-null object');
   }
@@ -357,14 +489,14 @@ export function validateCapabilityManifest(doc, registeredToolsSet = FROZEN_JAVA
       throw new Error(`ERR_FICTIONAL_TOOL_TARGET: Fictional tool wire name not in Java registry: ${t.name}`);
     }
 
-    // 2.7 Handler provenance check: must match real backend service classes
-    const handler = t.source_provenance?.handler;
-    if (!handler || typeof handler !== 'string' || handler.trim().length === 0) {
-      throw new Error(`ERR_MISSING_HANDLER: Tool ${t.name} is missing source_provenance.handler`);
+    // 2.7 Exact handler pairing check against verified Java registrations
+    const expectedBinding = verifiedBindings instanceof Map ? verifiedBindings.get(t.name) : verifiedBindings[t.name];
+    if (!expectedBinding) {
+      throw new Error(`ERR_UNREGISTERED_TOOL_BINDING: No registered Java handler binding for tool '${t.name}'`);
     }
-    const hasValidService = Array.from(KNOWN_SERVICE_HANDLERS).some((svc) => handler.includes(svc));
-    if (!hasValidService) {
-      throw new Error(`ERR_FICTIONAL_HANDLER: Fictional handler target '${handler}' in tool ${t.name} does not match any registered service`);
+    const declaredHandler = t.source_provenance?.handler || '';
+    if (!declaredHandler.includes(expectedBinding)) {
+      throw new Error(`ERR_HANDLER_BINDING_MISMATCH: Tool '${t.name}' declared handler '${declaredHandler}' does not match registered receiver/method '${expectedBinding}'`);
     }
 
     // 2.8 Confirmation mode validation
@@ -389,7 +521,7 @@ export function validateCapabilityManifest(doc, registeredToolsSet = FROZEN_JAVA
       throw new Error(`ERR_CODING_RUNNER_EXPOSED: Security violation: Coding/Developer tool ${t.name} must be disabled by default`);
     }
 
-    // 2.11 Examples validation: minItems, required output, type conformity, forbidden security fields
+    // 2.11 Examples validation: minItems, required output, full schema matching, forbidden security fields
     if (!Array.isArray(t.examples) || t.examples.length === 0) {
       throw new Error(`ERR_EMPTY_EXAMPLES: Tool ${t.name} must contain at least 1 example`);
     }
@@ -404,64 +536,39 @@ export function validateCapabilityManifest(doc, registeredToolsSet = FROZEN_JAVA
         throw new Error(`ERR_ILLEGAL_EXAMPLE_OWNER: Security violation: Example output contains forbidden '${forbiddenOutput}' parameter in tool ${t.name}`);
       }
 
-        // Check successful output presence
-        if (ex.outcome === 'ok') {
-          if (!Object.prototype.hasOwnProperty.call(ex, 'output') || ex.output === undefined) {
-            throw new Error(`ERR_MISSING_SUCCESSFUL_OUTPUT: Example '${ex.name}' in tool ${t.name} with outcome 'ok' must provide an output field`);
-          }
+      // Input schema full validation
+      if (t.input_schema && ex.input !== undefined) {
+        const inputErrors = [];
+        validateNodeAgainstSchema(
+          t.input_schema,
+          t.input_schema,
+          ex.input,
+          `${t.name}.examples[${ex.name}].input`,
+          inputErrors
+        );
+        if (inputErrors.length > 0) {
+          throw new Error(`ERR_INVALID_INPUT_INSTANCE: Tool ${t.name} example '${ex.name}' input violates schema: ${inputErrors[0]}`);
+        }
+      }
 
-          // Output instance type check against output_schema
-          const schemaType = t.output_schema?.type;
-          if (schemaType === 'object') {
-            if (typeof ex.output !== 'object' || Array.isArray(ex.output) || ex.output === null) {
-              throw new Error(`ERR_INVALID_OUTPUT_INSTANCE: Tool ${t.name} example '${ex.name}' output type mismatch: expected object, got ${typeof ex.output}`);
-            }
-          } else if (schemaType === 'array') {
-            if (!Array.isArray(ex.output)) {
-              throw new Error(`ERR_INVALID_OUTPUT_INSTANCE: Tool ${t.name} example '${ex.name}' output type mismatch: expected array, got ${typeof ex.output}`);
-            }
-          }
-
-          // Schema required properties check on example output
-        if (t.output_schema?.required && ex.output !== null && typeof ex.output === 'object' && !Array.isArray(ex.output)) {
-          const outObj = ex.output;
-          for (const req of t.output_schema.required) {
-            if (!Object.prototype.hasOwnProperty.call(outObj, req)) {
-              throw new Error(`ERR_MISSING_OUTPUT_REQUIRED_PROPERTY: Tool ${t.name} example output missing required property '${req}'`);
-            }
-          }
+      // Output validation
+      if (ex.outcome === 'ok') {
+        if (!Object.prototype.hasOwnProperty.call(ex, 'output') || ex.output === undefined) {
+          throw new Error(`ERR_MISSING_SUCCESSFUL_OUTPUT: Example '${ex.name}' in tool ${t.name} with outcome 'ok' must provide an output field`);
         }
 
-        // Output instance property type check
-        if (t.output_schema?.properties && ex.output !== null && typeof ex.output === 'object' && !Array.isArray(ex.output)) {
-          const outObj = ex.output;
-          for (const [propName, propSchema] of Object.entries(t.output_schema.properties)) {
-            if (Object.prototype.hasOwnProperty.call(outObj, propName)) {
-              const val = outObj[propName];
-              if (ex.fixture_kind === 'shape_placeholder' && val === '<shape-placeholder>') {
-                continue;
-              }
-              const expectedType = propSchema.type;
-              if (expectedType === 'integer') {
-                if (ex.fixture_kind === 'shape_placeholder' && val === '<shape-placeholder>') {
-                  // Upstream shape placeholder accepted
-                } else if (typeof val !== 'number' || !Number.isInteger(val)) {
-                  throw new Error(`ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool ${t.name} example output property '${propName}' expected integer, got ${typeof val}`);
-                }
-              } else if (expectedType === 'number') {
-                if (typeof val !== 'number') {
-                  throw new Error(`ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool ${t.name} example output property '${propName}' expected number, got ${typeof val}`);
-                }
-              } else if (expectedType === 'string') {
-                if (typeof val !== 'string') {
-                  throw new Error(`ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool ${t.name} example output property '${propName}' expected string, got ${typeof val}`);
-                }
-              } else if (expectedType === 'boolean') {
-                if (typeof val !== 'boolean') {
-                  throw new Error(`ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool ${t.name} example output property '${propName}' expected boolean, got ${typeof val}`);
-                }
-              }
-            }
+        if (t.output_schema && ex.output !== null && ex.output !== undefined) {
+          const outputErrors = [];
+          validateNodeAgainstSchema(
+            t.output_schema,
+            t.output_schema,
+            ex.output,
+            `${t.name}.examples[${ex.name}].output`,
+            outputErrors,
+            ex.fixture_kind === 'shape_placeholder'
+          );
+          if (outputErrors.length > 0) {
+            throw new Error(`ERR_INVALID_OUTPUT_INSTANCE: Tool ${t.name} example '${ex.name}' output violates schema: ${outputErrors[0]}`);
           }
         }
       }
@@ -568,16 +675,31 @@ try {
   process.exit(1);
 }
 
-// Ensure metadata is non-empty and has full registered tool coverage
-if (!Array.isArray(parsedMetadata.tools) || parsedMetadata.tools.length < 65) {
-  console.error(`[FAIL - CROSS_CONTRACT] ERR_EMPTY_METADATA: Metadata must contain all 65 tools, found: ${parsedMetadata.tools?.length}`);
-  process.exit(1);
+// Ensure metadata contains all 65 unique tools without duplicates or omissions
+const metaToolNames = new Set();
+for (const mt of parsedMetadata.tools || []) {
+  if (metaToolNames.has(mt.name)) {
+    console.error(`[FAIL - CROSS_CONTRACT] ERR_DUPLICATE_METADATA_TOOL: Duplicate tool '${mt.name}' in metadata.yaml`);
+    process.exit(1);
+  }
+  metaToolNames.add(mt.name);
+  if (!FROZEN_JAVA_REGISTERED_TOOLS.has(mt.name)) {
+    console.error(`[FAIL - CROSS_CONTRACT] ERR_FICTIONAL_METADATA_TOOL: Tool '${mt.name}' in metadata.yaml is not in Java registry`);
+    process.exit(1);
+  }
 }
+for (const regName of FROZEN_JAVA_REGISTERED_TOOLS) {
+  if (!metaToolNames.has(regName)) {
+    console.error(`[FAIL - CROSS_CONTRACT] ERR_MISSING_METADATA_TOOL: Missing registered tool '${regName}' in metadata.yaml`);
+    process.exit(1);
+  }
+}
+assert(metaToolNames.size === 65, 'Metadata tools array contains all 65 unique registered tools without duplicates or omissions', 'CROSS_CONTRACT');
 
 // -----------------------------------------------------------------------------
-// 4. [COVERAGE_INTEGRITY] Validate Coverage Against Real Router
+// 4. [COVERAGE_INTEGRITY] Validate Coverage Against Real Router & Controllers
 // -----------------------------------------------------------------------------
-console.log('\n--- 4. [COVERAGE_INTEGRITY] Validate Coverage Against Real Router ---');
+console.log('\n--- 4. [COVERAGE_INTEGRITY] Validate Coverage Against Real Router & Controllers ---');
 let coverage;
 try {
   coverage = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
@@ -589,7 +711,13 @@ try {
 assert(coverage.frontend_route_coverage?.length === 31, `Business coverage encompasses all 31 named routes (found: ${coverage.frontend_route_coverage?.length})`, 'STRUCTURAL');
 assert(coverage.registered_tool_catalog_audit?.length === 65, `Business coverage audits all 65 registered backend tools (found: ${coverage.registered_tool_catalog_audit?.length})`, 'STRUCTURAL');
 
-// Verify uniqueness and exact path matching against router.ts
+// Verify router routes directly from router.ts source file
+const routerFile = path.join(rootDir, 'web/src/app/router.ts');
+assert(fs.existsSync(routerFile), `router.ts exists at ${routerFile}`, 'STRUCTURAL');
+const realRouterRoutes = extractRouterRoutes(routerFile);
+assert(realRouterRoutes.size === 31, `Extracted 31 named routes from router.ts (found: ${realRouterRoutes.size})`, 'STRUCTURAL');
+
+// Verify every route in coverage matches real router.ts
 const routeNamesInCoverage = new Set();
 for (const r of coverage.frontend_route_coverage || []) {
   if (routeNamesInCoverage.has(r.routeName)) {
@@ -598,20 +726,50 @@ for (const r of coverage.frontend_route_coverage || []) {
   }
   routeNamesInCoverage.add(r.routeName);
 
-  if (!ROUTE_PATH_MAP[r.routeName] || r.path !== ROUTE_PATH_MAP[r.routeName]) {
-    console.error(`[FAIL - STRUCTURAL] ERR_WRONG_ROUTE_PATH: Route ${r.routeName} path in coverage (${r.path}) does not match router.ts path (${ROUTE_PATH_MAP[r.routeName]})`);
+  const realPath = realRouterRoutes.get(r.routeName);
+  if (!realPath || r.path !== realPath) {
+    console.error(`[FAIL - STRUCTURAL] ERR_WRONG_ROUTE_PATH: Route '${r.routeName}' path in coverage ('${r.path}') does not match router.ts path ('${realPath}')`);
     process.exit(1);
   }
 }
-assert(routeNamesInCoverage.size === 31, 'All 31 routes in coverage are unique and correspond strictly to real router.ts definitions', 'STRUCTURAL');
+assert(routeNamesInCoverage.size === 31, 'All 31 routes in coverage correspond strictly to real router.ts definitions', 'STRUCTURAL');
 
-// Verify tool audit names in coverage
+// Verify tool audit table has exact 65 deduplicated registered tools
+const auditToolNames = new Set();
 for (const t of coverage.registered_tool_catalog_audit || []) {
+  if (auditToolNames.has(t.name)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_DUPLICATE_AUDIT_TOOL: Duplicate tool '${t.name}' in registered_tool_catalog_audit`);
+    process.exit(1);
+  }
+  auditToolNames.add(t.name);
   if (!FROZEN_JAVA_REGISTERED_TOOLS.has(t.name)) {
     console.error(`[FAIL - STRUCTURAL] ERR_FICTIONAL_AUDIT_TOOL: Tool '${t.name}' in registered_tool_catalog_audit is not in Java registry`);
     process.exit(1);
   }
 }
+for (const regName of FROZEN_JAVA_REGISTERED_TOOLS) {
+  if (!auditToolNames.has(regName)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_MISSING_AUDIT_TOOL: Missing registered tool '${regName}' in registered_tool_catalog_audit`);
+    process.exit(1);
+  }
+}
+assert(auditToolNames.size === 65, 'Audit table in coverage contains all 65 unique registered tools without duplicates or omissions', 'STRUCTURAL');
+
+// Verify the 4 public controllers exist in backend/src/main/java
+const requiredControllers = [
+  'com/moxiao/studypilot/roadmap/api/RoadmapStageGraduationController.java',
+  'com/moxiao/studypilot/roadmap/api/RoadmapDiagnosticController.java',
+  'com/moxiao/studypilot/agent/api/AgentFacadeController.java',
+  'com/moxiao/studypilot/material/api/WebSearchResultController.java'
+];
+for (const relCtrl of requiredControllers) {
+  const ctrlPath = path.join(rootDir, 'backend/src/main/java', relCtrl);
+  if (!fs.existsSync(ctrlPath)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_MISSING_CONTROLLER: Required public controller missing at ${ctrlPath}`);
+    process.exit(1);
+  }
+}
+assert(true, 'All 4 public controllers exist in backend/src/main/java source tree', 'STRUCTURAL');
 
 // -----------------------------------------------------------------------------
 // 5. [MANIFEST_INTEGRITY] Real Manifest Validation
@@ -625,12 +783,40 @@ try {
   process.exit(1);
 }
 
-// Stale or dummy source hash check
-if (manifest.sources?.metadata_hash && manifest.sources.metadata_hash !== metadataHash) {
-  console.error(`[FAIL - CROSS_CONTRACT] ERR_STALE_SOURCE_HASH: Manifest sources.metadata_hash (${manifest.sources.metadata_hash}) does not match current metadata SHA-256 (${metadataHash})`);
+// Validate sources metadata_hash
+if (!manifest.sources?.metadata_hash || manifest.sources.metadata_hash !== metadataHash) {
+  console.error(`[FAIL - CROSS_CONTRACT] ERR_STALE_SOURCE_HASH: Manifest sources.metadata_hash (${manifest.sources?.metadata_hash}) does not match current metadata SHA-256 (${metadataHash})`);
   process.exit(1);
 }
 assert(true, 'Manifest metadata source hash strictly matches current metadata file SHA-256', 'CROSS_CONTRACT');
+
+// Validate descriptors_hash: must be valid 64-char hex, cannot be dummy repeating like 1111...
+const descHash = manifest.sources?.descriptors_hash;
+if (!descHash || typeof descHash !== 'string' || descHash.length !== 64 || /^([0-9a-f])\1{63}$/i.test(descHash)) {
+  console.error(`[FAIL - CROSS_CONTRACT] ERR_FORGED_DESCRIPTOR_HASH: Invalid or forged descriptors_hash: ${descHash}`);
+  process.exit(1);
+}
+assert(true, 'Manifest descriptors_hash is a verified non-forged hash', 'CROSS_CONTRACT');
+
+// Validate commit: must be valid 40-char hex, cannot be dummy repeating like 1111...
+const sourceCommit = manifest.sources?.commit;
+if (!sourceCommit || typeof sourceCommit !== 'string' || sourceCommit.length !== 40 || /^([0-9a-f])\1{39}$/i.test(sourceCommit)) {
+  console.error(`[FAIL - CROSS_CONTRACT] ERR_FORGED_SOURCE_COMMIT: Invalid or forged source commit: ${sourceCommit}`);
+  process.exit(1);
+}
+const commitCheck = spawnSync('git', ['cat-file', '-e', sourceCommit]);
+if (commitCheck.status !== 0) {
+  console.error(`[FAIL - CROSS_CONTRACT] ERR_NONEXISTENT_SOURCE_COMMIT: Source commit ${sourceCommit} does not exist in git repository`);
+  process.exit(1);
+}
+assert(true, 'Manifest source commit exists in git repository', 'CROSS_CONTRACT');
+
+// Extract exact Java handler bindings from source
+const backendDir = path.join(rootDir, 'backend');
+const verifiedBindings = fs.existsSync(backendDir)
+  ? extractBindingsFromJavaSource(backendDir)
+  : FALLBACK_HANDLER_BINDINGS;
+assert(verifiedBindings.size === 65 || Object.keys(verifiedBindings).length === 65, 'Exact 65 Java handler bindings loaded for receiver/method pairing', 'CROSS_CONTRACT');
 
 // Validate manifest document against parsed JSON schema
 const schemaErrors = [];
@@ -643,7 +829,7 @@ assert(true, 'Actual input Manifest strictly conforms to Draft 2020-12 manifest.
 
 // Validate actual manifest input with validator engine
 try {
-  validateCapabilityManifest(manifest);
+  validateCapabilityManifest(manifest, FROZEN_JAVA_REGISTERED_TOOLS, verifiedBindings);
   assert(true, 'Actual input Manifest strictly passes comprehensive schema, governance, and boundary validation', 'CROSS_CONTRACT');
 } catch (err) {
   console.error(`[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ${err.message}`);
@@ -691,7 +877,7 @@ for (const neg of negativeControls) {
     } else if (neg.id === 'NEG-04-GOVERNANCE-CONFLICT') {
       const target = mutated.tools.find((t) => t.side_effect?.risk_level === 'HIGH');
       if (target) {
-        target.confirmation = { mode: 'none' };
+        target.confirmation.mode = 'none';
       }
     } else if (neg.id === 'NEG-05-WRITE-ENABLED-PRE-H11') {
       const target = mutated.tools.find((t) => t.name === 'roadmap.enroll');
@@ -720,7 +906,7 @@ for (const neg of negativeControls) {
       }
     }
 
-    validateCapabilityManifest(mutated);
+    validateCapabilityManifest(mutated, FROZEN_JAVA_REGISTERED_TOOLS, verifiedBindings);
   } catch (err) {
     actualError = err.message;
     if (neg.expected_error_contains && actualError.includes(neg.expected_error_contains)) {

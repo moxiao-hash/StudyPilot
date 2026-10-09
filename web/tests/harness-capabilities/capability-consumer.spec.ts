@@ -5,6 +5,7 @@ import {
   FROZEN_JAVA_REGISTERED_TOOLS,
   WRITE_TOOLS,
   USER_EXCLUSIVE_ACTIONS,
+  VERIFIED_HANDLER_BINDINGS,
   validateCapabilityManifest,
   type CapabilityManifest,
   type CapabilityToolEntry
@@ -93,7 +94,7 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
             confirmation: { mode: isWrite ? 'always_user_confirmation' : 'none' },
             exposure: { state: isDisabled ? 'disabled' : 'allowed', reason: 'baseline' },
             source_provenance: {
-              handler: 'AgentLearningContextService.get'
+              handler: VERIFIED_HANDLER_BINDINGS[name] || 'AgentLearningContextService.get'
             },
             examples: [
               {
@@ -147,7 +148,7 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
             reason: 'mock reason'
           },
           source_provenance: {
-            handler: 'AgentLearningContextService.get'
+            handler: VERIFIED_HANDLER_BINDINGS[name] || 'AgentLearningContextService.get'
           },
           authoritative_facts: name === 'roadmap.current.get' ? [{ fact: 'overall_progress', meaning: 'pct' }] : [],
           output_schema: name === 'roadmap.current.get'
@@ -302,12 +303,12 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
       expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_UNVERIFIED_AUTHORITATIVE_FACT');
     });
 
-    it('NEG-15: 虚构处理类 (UnregisteredClass.noSuchMethod) 被严格拦截 (ERR_FICTIONAL_HANDLER)', () => {
+    it('NEG-15: 虚构处理类 (UnregisteredClass.noSuchMethod) 被严格拦截 (ERR_HANDLER_BINDING_MISMATCH)', () => {
       const manifest = buildBaseMockManifest();
       manifest.tools[0].source_provenance = {
         handler: 'UnregisteredClass.noSuchMethod'
       };
-      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_FICTIONAL_HANDLER');
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_HANDLER_BINDING_MISMATCH');
     });
   });
 

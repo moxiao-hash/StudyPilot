@@ -9,9 +9,9 @@
       "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-minimax",
       "head_commit": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
       "schema_path": "contracts/agent-capabilities/manifest.schema.json",
-      "schema_sha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
+      "schema_sha256": "73d6b5a3bcefb413f2598db4ec62a39e2357471da00fd83184c7e13fa01159cb",
       "manifest_path": "contracts/agent-capabilities/generated/manifest.json",
-      "manifest_sha256": "f59fbad509ccb5c0abf04d5bfa83ea261eb6a7d3e6906563a4ba9dcf84e4528b"
+      "manifest_sha256": "f1fe25dfdd90f2b9cb8abd93b7d9eacc7a246c8aa1dd9fa9006df2db4c761d1c"
     },
     "deepseek": {
       "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-deepseek",
