@@ -56,6 +56,7 @@ const KNOWN_SCHEMA_KEYWORDS = new Set([
 ]);
 
 function checkSchemaConstraints(schema, path = '$') {
+  if (typeof schema === 'boolean') return;
   if (!schema || typeof schema !== 'object') return;
   for (const [k, v] of Object.entries(schema)) {
     if (!KNOWN_SCHEMA_KEYWORDS.has(k)) {
@@ -69,6 +70,8 @@ function checkSchemaConstraints(schema, path = '$') {
       checkSchemaConstraints(v, `${path}.items`);
     } else if (['oneOf', 'anyOf', 'allOf'].includes(k) && Array.isArray(v)) {
       v.forEach((branch, idx) => checkSchemaConstraints(branch, `${path}.${k}[${idx}]`));
+    } else if (['not', 'if', 'then', 'else'].includes(k) && (typeof v === 'object' || typeof v === 'boolean') && v !== null) {
+      checkSchemaConstraints(v, `${path}.${k}`);
     }
   }
 }
@@ -114,7 +117,45 @@ function checkForbiddenKeysRecursive(value, path = '$') {
 }
 
 function validateValueAgainstSchema(schema, value, path = '$') {
+  if (schema === true) return;
+  if (schema === false) {
+    throw new Error(`Schema 为 false，任何值均不允许: ${path}`);
+  }
   if (!schema || typeof schema !== 'object') return;
+
+  // not 约束
+  if (schema.not !== undefined) {
+    let notMatched = false;
+    try {
+      validateValueAgainstSchema(schema.not, value, `${path}.not`);
+      notMatched = true;
+    } catch {
+      notMatched = false;
+    }
+    if (notMatched) {
+      throw new Error(`值违反 not 约束: ${path} 不应满足 not 模式`);
+    }
+  }
+
+  // if-then-else 条件约束
+  if (schema.if !== undefined) {
+    let ifPassed = false;
+    try {
+      validateValueAgainstSchema(schema.if, value, `${path}.if`);
+      ifPassed = true;
+    } catch {
+      ifPassed = false;
+    }
+    if (ifPassed) {
+      if (schema.then !== undefined) {
+        validateValueAgainstSchema(schema.then, value, `${path}.then`);
+      }
+    } else {
+      if (schema.else !== undefined) {
+        validateValueAgainstSchema(schema.else, value, `${path}.else`);
+      }
+    }
+  }
 
   // oneOf 约束
   if (Array.isArray(schema.oneOf)) {
@@ -227,7 +268,7 @@ function validateValueAgainstSchema(schema, value, path = '$') {
       }
     }
     for (const [k, v] of Object.entries(value)) {
-      if (props[k]) {
+      if (props[k] !== undefined) {
         validateValueAgainstSchema(props[k], v, `${path}.${k}`);
       }
     }
@@ -420,7 +461,48 @@ export function compileCapabilities({
     metadataMap.set(m.name, m);
   }
 
-  // 1. 检查遗漏工具
+  // 1. 双向完全核对 Java 源码真实注册集合 (65 个工具)
+  const missingInDescriptors = [];
+  for (const name of realBindings.keys()) {
+    if (!descriptorMap.has(name)) {
+      missingInDescriptors.push(name);
+    }
+  }
+  if (missingInDescriptors.length > 0) {
+    throw new Error(`描述符遗漏了 Java 源码中已注册的工具 (${missingInDescriptors.length}): ${missingInDescriptors.join(', ')}`);
+  }
+
+  const extraInDescriptors = [];
+  for (const name of descriptorMap.keys()) {
+    if (!realBindings.has(name)) {
+      extraInDescriptors.push(name);
+    }
+  }
+  if (extraInDescriptors.length > 0) {
+    throw new Error(`描述符包含未在 Java 源码配置中注册的未知工具 (${extraInDescriptors.length}): ${extraInDescriptors.join(', ')}`);
+  }
+
+  const missingFromJavaInMetadata = [];
+  for (const name of realBindings.keys()) {
+    if (!metadataMap.has(name)) {
+      missingFromJavaInMetadata.push(name);
+    }
+  }
+  if (missingFromJavaInMetadata.length > 0) {
+    throw new Error(`元数据遗漏了 Java 源码中已注册的工具 (${missingFromJavaInMetadata.length}): ${missingFromJavaInMetadata.join(', ')}`);
+  }
+
+  const extraFromJavaInMetadata = [];
+  for (const name of metadataMap.keys()) {
+    if (!realBindings.has(name)) {
+      extraFromJavaInMetadata.push(name);
+    }
+  }
+  if (extraFromJavaInMetadata.length > 0) {
+    throw new Error(`元数据包含未在 Java 源码配置中注册的未知工具 (${extraFromJavaInMetadata.length}): ${extraFromJavaInMetadata.join(', ')}`);
+  }
+
+  // 2. 检查描述符与元数据之间的对称性
   const missingInMetadata = [];
   for (const name of descriptorMap.keys()) {
     if (!metadataMap.has(name)) {
@@ -431,7 +513,6 @@ export function compileCapabilities({
     throw new Error(`元数据遗漏了已注册工具 (${missingInMetadata.length}): ${missingInMetadata.join(', ')}`);
   }
 
-  // 2. 检查未知工具
   const unknownInMetadata = [];
   for (const name of metadataMap.keys()) {
     if (!descriptorMap.has(name)) {
@@ -712,13 +793,14 @@ export function compileCapabilities({
     tools: compiledTools
   };
 
-  // 生成产物前严格依据 manifest.schema.json 递归校验完整 Manifest 结构
+  // 生成产物前严格依据 manifest.schema.json 递归校验完整 Manifest 结构（缺文件必须失败关闭）
   const schemaPath = resolve(root, 'contracts/agent-capabilities/manifest.schema.json');
-  if (existsSync(schemaPath)) {
-    const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
-    // 递归验证 root schema 及各 defs 约束
-    validateManifestAgainstSchema(schema, manifest);
+  if (!existsSync(schemaPath)) {
+    throw new Error(`manifest.schema.json 契约定义文件不存在: ${schemaPath}`);
   }
+  const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
+  // 递归验证 root schema 及各 defs 约束
+  validateManifestAgainstSchema(schema, manifest);
 
   if (outputPath) {
     const dir = dirname(outputPath);

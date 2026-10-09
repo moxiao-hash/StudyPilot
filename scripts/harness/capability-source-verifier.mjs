@@ -18,12 +18,50 @@ const KNOWN_KEYWORDS = new Set([
 ]);
 
 function validateSchema(schema, data, path = '$', rootSchema = schema) {
+  if (schema === true) return;
+  if (schema === false) {
+    throw new Error(`Schema 为 false，任何值均不允许: ${path}`);
+  }
   if (!schema || typeof schema !== 'object') return;
 
   // 校验未知关键字，防止静默绕过
   for (const k of Object.keys(schema)) {
     if (!KNOWN_KEYWORDS.has(k)) {
       throw new Error(`Schema 包含未知约束关键字: ${path}.${k}`);
+    }
+  }
+
+  // not 约束
+  if (schema.not !== undefined) {
+    let notMatched = false;
+    try {
+      validateSchema(schema.not, data, `${path}.not`, rootSchema);
+      notMatched = true;
+    } catch {
+      notMatched = false;
+    }
+    if (notMatched) {
+      throw new Error(`值违反 not 约束: ${path} 不应满足 not 模式`);
+    }
+  }
+
+  // if-then-else 约束
+  if (schema.if !== undefined) {
+    let ifPassed = false;
+    try {
+      validateSchema(schema.if, data, `${path}.if`, rootSchema);
+      ifPassed = true;
+    } catch {
+      ifPassed = false;
+    }
+    if (ifPassed) {
+      if (schema.then !== undefined) {
+        validateSchema(schema.then, data, `${path}.then`, rootSchema);
+      }
+    } else {
+      if (schema.else !== undefined) {
+        validateSchema(schema.else, data, `${path}.else`, rootSchema);
+      }
     }
   }
 
