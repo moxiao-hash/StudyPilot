@@ -1,12 +1,12 @@
 {
   "manifest_version": "1.0-draft",
-  "generated_at": "2026-10-08T13:30:07.305Z",
+  "generated_at": "2026-10-08T19:09:20.606Z",
   "sources": {
     "descriptor_count": 65,
-    "descriptors_hash": "37d4d5044f79805305881734d99cbe047261c2ca0a5e983074ce5ffa369432b4",
+    "descriptors_hash": "bf95c7ef0beae9823129c7ca77654bd34115642aec89ab6e8406422c496d02ea",
     "metadata_hash": "0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a",
     "java_source_hash": "13ff8548e69cf9c4d7fecb99e299b0f44d005afc25347cf7964847c0468ba6c8",
-    "commit": "24f4c77646c296a24b35a41924dc8bd07cb3703e"
+    "commit": "727b7b815193759310c3405cc92f050561c42bcb"
   },
   "tools": [
     {
@@ -3890,20 +3890,20 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "message": {
+            "type": "string"
+          },
           "paths": {
             "type": "array"
           },
           "workspaceId": {
             "type": "string"
-          },
-          "message": {
-            "type": "string"
           }
         },
         "required": [
+          "message",
           "paths",
-          "workspaceId",
-          "message"
+          "workspaceId"
         ]
       },
       "output_schema": {
@@ -5149,6 +5149,9 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "explanation": {
+            "type": "string"
+          },
           "workspaceId": {
             "type": "string"
           },
@@ -5159,9 +5162,6 @@
             "type": "string"
           },
           "targetFile": {
-            "type": "string"
-          },
-          "explanation": {
             "type": "string"
           }
         },
@@ -5329,20 +5329,20 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "diff": {
+            "type": "string"
+          },
           "targetFile": {
             "type": "string"
           },
           "workspaceId": {
             "type": "string"
-          },
-          "diff": {
-            "type": "string"
           }
         },
         "required": [
+          "diff",
           "targetFile",
-          "workspaceId",
-          "diff"
+          "workspaceId"
         ]
       },
       "output_schema": {
@@ -6906,20 +6906,20 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "targetDate": {
+            "type": "string"
+          },
           "weeklyStudyHours": {
             "type": "integer"
           },
           "title": {
             "type": "string"
-          },
-          "targetDate": {
-            "type": "string"
           }
         },
         "required": [
+          "targetDate",
           "weeklyStudyHours",
-          "title",
-          "targetDate"
+          "title"
         ]
       },
       "output_schema": {
@@ -11287,9 +11287,9 @@
           }
         },
         "required": [
+          "idempotencyKey",
           "templateType",
-          "workspaceId",
-          "idempotencyKey"
+          "workspaceId"
         ]
       },
       "output_schema": {
