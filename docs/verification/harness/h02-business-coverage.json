@@ -2450,58 +2450,464 @@
   ],
   "backend_controller_audit": [
     {
-      "controllerName": "WebSearchResultController",
-      "package": "com.moxiao.studypilot.material.api",
-      "primaryRoute": "materials",
+      "controllerName": "AgentExecutionController",
+      "package": "com.moxiao.studypilot.agent.api",
+      "primaryRoute": "activity",
       "endpoints": [
-        "POST /api/web-search-results/{resultId}/import"
+        "GET /api/agent-executions",
+        "POST /api/agent-executions/{executionId}/confirm"
       ],
-      "mappedAgentTool": "materials.web.import",
-      "classification": "REGISTERED_TOOL_WRITE",
-      "status": "disabled",
-      "reason": "对应写工具 materials.web.import；受 Task H11 规则约束处于 disabled 状态。"
-    },
-    {
-      "controllerName": "RoadmapStageGraduationController",
-      "package": "com.moxiao.studypilot.roadmap.api",
-      "primaryRoute": "roadmap-stage",
-      "endpoints": [
-        "POST /api/roadmaps/current/stages/{stageId}/graduation",
-        "GET /api/roadmaps/current/stages/{stageId}/graduation"
-      ],
-      "mappedAgentTool": null,
-      "classification": "UNREGISTERED_BUSINESS_OPERATION",
-      "status": "unregistered_in_catalog",
-      "reason": "阶段结业属于里程碑式综合考核，为用户交互式操作，未在 Java AgentToolRegistry 中注册独立 Agent 工具。"
-    },
-    {
-      "controllerName": "RoadmapDiagnosticController",
-      "package": "com.moxiao.studypilot.roadmap.api",
-      "primaryRoute": "roadmap",
-      "endpoints": [
-        "POST /api/roadmaps/current/diagnostic",
-        "GET /api/roadmaps/current/diagnostic"
-      ],
-      "mappedAgentTool": null,
-      "classification": "UNREGISTERED_BUSINESS_OPERATION",
-      "status": "unregistered_in_catalog",
-      "reason": "初始路线诊断测试评估，由学习者在路线首页主动发起，未在 Java AgentToolRegistry 中注册独立 Agent 工具。"
+      "classification": "GOVERNANCE_EXECUTION_AUDIT",
+      "status": "allowed",
+      "reason": "Agent 执行记录查询与确认；对应治理查询工具 governance.executions.list。"
     },
     {
       "controllerName": "AgentFacadeController",
       "package": "com.moxiao.studypilot.agent.api",
       "primaryRoute": "agent-plan",
       "endpoints": [
-        "POST /api/agent/plan-conversations",
-        "POST /api/agent/plan-conversations/{id}/messages",
+        "GET /api/agent/knowledge-conversations/{id}",
+        "GET /api/agent/plan-adjustments/{id}",
         "GET /api/agent/plan-conversations/{id}",
+        "GET /api/agent/task-conversations/{id}",
+        "GET /api/agent/teaching-conversations/{id}",
+        "POST /api/agent/knowledge-conversations",
+        "POST /api/agent/knowledge-conversations/{id}/messages",
+        "POST /api/agent/plan-adjustments/analyze",
+        "POST /api/agent/plan-adjustments/{id}/confirm",
+        "POST /api/agent/plan-conversations",
         "POST /api/agent/plan-conversations/{id}/confirm",
-        "POST /api/agent/task-conversations"
+        "POST /api/agent/plan-conversations/{id}/messages",
+        "POST /api/agent/quizzes/generate",
+        "POST /api/agent/task-conversations",
+        "POST /api/agent/task-conversations/{id}/confirm",
+        "POST /api/agent/task-conversations/{id}/messages",
+        "POST /api/agent/teaching-conversations",
+        "POST /api/agent/teaching-conversations/{id}/messages"
       ],
-      "mappedAgentTool": null,
       "classification": "CLIENT_FACADE_GATEWAY",
       "status": "unregistered_in_catalog",
-      "reason": "面向前端的会话网关 Controller，负责鉴权并将对话委托给 Python agent-service，自身非供 Agent 调用的工具描述符。"
+      "reason": "面向前端的计划与任务会话 REST 网关控制器，负责鉴权并转发请求至 Python 服务端，非供 Agent 调用的工具描述符。"
+    },
+    {
+      "controllerName": "AgentGrantController",
+      "package": "com.moxiao.studypilot.agent.api",
+      "primaryRoute": "activity",
+      "endpoints": [
+        "GET /api/agent-grants",
+        "POST /api/agent-grants"
+      ],
+      "classification": "USER_EXCLUSIVE_OPERATION",
+      "status": "user_exclusive",
+      "reason": "高风险及跨范围权限提升审批；严格要求学习者本人主动授权，禁止 Agent 自行提权。"
+    },
+    {
+      "controllerName": "AiCredentialController",
+      "package": "com.moxiao.studypilot.aicredential.api",
+      "primaryRoute": "settings-ai",
+      "endpoints": [
+        "DELETE /api/ai-settings/deepseek-key",
+        "DELETE /api/ai-settings/tavily-key",
+        "GET /api/ai-settings",
+        "PUT /api/ai-settings/deepseek-key",
+        "PUT /api/ai-settings/tavily-key"
+      ],
+      "classification": "USER_EXCLUSIVE_CREDENTIAL",
+      "status": "allowed",
+      "reason": "AI 模型服务凭据状态查看允许（settings.ai_status.get）；用户私有 API Key 设置与删除属于用户专属安全行为。"
+    },
+    {
+      "controllerName": "AssistantAutomationController",
+      "package": "com.moxiao.studypilot.agent.automation",
+      "primaryRoute": "settings",
+      "endpoints": [
+        "DELETE /api/assistant/automation-rules/{ruleId}",
+        "GET /api/assistant/automation-rules",
+        "GET /api/assistant/automation-rules/{ruleId}",
+        "GET /api/assistant/automation-settings",
+        "PATCH /api/assistant/automation-rules/{ruleId}",
+        "PATCH /api/assistant/automation-settings",
+        "POST /api/assistant/automation-rules"
+      ],
+      "classification": "AUTOMATION_SETTINGS",
+      "status": "allowed",
+      "reason": "学习者自动化设置与规则列表查询；对应工具 automation.settings.get 与 automation.rules.list。"
+    },
+    {
+      "controllerName": "AssistantHealthController",
+      "package": "com.moxiao.studypilot.agent.api",
+      "primaryRoute": "assistant-health",
+      "endpoints": [
+        "GET /api/assistant/health"
+      ],
+      "classification": "REGISTERED_TOOL_READ_PENDING_DEFECT",
+      "status": "pending",
+      "reason": "对应 governance.health.get 工具；因 Java 返回字段超出登记闭合输出 schema，处于 pending 状态。"
+    },
+    {
+      "controllerName": "AuditLogController",
+      "package": "com.moxiao.studypilot.agent.api",
+      "primaryRoute": "activity",
+      "endpoints": [
+        "GET /api/audit-logs"
+      ],
+      "classification": "REGISTERED_TOOL_READ",
+      "status": "allowed",
+      "reason": "安全与治理审计日志查询；对应工具 governance.audit.list。"
+    },
+    {
+      "controllerName": "AuthenticationController",
+      "package": "com.moxiao.studypilot.auth.api",
+      "primaryRoute": "login",
+      "endpoints": [
+        "GET /api/auth/me",
+        "POST /api/auth/login",
+        "POST /api/auth/logout",
+        "POST /api/auth/register"
+      ],
+      "classification": "USER_IDENTITY_AUTHENTICATION",
+      "status": "user_exclusive",
+      "reason": "用户注册、登录凭据验证与登出；严格为用户本人专属操作，无对应 Agent 工具。"
+    },
+    {
+      "controllerName": "CourseController",
+      "package": "com.moxiao.studypilot.course.api",
+      "primaryRoute": "courses",
+      "endpoints": [
+        "GET /api/courses",
+        "GET /api/courses/continue",
+        "GET /api/courses/{courseSlug}",
+        "GET /api/lessons/{lessonId}",
+        "POST /api/lessons/{lessonId}/checkpoints/{blockKey}/attempts",
+        "PUT /api/lessons/{lessonId}/progress"
+      ],
+      "classification": "UNREGISTERED_LEGACY_COURSE",
+      "status": "unregistered_in_catalog",
+      "reason": "历史课程体系与视频课时播放控制器；为历史兼容模块，未注册 Agent 工具。"
+    },
+    {
+      "controllerName": "DashboardController",
+      "package": "com.moxiao.studypilot.dashboard.api",
+      "primaryRoute": "dashboard",
+      "endpoints": [
+        "GET /api/dashboard"
+      ],
+      "classification": "PORTAL_DASHBOARD",
+      "status": "allowed",
+      "reason": "学习者主看板总览数据；由 Java 端聚合多个只读事实服务提供。"
+    },
+    {
+      "controllerName": "LearningGoalController",
+      "package": "com.moxiao.studypilot.learning.api",
+      "primaryRoute": "goals",
+      "endpoints": [
+        "GET /api/learning-goals",
+        "PATCH /api/learning-goals/{goalId}",
+        "POST /api/learning-goals"
+      ],
+      "classification": "LEARNING_GOALS",
+      "status": "allowed",
+      "reason": "目标列表查询允许（learning.goals.list）；目标创建为写工具（learning.goal.create，禁用）。"
+    },
+    {
+      "controllerName": "LearningPlanController",
+      "package": "com.moxiao.studypilot.learning.api",
+      "primaryRoute": "plans",
+      "endpoints": [
+        "GET /api/learning-plans",
+        "GET /api/learning-plans/{planId}/versions",
+        "POST /api/learning-plans",
+        "POST /api/learning-plans/{planId}/confirm",
+        "POST /api/learning-plans/{planId}/tasks"
+      ],
+      "classification": "LEARNING_PLANS",
+      "status": "allowed",
+      "reason": "计划列表与详情查询允许（learning.plans.list, learning.plan.get）；计划创建为写工具（learning.plan.create，禁用）。"
+    },
+    {
+      "controllerName": "LearningTaskController",
+      "package": "com.moxiao.studypilot.learning.api",
+      "primaryRoute": "today",
+      "endpoints": [
+        "GET /api/learning-tasks",
+        "GET /api/learning-tasks/{taskId}/history",
+        "PATCH /api/learning-tasks/{taskId}/status"
+      ],
+      "classification": "LEARNING_TASKS",
+      "status": "allowed",
+      "reason": "每日任务列表查询允许（learning.tasks.list）；任务状态更新为 HIGH 风险写工具（learning.task.update，禁用）。"
+    },
+    {
+      "controllerName": "MasteryController",
+      "package": "com.moxiao.studypilot.assessment.api",
+      "primaryRoute": "mastery",
+      "endpoints": [
+        "GET /api/mastery"
+      ],
+      "classification": "REGISTERED_TOOL_READ",
+      "status": "allowed",
+      "reason": "知识掌握度雷达图与指标查询；对应工具 assessment.mastery.list。"
+    },
+    {
+      "controllerName": "MaterialController",
+      "package": "com.moxiao.studypilot.material.api",
+      "primaryRoute": "materials",
+      "endpoints": [
+        "GET /api/materials",
+        "GET /api/materials/{materialId}",
+        "POST /api/materials",
+        "POST /api/materials",
+        "POST /api/materials/text",
+        "POST /api/materials/web"
+      ],
+      "classification": "LEARNING_MATERIALS",
+      "status": "allowed",
+      "reason": "资料库列表与正文查询允许（materials.list, materials.get）；文本/网页导入为写工具（materials.text.import，禁用）。"
+    },
+    {
+      "controllerName": "NotificationController",
+      "package": "com.moxiao.studypilot.notification.api",
+      "primaryRoute": "notifications",
+      "endpoints": [
+        "GET /api/notifications",
+        "PATCH /api/notifications/{notificationId}/read"
+      ],
+      "classification": "USER_NOTIFICATIONS",
+      "status": "allowed",
+      "reason": "通知列表查询允许（notifications.list）；标记已读为写工具（notifications.mark_read，禁用）。"
+    },
+    {
+      "controllerName": "ProjectWorkspaceController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "workspace-artifacts",
+      "endpoints": [
+        "GET /api/workspaces",
+        "POST /api/workspaces"
+      ],
+      "classification": "PROJECT_WORKSPACES",
+      "status": "allowed",
+      "reason": "工作区列表查询允许（workspaces.list）；工作区注册为 HIGH 风险写工具（workspaces.register，禁用）。"
+    },
+    {
+      "controllerName": "QuizAttemptController",
+      "package": "com.moxiao.studypilot.assessment.api",
+      "primaryRoute": "attempt",
+      "endpoints": [
+        "GET /api/quiz-attempts/{attemptId}",
+        "POST /api/quiz-attempts/{attemptId}/self-assessments"
+      ],
+      "classification": "REGISTERED_TOOL_READ",
+      "status": "allowed",
+      "reason": "测验作答记录详情查询与复盘；对应工具 assessment.attempt.get。"
+    },
+    {
+      "controllerName": "QuizController",
+      "package": "com.moxiao.studypilot.assessment.api",
+      "primaryRoute": "quiz",
+      "endpoints": [
+        "GET /api/quizzes/{quizId}",
+        "POST /api/quizzes/{quizId}/attempts"
+      ],
+      "classification": "USER_EXCLUSIVE_ASSESSMENT",
+      "status": "allowed",
+      "reason": "测验试题查询允许（assessment.quiz.get）；试卷作答提交属于学习者专属考核行为（QUIZ_SUBMISSION），禁止 Agent 代办。"
+    },
+    {
+      "controllerName": "RoadmapArtifactController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "workspace-artifacts",
+      "endpoints": [
+        "GET /api/roadmap-artifacts",
+        "GET /api/roadmap-artifacts/{artifactId}",
+        "POST /api/roadmap-artifacts",
+        "POST /api/roadmap-artifacts/{artifactId}/accept",
+        "POST /api/roadmap-artifacts/{artifactId}/evaluate",
+        "POST /api/roadmap-artifacts/{artifactId}/reject",
+        "POST /api/roadmap-artifacts/{artifactId}/review-previews",
+        "POST /api/roadmap-artifacts/{artifactId}/review-previews/{previewId}/confirm"
+      ],
+      "classification": "ROADMAP_ARTIFACTS",
+      "status": "allowed",
+      "reason": "成果物列表与详情允许（artifacts.list, artifacts.get）；成果物提交禁用（artifacts.submit）；最终验收属于用户专属动作（ACCEPT_ARTIFACT_SUBMISSION）。"
+    },
+    {
+      "controllerName": "RoadmapController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "roadmap",
+      "endpoints": [
+        "GET /api/roadmaps/current",
+        "GET /api/roadmaps/current/map",
+        "GET /api/roadmaps/current/modules/{moduleId}",
+        "GET /api/roadmaps/current/nodes/{nodeId}",
+        "GET /api/roadmaps/current/stages/{stageId}",
+        "POST /api/roadmap-enrollments"
+      ],
+      "classification": "ROADMAP_CORE",
+      "status": "allowed",
+      "reason": "路线图各层级只读查询允许（roadmap.current.get, roadmap.stage.get, roadmap.module.get, roadmap.node.get）；报名为写工具（roadmap.enroll，禁用）。"
+    },
+    {
+      "controllerName": "RoadmapDiagnosticController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "roadmap",
+      "endpoints": [
+        "GET /api/roadmaps/current/diagnostic",
+        "POST /api/roadmaps/current/diagnostic"
+      ],
+      "classification": "UNREGISTERED_BUSINESS_OPERATION",
+      "status": "unregistered_in_catalog",
+      "reason": "初始路线诊断测试评估，由学习者在路线首页主动发起，未在 Java AgentToolRegistry 中注册独立 Agent 工具。"
+    },
+    {
+      "controllerName": "RoadmapLearningLoopController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "roadmap-node",
+      "endpoints": [
+        "GET /api/roadmap-nodes/{nodeId}/check-ins",
+        "GET /api/roadmap-nodes/{nodeId}/quiz",
+        "POST /api/roadmap-nodes/{nodeId}/check-ins",
+        "POST /api/roadmap-nodes/{nodeId}/quick-verification",
+        "POST /api/roadmap-nodes/{nodeId}/quiz-retries"
+      ],
+      "classification": "ROADMAP_LEARNING_LOOP",
+      "status": "allowed",
+      "reason": "节点测验状态只读允许（assessment.node_quiz_status.get）；测验生成/重试为写工具禁用；打卡提交为用户专属行为（CHECKIN_SUMMARY_SUBMIT）。"
+    },
+    {
+      "controllerName": "RoadmapScheduleController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "today",
+      "endpoints": [
+        "GET /api/roadmaps/current/schedule",
+        "POST /api/roadmaps/current/schedule/refresh"
+      ],
+      "classification": "ROADMAP_SCHEDULE",
+      "status": "allowed",
+      "reason": "今日日程查询允许（schedule.today.get, schedule.unfinished.get）；日程刷新为写工具（schedule.refresh，禁用）。"
+    },
+    {
+      "controllerName": "RoadmapStageGraduationController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "roadmap-stage",
+      "endpoints": [
+        "GET /api/roadmaps/current/stages/{stageId}/graduation",
+        "POST /api/roadmaps/current/stages/{stageId}/graduation"
+      ],
+      "classification": "UNREGISTERED_BUSINESS_OPERATION",
+      "status": "unregistered_in_catalog",
+      "reason": "阶段结业属于里程碑式综合考核，为用户交互式操作，未在 Java AgentToolRegistry 中注册独立 Agent 工具。"
+    },
+    {
+      "controllerName": "RoadmapUpgradeController",
+      "package": "com.moxiao.studypilot.roadmap.api",
+      "primaryRoute": "roadmap",
+      "endpoints": [
+        "GET /api/roadmaps/current/upgrades",
+        "POST /api/roadmaps/current/upgrades/{upgradeId}/confirm"
+      ],
+      "classification": "DISABLED_TOOL_WRITE",
+      "status": "disabled",
+      "reason": "路线大版本升级确认控制器；对应 HIGH 风险写工具 roadmap.upgrade，受 H11 规则约束禁用。"
+    },
+    {
+      "controllerName": "RunnerController",
+      "package": "com.moxiao.studypilot.agent.runner",
+      "primaryRoute": "workspace-artifacts",
+      "endpoints": [
+        "GET /api/runner/executions/{runnerExecutionId}",
+        "POST /api/runner/executions",
+        "POST /api/runner/executions/{runnerExecutionId}/confirm",
+        "POST /api/runner/executions/{runnerExecutionId}/reject",
+        "POST /api/runner/preview"
+      ],
+      "classification": "DISABLED_RUNNER",
+      "status": "disabled",
+      "reason": "远程 Runner 执行与依赖准备控制器；对应 runner.* 工具，默认禁用。"
+    },
+    {
+      "controllerName": "UnifiedAssistantFacadeController",
+      "package": "com.moxiao.studypilot.agent.api",
+      "primaryRoute": "assistant",
+      "endpoints": [
+        "GET /api/assistant/conversations/{id}",
+        "GET /api/assistant/conversations/{id}/events",
+        "POST /api/assistant/conversations",
+        "POST /api/assistant/conversations/{id}/actions/receipt",
+        "POST /api/assistant/conversations/{id}/actions/{actionId}/confirm",
+        "POST /api/assistant/conversations/{id}/actions/{actionId}/reject",
+        "POST /api/assistant/conversations/{id}/messages",
+        "POST /api/assistant/conversations/{id}/turns/{turnId}/cancel"
+      ],
+      "classification": "CLIENT_FACADE_GATEWAY",
+      "status": "unregistered_in_catalog",
+      "reason": "主助手统一 SSE 流式会话网关与多轮对话状态机门面控制器。"
+    },
+    {
+      "controllerName": "UserSettingsController",
+      "package": "com.moxiao.studypilot.user.api",
+      "primaryRoute": "settings",
+      "endpoints": [
+        "GET /api/user-settings",
+        "PUT /api/user-settings"
+      ],
+      "classification": "USER_SETTINGS",
+      "status": "allowed",
+      "reason": "学习者偏好设置查询允许（settings.learning.get）；偏好修改为 HIGH 风险写工具（settings.learning.update，禁用）。"
+    },
+    {
+      "controllerName": "WebSearchResultController",
+      "package": "com.moxiao.studypilot.material.api",
+      "primaryRoute": "materials",
+      "endpoints": [
+        "POST /api/web-search-results/{resultId}/import"
+      ],
+      "classification": "DISABLED_TOOL_WRITE",
+      "status": "disabled",
+      "reason": "外部网页搜索结果导入控制器；对应写工具 materials.web.import，受 H11 规则约束禁用。"
+    },
+    {
+      "controllerName": "WorkspaceDeveloperController",
+      "package": "com.moxiao.studypilot.agent.developer",
+      "primaryRoute": "workspace-artifacts",
+      "endpoints": [
+        "GET /api/developer/workspaces/{workspaceId}/file",
+        "GET /api/developer/workspaces/{workspaceId}/git-diff",
+        "GET /api/developer/workspaces/{workspaceId}/git-log",
+        "GET /api/developer/workspaces/{workspaceId}/git-push-preview",
+        "GET /api/developer/workspaces/{workspaceId}/git-status",
+        "GET /api/developer/workspaces/{workspaceId}/search",
+        "GET /api/developer/workspaces/{workspaceId}/tree",
+        "POST /api/developer/workspaces/{workspaceId}/git-commit-preview",
+        "POST /api/developer/workspaces/{workspaceId}/patch-preview",
+        "POST /api/developer/workspaces/{workspaceId}/test-recommendations"
+      ],
+      "classification": "DISABLED_LOCAL_AUTOMATION",
+      "status": "disabled",
+      "reason": "工作区本地开发与代码分析控制器；对应 developer.* 工具，为保障沙箱安全默认禁用。"
+    },
+    {
+      "controllerName": "WrongQuestionController",
+      "package": "com.moxiao.studypilot.assessment.api",
+      "primaryRoute": "wrong-questions",
+      "endpoints": [
+        "GET /api/wrong-questions",
+        "GET /api/wrong-questions/summary"
+      ],
+      "classification": "ASSESSMENT_WRONG_QUESTIONS",
+      "status": "allowed",
+      "reason": "错题概览统计允许（assessment.wrong_questions.summary）；错题分页列表因契约缺陷处于 pending（assessment.wrong_questions.list）。"
+    },
+    {
+      "controllerName": "WrongQuestionReviewController",
+      "package": "com.moxiao.studypilot.assessment.api",
+      "primaryRoute": "wrong-questions",
+      "endpoints": [
+        "GET /api/wrong-question-reviews/current",
+        "POST /api/wrong-question-reviews"
+      ],
+      "classification": "DISABLED_TOOL_WRITE",
+      "status": "disabled",
+      "reason": "错题复习批次生成控制器；对应写工具 assessment.wrong_question_review.create，受 H11 规则约束禁用。"
     }
   ]
 }

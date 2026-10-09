@@ -771,6 +771,8 @@ function extractBackendControllerEndpoints(backendJavaDir) {
   const controllers = findJavaFiles(backendJavaDir, (n) => n.endsWith('Controller.java'));
   const endpoints = new Map();
   const controllerMap = new Map();
+  const controllerToEndpoints = new Map();
+  const publicControllerSet = new Set();
 
   for (const cPath of controllers) {
     const content = fs.readFileSync(cPath, 'utf8');
@@ -782,6 +784,7 @@ function extractBackendControllerEndpoints(backendJavaDir) {
 
     const methodRegex = /@(Get|Post|Put|Delete|Patch)Mapping(?:\((?:value\s*=\s*)?(?:['"]([^'"]*)['"])?[^)]*\))?/g;
     let m;
+    const ctrlEps = new Set();
     while ((m = methodRegex.exec(content)) !== null) {
       const httpMethod = m[1].toUpperCase();
       const subPath = m[2] || '';
@@ -789,14 +792,20 @@ function extractBackendControllerEndpoints(backendJavaDir) {
       if (fullPath.endsWith('/') && fullPath.length > 1) fullPath = fullPath.slice(0, -1);
       const key = `${httpMethod} ${fullPath}`;
       endpoints.set(key, { controller: cName, file: cPath });
+      ctrlEps.add(key);
+    }
+    controllerToEndpoints.set(cName, ctrlEps);
+    const isInternal = cName.startsWith('Internal') || basePath.startsWith('/internal');
+    if (!isInternal) {
+      publicControllerSet.add(cName);
     }
   }
-  return { endpoints, controllerMap };
+  return { endpoints, controllerMap, controllerToEndpoints, publicControllerSet };
 }
 
 const backendJavaDir = path.join(rootDir, 'backend/src/main/java');
 assert(fs.existsSync(backendJavaDir), `backend java source dir exists at ${backendJavaDir}`, 'STRUCTURAL');
-const { endpoints: realBackendEndpoints, controllerMap: realControllerMap } = extractBackendControllerEndpoints(backendJavaDir);
+const { endpoints: realBackendEndpoints, controllerMap: realControllerMap, controllerToEndpoints, publicControllerSet } = extractBackendControllerEndpoints(backendJavaDir);
 assert(realControllerMap.size >= 50, `Extracted real controllers from backend sources (found: ${realControllerMap.size} controllers, ${realBackendEndpoints.size} endpoints)`, 'STRUCTURAL');
 
 // Verify backend_controller_audit (R-Z10)
@@ -805,7 +814,14 @@ if (!Array.isArray(coverage.backend_controller_audit) || coverage.backend_contro
   process.exit(1);
 }
 
+const auditedControllerNames = new Set();
 for (const cAudit of coverage.backend_controller_audit) {
+  if (auditedControllerNames.has(cAudit.controllerName)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_DUPLICATE_CONTROLLER_AUDIT: Duplicate controller in audit: ${cAudit.controllerName}`);
+    process.exit(1);
+  }
+  auditedControllerNames.add(cAudit.controllerName);
+
   if (!realControllerMap.has(cAudit.controllerName)) {
     console.error(`[FAIL - STRUCTURAL] ERR_FICTIONAL_CONTROLLER: Controller '${cAudit.controllerName}' in audit does not exist in backend sources`);
     process.exit(1);
@@ -814,14 +830,23 @@ for (const cAudit of coverage.backend_controller_audit) {
     console.error(`[FAIL - STRUCTURAL] ERR_EMPTY_CONTROLLER_ENDPOINTS: Controller '${cAudit.controllerName}' must declare non-empty endpoints`);
     process.exit(1);
   }
+  const realEndpointsForThisCtrl = controllerToEndpoints.get(cAudit.controllerName);
   for (const ep of cAudit.endpoints) {
-    if (!realBackendEndpoints.has(ep)) {
-      console.error(`[FAIL - STRUCTURAL] ERR_INVENTED_CONTROLLER_ENDPOINT: Endpoint '${ep}' in '${cAudit.controllerName}' does not exist in backend Controller sources`);
+    if (!realEndpointsForThisCtrl || !realEndpointsForThisCtrl.has(ep)) {
+      console.error(`[FAIL - STRUCTURAL] ERR_CONTROLLER_ENDPOINT_MISMATCH: Endpoint '${ep}' does not belong to Controller '${cAudit.controllerName}'`);
       process.exit(1);
     }
   }
 }
-assert(true, 'All controller audit entries correspond to real Controller source files and actual HTTP endpoints', 'STRUCTURAL');
+
+// Ensure all public controllers in backend are audited (bidirectional completeness)
+for (const expectedCtrl of publicControllerSet) {
+  if (!auditedControllerNames.has(expectedCtrl)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_MISSING_CONTROLLER_AUDIT: Missing required public controller in audit: ${expectedCtrl}`);
+    process.exit(1);
+  }
+}
+assert(true, 'All controller audit entries correspond to real Controller source files, exact endpoint pairing, and bidirectional completeness', 'STRUCTURAL');
 
 // Verify authoritative_facts_sources (R-Z10)
 if (!Array.isArray(coverage.authoritative_facts_sources) || coverage.authoritative_facts_sources.length === 0) {
@@ -830,10 +855,22 @@ if (!Array.isArray(coverage.authoritative_facts_sources) || coverage.authoritati
 }
 
 for (const afs of coverage.authoritative_facts_sources) {
-  const serviceClass = afs.javaService.split('.')[0];
+  const parts = afs.javaService.split('.');
+  if (parts.length < 2) {
+    console.error(`[FAIL - STRUCTURAL] ERR_INVALID_JAVA_SERVICE_FORMAT: Java service '${afs.javaService}' must specify ClassName.methodName`);
+    process.exit(1);
+  }
+  const serviceClass = parts[0];
+  const methodName = parts[1];
   const serviceFiles = findJavaFiles(backendJavaDir, (n) => n === `${serviceClass}.java`);
   if (serviceFiles.length === 0) {
     console.error(`[FAIL - STRUCTURAL] ERR_INVENTED_AUTHORITATIVE_SERVICE: Authoritative fact service '${afs.javaService}' (${serviceClass}) does not exist in backend Java sources`);
+    process.exit(1);
+  }
+  const serviceSource = fs.readFileSync(serviceFiles[0], 'utf8');
+  const methodRegex = new RegExp(`\\b${methodName}\\s*\\(`, 'g');
+  if (!methodRegex.test(serviceSource)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_NONEXISTENT_SERVICE_METHOD: Method '${methodName}' does not exist in service '${serviceClass}' (${afs.javaService})`);
     process.exit(1);
   }
   if (!realBackendEndpoints.has(afs.endpoint)) {
@@ -894,18 +931,6 @@ if (descriptorsArg && fs.existsSync(descriptorsArg)) {
   } else {
     try {
       descContent = execFileSync('git', ['show', `${sourceCommit}:contracts/agent-capabilities/generated/descriptors.json`], { encoding: 'utf8' });
-      const hash1 = crypto.createHash('sha256').update(descContent).digest('hex');
-      if (hash1 !== manifest.sources?.descriptors_hash) {
-        for (const candidateCommit of ['HEAD', 'da3bae15bbc74978b5cff82ef7b26f357bd50837', '4cc217692e4436abc3c7433ce941efc703fd5368']) {
-          try {
-            const candidateContent = execFileSync('git', ['show', `${candidateCommit}:contracts/agent-capabilities/generated/descriptors.json`], { encoding: 'utf8' });
-            if (crypto.createHash('sha256').update(candidateContent).digest('hex') === manifest.sources?.descriptors_hash) {
-              descContent = candidateContent;
-              break;
-            }
-          } catch {}
-        }
-      }
     } catch (err) {
       console.error(`[FAIL - CROSS_CONTRACT] ERR_MISSING_DESCRIPTORS_SOURCE: Failed to read descriptors from source commit ${sourceCommit}: ${err.message}`);
       process.exit(1);

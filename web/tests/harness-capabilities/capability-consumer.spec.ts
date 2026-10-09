@@ -310,18 +310,100 @@ describe('StudyPilot H02 Capability Consumer Verification (ZCode Owner)', () => 
       };
       expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_HANDLER_BINDING_MISMATCH');
     });
+
+    it('NEG-16: 输入参数低于 minimum 约束时严格拦截 (ERR_INVALID_INPUT_INSTANCE)', () => {
+      const manifest = buildBaseMockManifest();
+      manifest.tools[0].input_schema = {
+        type: 'object',
+        properties: { n: { type: 'integer', minimum: 1 } },
+        required: ['n']
+      };
+      manifest.tools[0].examples = [
+        {
+          name: 'input_below_minimum',
+          input: { n: 0 },
+          expect: 'should fail',
+          outcome: 'ok',
+          output: {}
+        }
+      ];
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_INVALID_INPUT_INSTANCE');
+    });
+
+    it('NEG-17: 输入参数违反 oneOf 分支约束时严格拦截 (ERR_INVALID_INPUT_INSTANCE)', () => {
+      const manifest = buildBaseMockManifest();
+      manifest.tools[0].input_schema = {
+        type: 'object',
+        properties: { n: { oneOf: [{ type: 'integer' }] } }
+      };
+      manifest.tools[0].examples = [
+        {
+          name: 'input_violates_one_of',
+          input: { n: 'wrong' },
+          expect: 'should fail',
+          outcome: 'ok',
+          output: {}
+        }
+      ];
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_INVALID_INPUT_INSTANCE');
+    });
+
+    it('NEG-18: 输入数组包含重复项违反 uniqueItems 约束时严格拦截 (ERR_INVALID_INPUT_INSTANCE)', () => {
+      const manifest = buildBaseMockManifest();
+      manifest.tools[0].input_schema = {
+        type: 'object',
+        properties: { n: { type: 'array', uniqueItems: true, items: { type: 'integer' } } }
+      };
+      manifest.tools[0].examples = [
+        {
+          name: 'input_violates_unique_items',
+          input: { n: [1, 1] },
+          expect: 'should fail',
+          outcome: 'ok',
+          output: {}
+        }
+      ];
+      expect(() => validateCapabilityManifest(manifest)).toThrow('ERR_INVALID_INPUT_INSTANCE');
+    });
   });
 
   describe('5. 后端公开 Controller 与未注册业务操作审计 (Controller Auditing)', () => {
-    it('覆盖表完整审计 RoadmapStageGraduationController、RoadmapDiagnosticController、AgentFacadeController 与 WebSearchResultController', async () => {
+    it('覆盖表完整审计全部 33 个公开 Controller（涵盖 RoadmapStageGraduationController 等全部公开控制器），零遗漏', async () => {
       const coverageModule = await import('../../../docs/verification/harness/h02-business-coverage.json');
       const coverage = coverageModule.default || coverageModule;
       const auditedControllers = (coverage.backend_controller_audit || []).map((c: { controllerName: string }) => c.controllerName);
 
+      expect(auditedControllers.length).toBe(33);
       expect(auditedControllers).toContain('RoadmapStageGraduationController');
       expect(auditedControllers).toContain('RoadmapDiagnosticController');
       expect(auditedControllers).toContain('AgentFacadeController');
       expect(auditedControllers).toContain('WebSearchResultController');
+      expect(auditedControllers).toContain('MasteryController');
+      expect(auditedControllers).toContain('QuizController');
+      expect(auditedControllers).toContain('LearningTaskController');
+    });
+
+    it('审计的 Controller 端点均属于该 Controller，拒绝错误配对', async () => {
+      const coverageModule = await import('../../../docs/verification/harness/h02-business-coverage.json');
+      const coverage = coverageModule.default || coverageModule;
+      const webSearchAudit = (coverage.backend_controller_audit || []).find((c: { controllerName: string }) => c.controllerName === 'WebSearchResultController');
+
+      expect(webSearchAudit).toBeDefined();
+      expect(webSearchAudit?.endpoints).toContain('POST /api/web-search-results/{resultId}/import');
+      expect(webSearchAudit?.endpoints).not.toContain('GET /api/mastery');
+    });
+
+    it('权威事实源均指向实际存在的 Java 服务及方法，拒绝虚构方法', async () => {
+      const coverageModule = await import('../../../docs/verification/harness/h02-business-coverage.json');
+      const coverage = coverageModule.default || coverageModule;
+      const factSources = coverage.authoritative_facts_sources || [];
+
+      expect(factSources.length).toBeGreaterThanOrEqual(7);
+      for (const afs of factSources) {
+        expect(afs.javaService).toMatch(/^[A-Za-z0-9_]+\.[A-Za-z0-9_]+$/);
+        expect(afs.javaService).not.toContain('noSuchFactMethod');
+        expect(afs.javaService).not.toContain('ImaginaryService');
+      }
     });
   });
 });

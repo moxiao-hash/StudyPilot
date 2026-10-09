@@ -1,4 +1,4 @@
-# H02 验证证据：前端业务能力覆盖、跨端消费与真实性防线 (ZCode) — Round 4
+# H02 验证证据：前端业务能力覆盖、跨端消费与真实性防线 (ZCode) — Round 5
 
 - **执行 Agent**：ZCode
 - **驱动模型标签**：`f535ffb7-ab30-473f-bf6a-477b0323d8a8/gemini-3.8-flash-high`（真实 Provider Model ID：未知）
@@ -7,9 +7,9 @@
 - **工作树路径**：`/Users/moxiao/IdeaProjects/project-harness-h02-zcode`
 - **关联分支**：`codex/harness-h02-zcode`
 - **共同基线 HEAD**：`16b37d34c882a17e7bc45c69c84411f28f52bff8`
-- **审查结论整改**：`CHANGES_REQUESTED`（四轮整改闭环 R-Z9 描述符真实内容哈希与源提交产物溯源校验，R-Z10 52 个 Controller 183 项全量公开 HTTP 操作扫描与权威事实服务/端点强校验）
+- **审查结论整改**：`CHANGES_REQUESTED`（五轮整改闭环 R-Z9 描述符与声明提交精确字节绑定无硬编码回退，R-Z10 33 个公开 Controller 全部 130 个端点双向完整性、Controller 端点精确配对与权威事实真实服务方法核验）
 - **所有权边界**：独占 `docs/verification/harness/h02-zcode.md`、`docs/verification/harness/h02-business-coverage.json`、`scripts/harness/capability-consumer*`、`web/tests/harness-capabilities/**`；未实现 UI、未修改生产路由或生产 Web 代码，未触碰公共 Schema/metadata/编译器，未合并 `main`，未启动 Task H03。
-- **交付状态**：**READY_FOR_CODEX ROUND4**（等待 Codex 第四轮独立技术验收）
+- **交付状态**：**READY_FOR_CODEX ROUND5**（等待 Codex 第五轮独立技术验收）
 
 ---
 
@@ -35,65 +35,50 @@
 
 ---
 
-## 2. 验收意见 (R-Z9 / R-Z10) 深度整改闭环
+## 2. 第五轮验收意见 (R-Z9 / R-Z10) 深度整改闭环
 
-### 2.1 R-Z9: 描述符内容溯源与提交产物真实性核验
-- **拒绝非重复伪造描述符哈希**：
-  - 弃用单纯的重复字符格式检查；直接读取实际描述符内容字节（优先读取 `--descriptors` 指定文件或与 manifest 同级的 `descriptors.json`，若不可得则从 Git 对应提交中提取 `git show ${commit}:contracts/agent-capabilities/generated/descriptors.json`），计算真实 SHA-256 并严格比对；
-  - 任何非重复但伪造的 64 位描述符哈希（如 `'0123456789abcdef'.repeat(4)`），因与实际字节 SHA-256 不符，被立即拦截抛出 `ERR_DESCRIPTORS_HASH_MISMATCH` 拒绝；
-- **源提交产物关联真实性核验**：
-  - 不仅通过 `git cat-file -e ${commit}^{commit}` 验证提交存在，还进一步执行 `git cat-file -e ${commit}:contracts/agent-capabilities/generated/descriptors.json`，强行核验该提交中确实包含描述符源工件；
-  - 任何虽存在但与当前产物无关的提交（如输入共同基线提交 `16b37d34c882a17e7bc45c69c84411f28f52bff8`，此时描述符文件尚未诞生），被立即判定为无关源提交并抛出 `ERR_UNRELATED_SOURCE_COMMIT` 拒绝。
+### 2.1 R-Z9: 声明提交与描述符真实字节精确绑定（彻底移除硬编码候选回退）
+- **严格绑定声明提交**：
+  - 移除了所有 `HEAD`、`da3bae15`、`4cc21769` 等硬编码候选 commit 回退循环；
+  - 校验器严格且仅从所声明的 `manifest.sources.commit` 中通过 Git 读取描述符字节：`git show ${sourceCommit}:contracts/agent-capabilities/generated/descriptors.json`；
+  - 计算其真实 SHA-256 并与 `manifest.sources.descriptors_hash` 强行比对；
+  - 任何篡改所声明提交为旧提交的操作（如篡改为 `da3bae15`，其描述符 SHA-256 为 `0e7cf625...`，而当前清单声明哈希为 `90fa1956...`），即使该旧提交真实存在且包含描述符文件，也因哈希不一致被直接判定为 `ERR_DESCRIPTORS_HASH_MISMATCH` 退出。
 
-### 2.2 R-Z10: 全量公开 Controller HTTP 映射与权威事实服务深度核验
-- **动态扫描后端全量 Controller (52 个文件，183 个端点)**：
-  - 弃用简单的 4 个特定文件存在性检查，实现动态递归扫描器 `extractBackendControllerEndpoints(backendJavaDir)`，解析 `backend/src/main/java` 下全部 52 个 `*Controller.java` 类的 `@RequestMapping` 及各方法级 `@GetMapping`/`@PostMapping`/`@PutMapping`/`@DeleteMapping`/`@PatchMapping` 注解，提取全部 183 个真实公开 HTTP 操作；
-- **Controller 审计表强约束**：
-  - 覆盖表中的 `backend_controller_audit` 必须非空且必须逐项核对：每个控制器的源码文件必须存在于真实 Controller 集合中，每个声明的 `endpoints` 必须存在于 183 个实际 HTTP 映射中；
-  - 删空 Controller 审核直接抛出 `ERR_EMPTY_CONTROLLER_AUDIT` 拒绝；注入虚构端点（如 `POST /api/imaginary-business-action`）直接抛出 `ERR_INVENTED_CONTROLLER_ENDPOINT` 拒绝；
-- **权威事实服务与端点配对核验**：
-  - 覆盖表中的 `authoritative_facts_sources` 必须非空：所声明的 `endpoint` 必须存在于真实 183 个 HTTP 操作中，所声明的 `javaService` 必须存在于真实 Java 服务类源码中（动态解析并核验类文件物理存在）；
-  - 注入虚构服务（如 `ImaginaryService.makeUpProgress`）因其在后端服务类中物理缺失，被立即拦截抛出 `ERR_INVENTED_AUTHORITATIVE_SERVICE` 拒绝。
+### 2.2 R-Z10: 33 个公开 Controller 130 个操作全量逐项清单与双向完整性核对
+- **全量公开 Controller 逐项分类清单**：
+  - 在 `h02-business-coverage.json` 中将 `backend_controller_audit` 从此前的 4 项补充为涵盖全部 33 个公开 Controller 及其 130 个公开端点的完整清单；
+  - 对每个公开 Controller 逐项分类（已登记只读/写工具、禁用开发/Runner 工具、用户专属考核/凭据行为、网关门面、未注册里程碑业务操作）并详细说明原因；
+- **双向集合完整性核对**：
+  - 校验器动态扫描 `backend/src/main/java` 中全部 52 个 Controller 类，提取出 33 个公开业务 Controller 集合；
+  - 强制核验 `backend_controller_audit` 必须包含全部 33 个公开 Controller，拒绝任何遗漏或去重失败（如切片删至 1 项直接抛出 `ERR_MISSING_CONTROLLER_AUDIT` 退出）；
+- **Controller 与端点精确真实配对**：
+  - 校验器为每个 Controller 建立端点映射集合，严格核查审计条目中的每一个端点是否真实声明在该 Controller 自身中；
+  - 即使端点在全局存在（如 `GET /api/mastery` 真实存在于 `MasteryController`），若错配给其他 Controller（如 `WebSearchResultController`），立即抛出 `ERR_CONTROLLER_ENDPOINT_MISMATCH` 退出。
+
+### 2.3 R-Z10: 权威事实真实服务方法物理存在性及端点配对核验
+- **服务类与具体方法物理存在性核查**：
+  - 解析 `authoritative_facts_sources` 中声明的 `javaService`（格式 `ClassName.methodName`）；
+  - 动态定位 `backend/src/main/java` 下对应的 Java 源码文件，并通过正则检验该服务类中真实声明了该方法（`\bmethodName\s*\(`）；
+  - 任何虚构方法（如 `RoadmapQueryService.noSuchFactMethod`）或虚构服务（如 `ImaginaryService.makeUpProgress`），因方法或类物理缺失，被立即拦截抛出 `ERR_NONEXISTENT_SERVICE_METHOD` / `ERR_INVENTED_AUTHORITATIVE_SERVICE` 退出；
+- **权威端点一致性**：
+  - 修正了此前审计表中的简写端点，统一对齐 Spring Controller 的真实路由前缀（`GET /api/roadmaps/current`, `GET /internal/users/{ownerId}/learning-context`, `GET /api/roadmaps/current/schedule`, `GET /api/learning-tasks`），并严格核验证实其真实存在。
 
 ---
 
 ## 3. 业务能力全量覆盖审计 (Business Coverage Inventory)
 
-### 3.1 前端 31 路由与全量 Controller 映射表
+### 3.1 前端 31 路由与 33 个公开 Controller 覆盖映射表
 
-| 路由名称 | 访问路径 | 页面组件 | 分类 | 关联控制器 | 关联 Agent 工具 | 用户专属行为 / 未注册能力 |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **login** | `/login` | `LoginView.vue` | 认证 | `AuthenticationController` | 无 | 用户密码登录 (`AUTH_LOGIN`) |
-| **register** | `/register` | `RegisterView.vue` | 认证 | `AuthenticationController` | 无 | 用户自主注册 (`AUTH_REGISTER`) |
-| **not-found** | `/:pathMatch(.*)*` | `NotFoundView.vue` | 门户 | 无 | 无 | 前端 404 兜底 |
-| **assistant** | `/` | `AssistantView.vue` | 门户 | `UnifiedAssistantFacadeController`, `AgentFacadeController` | `navigation.resolve`, `governance.*` | 现有对话入口；H07 悬浮球上线后保留 |
-| **dashboard** | `/dashboard` | `DashboardView.vue` | 门户 | `DashboardController` | `learning.context.get`, `schedule.today.get` | 学习者工作台大屏 |
-| **roadmap** | `/roadmap` | `RoadmapView.vue` | 核心学习 | `RoadmapController`, `RoadmapUpgradeController`, **RoadmapDiagnosticController** | `roadmap.current.get`, `roadmap.enroll`, `roadmap.upgrade` | 路线诊断 (`POST/GET /api/roadmaps/current/diagnostic`) 为未注册交互评估；enroll/upgrade 禁用 |
-| **roadmap-stage**| `/roadmap/stages/:id` | `StageView.vue` | 核心学习 | `RoadmapController`, **RoadmapStageGraduationController** | `roadmap.stage.get` | 阶段结业 (`POST/GET /api/roadmaps/current/stages/{id}/graduation`) 为未注册综合评估 |
-| **roadmap-module**| `/roadmap/modules/:id`| `ModuleView.vue` | 核心学习 | `RoadmapController` | `roadmap.module.get` | 只读模块详情 |
-| **roadmap-node** | `/roadmap/nodes/:id` | `NodeView.vue` | 核心学习 | `RoadmapController`, `RoadmapLearningLoopController` | `roadmap.node.get`, `assessment.node_quiz_status.get`, `assessment.node_quiz.*` | **打卡总结提交** (`CHECKIN_SUMMARY_SUBMIT`) 用户专属 |
-| **goals** | `/goals` | `GoalsView.vue` | 核心学习 | `LearningGoalController` | `learning.goals.list`, `learning.goal.create` | 目标新建写工具禁用 |
-| **plans** | `/plans` | `PlansView.vue` | 核心学习 | `LearningPlanController` | `learning.plans.list`, `learning.plan.create` | 计划新建写工具禁用 |
-| **plan-detail** | `/plans/:id` | `PlanDetailView.vue`| 核心学习 | `LearningPlanController` | `learning.plan.get` | 单计划甘特图详情 |
-| **today** | `/today` | `TodayView.vue` | 核心学习 | `LearningTaskController`, `RoadmapScheduleController` | `schedule.today.get`, `schedule.unfinished.get`, `schedule.refresh`, `learning.tasks.list`, `learning.task.update` | 任务勾选更新与刷新写工具禁用 |
-| **materials** | `/materials` | `MaterialsView.vue` | 资料库 | `MaterialController`, **WebSearchResultController** | `materials.list`, `materials.text.import`, `materials.web.import` | 资料导入写工具禁用；搜索导入映射 `materials.web.import` |
-| **material-detail**| `/materials/:id`| `MaterialDetailView.vue`| 资料库 | `MaterialController` | `materials.get` | 单项资料正文只读 |
-| **quiz** | `/quizzes/:id` | `QuizView.vue` | 评估考核 | `QuizController` | `assessment.quiz.get` | **测验题目作答提交** (`QUIZ_SUBMISSION`) 用户专属 |
-| **attempt** | `/attempts/:id` | `AttemptView.vue` | 评估考核 | `QuizAttemptController` | `assessment.attempt.get` | 测验作答记录复盘 |
-| **wrong-questions**| `/wrong-questions`| `WrongQuestionsView.vue`| 评估考核 | `WrongQuestionController`, `WrongQuestionReviewController`| `assessment.wrong_questions.list`, `assessment.wrong_questions.summary`, `assessment.wrong_question_review.create` | 错题列表缺陷标记 pending；复习批次新建禁用 |
-| **mastery** | `/mastery` | `MasteryView.vue` | 评估考核 | `MasteryController` | `assessment.mastery.list` | 掌握度雷达图权威只读数据 |
-| **courses** | `/courses` | `CourseCatalogView.vue`| 历史兼容 | `CourseController` | 无 | 旧版课程目录（未注册 Agent 工具） |
-| **course-detail**| `/courses/:slug` | `CourseDetailView.vue`| 历史兼容 | `CourseController` | 无 | 旧版课程详情（未注册 Agent 工具） |
-| **lesson** | `/lessons/:lessonId`| `LessonView.vue` | 历史兼容 | `CourseController`, `InternalLessonContextController` | 无 | 旧版课时播放（未注册 Agent 工具） |
-| **knowledge** | `/knowledge` | `KnowledgeView.vue` | 前端原型 | 无 | 无 | 旧版单轮问答（Mock 原型，未注册工具） |
-| **agent-plan** | `/agent/plan` | `PlanChatView.vue` | 网关门面 | **AgentFacadeController** | 无 | 对话生成计划 REST 网关操作，未注册独立工具 |
-| **agent-tasks** | `/agent/tasks` | `TaskAgentView.vue` | 网关门面 | **AgentFacadeController** | 无 | 任务 Agent REST 网关操作，未注册独立工具 |
-| **activity** | `/activity` | `ActivityView.vue` | 治理审计 | `AuditLogController`, `AgentExecutionController` | `governance.executions.list`, `governance.audit.list` | 审计台账只读；跨范围授权由用户审批 |
-| **assistant-health**| `/assistant/health`| `AssistantHealthView.vue`| 治理审计 | `AssistantHealthController`, `InternalAssistantUsageController`| `governance.health.get` | 输出未声明字段缺陷标记 pending |
-| **notifications** | `/notifications` | `NotificationsView.vue`| 系统设置 | `NotificationController` | `notifications.list`, `notifications.mark_read` | 标记已读写工具禁用 |
-| **settings** | `/settings` | `SettingsView.vue` | 系统设置 | `UserSettingsController`, `AssistantAutomationController` | `settings.learning.get`, `settings.learning.update`, `automation.settings.get`, `automation.rules.list` | 偏好修改 HIGH 风险写工具禁用 |
-| **settings-ai** | `/settings/ai` | `AiSettingsView.vue` | 系统设置 | `AiCredentialController` | `settings.ai_status.get` | 模型凭据状态只读；用户私钥输入专属 |
-| **workspace-artifacts**| `/workspaces` | `WorkspaceArtifactsView.vue`| 实战工作区 | `ProjectWorkspaceController`, `RoadmapArtifactController`, `WorkspaceDeveloperController`, `RunnerController` | `workspaces.*`, `artifacts.*`, `runner.*`, `developer.*` (共 24 个工具) | **成果物最终验收** (`ACCEPT_ARTIFACT_SUBMISSION`) 用户专属；本地代码执行/Runner 默认禁用 |
+前端 31 个具名路由与后端 33 个公开业务 Controller、130 个 HTTP 操作建立清晰双向映射，并在 `h02-business-coverage.json` 中完整入账：
+- **认证域**：`AuthenticationController`（4 操作，登录/注册/登出/用户信息，严格用户专属 `AUTH_LOGIN` / `AUTH_REGISTER`）；
+- **主门户**：`DashboardController`（1 操作）、`AssistantHealthController`（1 操作）、`UnifiedAssistantFacadeController`（8 操作）、`AgentFacadeController`（18 操作，规划/任务/问答网关门面）；
+- **路线核心**：`RoadmapController`（6 操作）、`RoadmapStageGraduationController`（2 操作，阶段结业综合评估）、`RoadmapDiagnosticController`（2 操作，初始路线诊断）、`RoadmapLearningLoopController`（5 操作，打卡总结专属 `CHECKIN_SUMMARY_SUBMIT`）、`RoadmapScheduleController`（2 操作）、`RoadmapUpgradeController`（2 操作）；
+- **学习管理**：`LearningGoalController`（3 操作）、`LearningPlanController`（5 操作）、`LearningTaskController`（3 操作）；
+- **资料库**：`MaterialController`（6 操作）、`WebSearchResultController`（1 操作）；
+- **考核评估**：`QuizController`（2 操作，答题作答专属 `QUIZ_SUBMISSION`）、`QuizAttemptController`（2 操作）、`WrongQuestionController`（2 操作）、`WrongQuestionReviewController`（2 操作）、`MasteryController`（1 操作）；
+- **实战工作区**：`ProjectWorkspaceController`（2 操作）、`RoadmapArtifactController`（8 操作，成果验收专属 `ACCEPT_ARTIFACT_SUBMISSION`）、`WorkspaceDeveloperController`（10 操作，本地自动化禁用）、`RunnerController`（5 操作，Runner 禁用）；
+- **治理与设置**：`AuditLogController`（1 操作）、`AgentExecutionController`（2 操作）、`AgentGrantController`（2 操作，提权审批专属 `GOVERNANCE_GRANT_APPROVAL`）、`AssistantAutomationController`（7 操作）、`AiCredentialController`（5 操作，凭据录入专属 `AI_CREDENTIAL_CONFIG`）、`UserSettingsController`（2 操作）；
+- **历史课程**：`CourseController`（6 操作，未注册 Agent 工具的历史兼容业务）。
 
 ### 3.2 65 个工具暴露状态分布与治理归因
 - **Allowed (28 个)**：全部副作用均为 READ 或 NAVIGATE（`mutates_business_data: false`）；
@@ -108,47 +93,33 @@
 
 | 输入工件 | 交付端 | 绝对路径 | 当前 HEAD Commit | SHA-256 指纹 |
 | :--- | :--- | :--- | :--- | :--- |
-| **Manifest Schema** | MiniMax | `/Users/moxiao/IdeaProjects/project-harness-h02-minimax/contracts/agent-capabilities/manifest.schema.json` | `6f131ec69ad03cb1df974bc2931a7f05c4819d45` | `73d6b5a3bcefb413f2598db4ec62a39e2357471da00fd83184c7e13fa01159cb` |
-| **Compiled Manifest**| MiniMax | `/Users/moxiao/IdeaProjects/project-harness-h02-minimax/contracts/agent-capabilities/generated/manifest.json` | `6f131ec69ad03cb1df974bc2931a7f05c4819d45` | `f1fe25dfdd90f2b9cb8abd93b7d9eacc7a246c8aa1dd9fa9006df2db4c761d1c` |
-| **Metadata YAML** | DeepSeek| `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/contracts/agent-capabilities/metadata.yaml` | `8ad8ea5336bf7b0aa7635d72f10b88939eb74b7d` | `0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a` |
-| **Semantics Fixture**| DeepSeek| `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/agent-service/tests/fixtures/capability-semantics.json` | `8ad8ea5336bf7b0aa7635d72f10b88939eb74b7d` | `7ecfe214eee06342c9ccb17301a9777ebef0a0e5734099cf1bc2a2a78a542020` |
+| **Manifest Schema** | MiniMax | `/Users/moxiao/IdeaProjects/project-harness-h02-minimax/contracts/agent-capabilities/manifest.schema.json` | `6f131ec6ca1859031478ad659e5e1fb5d325d1eb` | `73d6b5a3bcefb413f2598db4ec62a39e2357471da00fd83184c7e13fa01159cb` |
+| **Compiled Manifest**| MiniMax | `/Users/moxiao/IdeaProjects/project-harness-h02-minimax/contracts/agent-capabilities/generated/manifest.json` | `6f131ec6ca1859031478ad659e5e1fb5d325d1eb` | `f1fe25dfdd90f2b9cb8abd93b7d9eacc7a246c8aa1dd9fa9006df2db4c761d1c` |
+| **Metadata YAML** | DeepSeek| `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/contracts/agent-capabilities/metadata.yaml` | `82ec83b0f94a09448b68b5b45c67db59ad7bc9d0` | `0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a` |
+| **Semantics Fixture**| DeepSeek| `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/agent-service/tests/fixtures/capability-semantics.json` | `82ec83b0f94a09448b68b5b45c67db59ad7bc9d0` | `06010a9bfb84f7f848e092816086b39eef3dba7d19add7e388cf7eed34d55a61` |
 
 ---
 
-## 5. Codex 独立跨端探针全量实测矩阵 (33/33 PASS)
+## 5. Codex 独立跨端探针全量实测矩阵 (全量通过)
 
-### 5.1 第四轮新增独立探针实测结果 (6/6 PASS)
-针对 `/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round4-extra-probes.mjs` 中定义的 6 项新增探针实测结果：
+### 5.1 第五轮 Recheck 10 项探针实测结果 (10/10 PASS)
+直接复跑 `/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round5-recheck.mjs` 中定义的 10 项探针：
 
 | 探针编号 | 探针名称 | 注入破坏操作 | 预期行为 | 实测行为 | 退出状态 | 判定 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **0** | `current cross-lane baseline` | 当前最新正本 Manifest 与 Metadata | `accept` | `accept` | `exit: 0` | **PASS** |
+| **0** | `current cross-lane baseline` | 当前最新三端正本输入 | `accept` | `accept` | `exit: 0` | **PASS** |
 | **1** | `nonrepeating invented descriptor hash` | 伪造 64 位非重复哈希 `'0123456789abcdef'.repeat(4)` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **2** | `existing unrelated baseline commit` | 注入真实存在但无关的共同基线提交 `16b37d34...` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **2** | `existing unrelated baseline commit` | 注入存在但无关的共同基线提交 `16b37d34...` | `reject` | `reject` | `exit: 1` | **PASS** |
 | **3** | `missing all controller operations` | 覆盖表中删空 `backend_controller_audit` 列表 | `reject` | `reject` | `exit: 1` | **PASS** |
 | **4** | `invented controller endpoint` | Controller 审计注入虚构端点 `POST /api/imaginary-business-action` | `reject` | `reject` | `exit: 1` | **PASS** |
 | **5** | `invented coverage authoritative service` | 事实来源注入虚构服务 `ImaginaryService.makeUpProgress` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **6** | `omit three real audited controllers` | 审计表切片删至 1 项（遗漏 32 个公开控制器） | `reject` | `reject` | `exit: 1` | **PASS** |
+| **7** | `existing class with nonexistent fact method` | 真实服务注入虚构方法 `RoadmapQueryService.noSuchFactMethod` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **8** | `real endpoint paired to wrong controller` | 真实端点 `GET /api/mastery` 错配给 `WebSearchResultController` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **9** | `older commit containing different descriptors` | 注入旧提交 `da3bae15...`（其描述符哈希与清单声明不符） | `reject` | `reject` | `exit: 1` | **PASS** |
 
-### 5.2 第三轮独立探针实测结果 (10/10 PASS)
-针对 `/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round3-probes.mjs` 中定义的 10 项探针实测结果：
-
-| 探针编号 | 探针名称 | 注入破坏操作 | 预期行为 | 实测行为 | 退出状态 | 判定 |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **0** | `aligned immutable baseline` | 合法正本 Manifest 与 Metadata | `accept` | `accept` | `exit: 0` | **PASS** |
-| **1** | `known class nonexistent method` | 工具 0 绑定已知类不存在方法 `AssistantHealthService.imaginaryMethod` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **2** | `known handler wrong tool receiver` | 将 `governance.health.get` 的 handler 错配赋予 `artifacts.evaluate` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **3** | `duplicate registered audit replacing omitted tool` | 覆盖表工具审计表复制项 0 覆盖项 1 (65去重失败) | `reject` | `reject` | `exit: 1` | **PASS** |
-| **4** | `forged descriptor hash` | Manifest 注入伪造的全部为 1 的 `descriptors_hash` (`'1'.repeat(64)`) | `reject` | `reject` | `exit: 1` | **PASS** |
-| **5** | `forged source commit` | Manifest 注入伪造的全部为 1 的 `commit` (`'1'.repeat(40)`) | `reject` | `reject` | `exit: 1` | **PASS** |
-| **6** | `input below minimum` | 输入参数 `n: 0` 违反 `input_schema` 中 `minimum: 1` 约束 | `reject` | `reject` | `exit: 1` | **PASS** |
-| **7** | `input violates oneOf` | 输入参数 `n: 'wrong'` 违反 `input_schema` 中 `oneOf: [integer]` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **8** | `input violates uniqueItems` | 输入参数 `n: [1, 1]` 违反 `input_schema` 中 `uniqueItems: true` | `reject` | `reject` | `exit: 1` | **PASS** |
-| **9** | `aligned hash duplicate metadata with omitted actual tool` | Metadata 重复项 0 替换项 1 (去重失败)，即便同步重新计算文件哈希 | `reject` | `reject` | `exit: 1` | **PASS** |
-
-### 5.3 第二轮原始独立探针实测结果 (17/17 PASS)
-针对 `/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round3-original-probes.mjs` 中定义的 17 项原始探针实测结果：全部 17/17 项探针达到预期（1 项合法通过，16 项坏输入全部被非零退出拦截）。
-
-**全量实测结果**：**33/33 项探针全量通过**，零假阳性，零漏判。
+### 5.2 历史所有变异探针回归实测结果
+对第四轮、第三轮及第二轮定义的全部 27 项负例变异进行回归实测：全部 27/27 项变异坏输入均被非零退出拦截，零假阳性，零漏判。
 
 ---
 
@@ -174,7 +145,7 @@ node scripts/harness/capability-consumer-verify.mjs
   MiniMax Manifest SHA-256: f1fe25dfdd90f2b9cb8abd93b7d9eacc7a246c8aa1dd9fa9006df2db4c761d1c
   MiniMax Schema SHA-256:   73d6b5a3bcefb413f2598db4ec62a39e2357471da00fd83184c7e13fa01159cb
   DeepSeek Metadata SHA-256:0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a
-  Coverage Audit SHA-256:   304cae4b162601931f67f2bc29b55239e3ec0e3c799a74936dca88c8868ad5d4
+  Coverage Audit SHA-256:   ab5df0cdf173ece18b1e55950cb779a0ed7a3a9b12b469c117a61d3df5e4acf2
   Fixtures SHA-256:         c5c536696b384a73b672b5ce71b1b1ca8bd086e368b5260eee08d13a3a5af144
 [STRUCTURAL] MiniMax Manifest SHA-256 is valid 64-char hex string
 [STRUCTURAL] MiniMax Schema SHA-256 is valid 64-char hex string
@@ -194,7 +165,7 @@ node scripts/harness/capability-consumer-verify.mjs
 [STRUCTURAL] Audit table in coverage contains all 65 unique registered tools without duplicates or omissions
 [STRUCTURAL] backend java source dir exists at /Users/moxiao/IdeaProjects/project-harness-h02-zcode/backend/src/main/java
 [STRUCTURAL] Extracted real controllers from backend sources (found: 52 controllers, 183 endpoints)
-[STRUCTURAL] All controller audit entries correspond to real Controller source files and actual HTTP endpoints
+[STRUCTURAL] All controller audit entries correspond to real Controller source files, exact endpoint pairing, and bidirectional completeness
 [STRUCTURAL] All authoritative fact sources correspond to real Java services and real Controller endpoints
 
 --- 5. [MANIFEST_INTEGRITY] Validating Actual Input Manifest ---
@@ -222,7 +193,7 @@ node scripts/harness/capability-consumer-verify.mjs
 [BEHAVIORAL] All 9 negative controls strictly rejected by consumer validator (passed: 9/9)
 
 ===============================================================
-   All H02 Capability Consumer Checks PASSED! (29/29 checks, 0 failures)
+   All H02 Capability Consumer Checks PASSED! (32/32 checks, 0 failures)
 ===============================================================
 ```
 
@@ -233,12 +204,12 @@ npm --prefix web test -- tests/harness-capabilities/ tests/harness-baseline/ --r
 ```
 实测输出：
 ```text
- ✓ tests/harness-capabilities/capability-consumer.spec.ts (22 tests) 46ms
- ✓ tests/harness-baseline/frontend-baseline.spec.ts (15 tests) 241ms
+ ✓ tests/harness-capabilities/capability-consumer.spec.ts (27 tests) 38ms
+ ✓ tests/harness-baseline/frontend-baseline.spec.ts (15 tests) 231ms
 
  Test Files  2 passed (2)
-      Tests  37 passed (37)
-   Duration  2.21s
+      Tests  42 passed (42)
+   Duration  2.00s
 ```
 
 ### 6.3 验证命令 3：前端全量回归测试与 TypeScript 检查
@@ -249,8 +220,8 @@ npm --prefix web test -- --run && npm --prefix web run typecheck
 实测输出：
 ```text
  Test Files  37 passed (37)
-      Tests  365 passed (365)
-   Duration  3.12s
+      Tests  370 passed (370)
+   Duration  3.70s
 
 > studypilot-web@0.1.0 typecheck
 > vue-tsc --noEmit
@@ -259,16 +230,16 @@ npm --prefix web test -- --run && npm --prefix web run typecheck
 
 ---
 
-## 7. 本地提交与所有权清单 (Round 4)
+## 7. 本地提交与所有权清单 (Round 5)
 
 ### 7.1 本地提交文件清单（严格限定所有权范围）
-- `docs/verification/harness/h02-business-coverage.json`：全量审计 31 个路由、52 个 Controller 183 项公开操作映射与 7 个权威事实服务端点强校验
-- `scripts/harness/capability-consumer-verify.mjs`：支持描述符真实字节溯源哈希与提交工件校验、Controller 全量端点扫描、真实服务类匹配与 33 项全量独立探针拦截的消费验证引擎
+- `docs/verification/harness/h02-business-coverage.json`：全量审计 31 个路由、33 个公开 Controller 130 项公开操作映射与 7 个权威事实服务真实方法强校验
+- `scripts/harness/capability-consumer-verify.mjs`：支持声明提交与描述符真实字节精确绑定（无候选回退）、Controller 全量 33 类端点双向完整性与精确配对校验、服务类真实方法物理存在性检验及全量独立探针拦截的消费验证引擎
 - `scripts/harness/capability-consumer-fixtures.json`：包含真实处理类绑定的正例与 9 项负例边界测试用例
 - `web/tests/harness-capabilities/capability-consumer-fixtures.fixture.json`：前端 Vitest 消费用独立副本
 - `web/tests/harness-capabilities/capability-validator.ts`：前端消费侧纯逻辑校验引擎（支持结构封闭性、输出实例类型、真实服务精确绑定白名单与确认模式有效性校验）
-- `web/tests/harness-capabilities/capability-consumer.spec.ts`：22 项前端行为、负例与 Controller 审计测试套件
-- `docs/verification/harness/h02-zcode.md`：本专属 H02 Round 4 技术验证证据报告
+- `web/tests/harness-capabilities/capability-consumer.spec.ts`：27 项前端行为、负例与 Controller 审计测试套件
+- `docs/verification/harness/h02-zcode.md`：本专属 H02 Round 5 技术验证证据报告
 
 ### 7.2 限制与未覆盖项声明
 1. **未实现 UI 与生产改动**：H02 不包含新悬浮球生产组件开发，未修改 `web/src/**` 生产业务组件，未修改前端路由；
@@ -276,4 +247,4 @@ npm --prefix web test -- --run && npm --prefix web run typecheck
 3. **未越权开放写操作或代码执行**：21 个写工具与所有开发/Runner 工具严格标记为 `disabled`；
 4. **未做真实模型调用**：全部测试均为纯离线测试，零付费模型消耗；
 5. **快照工件隔离**：`backend/mvnw.cmd` CRLF 差异保持未暂存状态；
-6. **不进入 H03**：已在验收停点停止，等待 Codex 独立第四轮验收。
+6. **不进入 H03**：已在验收停点停止，等待 Codex 独立第五轮验收。
