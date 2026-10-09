@@ -30,6 +30,7 @@
 //   node scripts/harness/capability-semantics.mjs [--json]
 //   node scripts/harness/capability-semantics.mjs --check   # frozen Java digests vs live source
 
+import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
@@ -707,6 +708,18 @@ function checkProvenance(entry, tool) {
       `${entry.name}: no "Class.method" in the handler is bound in this tool's registration context`,
     );
   }
+  // The upstream export now states the real binding per tool. When it is frozen
+  // it is the authority: the declared handler must actually mention it.
+  if (tool.handler) {
+    const authoritative = String(tool.handler);
+    if (!handler.includes(authoritative)) {
+      fail(
+        'E_PROVENANCE',
+        `${entry.name}: the declared handler does not mention the authoritative binding "${authoritative}" from the descriptor export`,
+      );
+    }
+  }
+
   const sources = javaClassSources();
   for (const pair of pairs) {
     const isBound = boundPairs.has(`${pair.className}#${pair.method}`);
@@ -1154,6 +1167,91 @@ export function validateMetadata(doc, fixture, tools) {
 }
 
 // ---------------------------------------------------------------------------
+// Source freshness: is the frozen provenance still the live artifact?
+// ---------------------------------------------------------------------------
+
+/** Canonical form that ignores `required` ordering (which is not semantic). */
+function canonicalSchema(value) {
+  if (Array.isArray(value)) return value.map(canonicalSchema);
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const key of Object.keys(value).sort()) {
+      out[key] = key === 'required' && Array.isArray(value[key])
+        ? [...value[key]].sort()
+        : canonicalSchema(value[key]);
+    }
+    return out;
+  }
+  return value;
+}
+
+/**
+ * Compare the frozen descriptor provenance and schemas against the live
+ * artifact. A hash mismatch means the provenance is stale and must be rebuilt;
+ * the report distinguishes a real contract change from a `required`-ordering
+ * (serialization) difference so a cosmetic change is never mistaken for a
+ * semantic one, and vice versa.
+ */
+export function checkSourceFreshness(frozenFacts, { descriptorsPath, manifestSchemaPath } = {}) {
+  const issues = [];
+  const provenance = frozenFacts.descriptorProvenance ?? {};
+  const schemas = frozenFacts.toolSchemas ?? {};
+
+  if (descriptorsPath) {
+    const raw = readFileSync(descriptorsPath);
+    const digest = createHash('sha256').update(raw).digest('hex');
+    if (digest !== provenance.artifactSha256) {
+      issues.push({ kind: 'descriptor_hash', severity: 'stale', expected: provenance.artifactSha256, actual: digest });
+      let fresh;
+      try {
+        fresh = JSON.parse(raw.toString('utf8'));
+      } catch (error) {
+        issues.push({ kind: 'descriptor_parse', severity: 'error', detail: error.message });
+        fresh = null;
+      }
+      if (Array.isArray(fresh)) {
+        const freshByName = new Map(fresh.map((entry) => [entry.name, entry]));
+        const onlyFresh = [...freshByName.keys()].filter((name) => !(name in schemas));
+        const onlyFrozen = Object.keys(schemas).filter((name) => !freshByName.has(name));
+        if (onlyFresh.length || onlyFrozen.length) {
+          issues.push({ kind: 'descriptor_tool_set', severity: 'semantic', onlyFresh, onlyFrozen });
+        }
+        for (const [name, frozen] of Object.entries(schemas)) {
+          const live = freshByName.get(name);
+          if (!live) continue;
+          for (const side of ['inputSchema', 'outputSchema']) {
+            const before = JSON.stringify(canonicalSchema(frozen[side]));
+            const after = JSON.stringify(canonicalSchema(live[side]));
+            if (before !== after) {
+              issues.push({ kind: 'descriptor_schema', severity: 'semantic', tool: name, side });
+            } else if (JSON.stringify(frozen[side]) !== JSON.stringify(live[side])) {
+              issues.push({ kind: 'descriptor_schema', severity: 'order-only', tool: name, side });
+            }
+          }
+          if (frozen.handler && live.handler && frozen.handler !== live.handler) {
+            issues.push({ kind: 'descriptor_handler', severity: 'semantic', tool: name, expected: frozen.handler, actual: live.handler });
+          }
+        }
+      }
+    }
+  } else {
+    issues.push({ kind: 'descriptor_path', severity: 'unverified', detail: 'no --descriptors path supplied; the frozen provenance was not compared' });
+  }
+
+  if (manifestSchemaPath) {
+    const digest = createHash('sha256').update(readFileSync(manifestSchemaPath)).digest('hex');
+    if (digest !== provenance.manifestSchemaSha256) {
+      issues.push({ kind: 'manifest_schema_hash', severity: 'stale', expected: provenance.manifestSchemaSha256, actual: digest });
+    }
+  } else {
+    issues.push({ kind: 'manifest_schema_path', severity: 'unverified', detail: 'no --manifest-schema path supplied' });
+  }
+
+  const blocking = issues.filter((issue) => issue.severity !== 'order-only');
+  return { ok: blocking.length === 0, issues, orderOnly: issues.filter((issue) => issue.severity === 'order-only').length };
+}
+
+// ---------------------------------------------------------------------------
 // Negative-case mutation runner
 // ---------------------------------------------------------------------------
 
@@ -1284,11 +1382,12 @@ function main(argv) {
 
   if (argv.includes('--check')) {
     const fixture = JSON.parse(readFileSync(DEFAULT_FIXTURE, 'utf8'));
-    const live = collectCapabilityFacts();
     const drift = [];
     for (const [relative, digest] of Object.entries(fixture.frozenFacts.javaSourceDigests ?? {})) {
-      if (live.sourceDigests[relative] !== digest) drift.push(`source changed: ${relative}`);
+      const live = collectCapabilityFacts();
+      if (live.sourceDigests[relative] !== digest) drift.push(`java source changed: ${relative}`);
     }
+    const live = collectCapabilityFacts();
     if (live.toolCount !== fixture.frozenFacts.toolCount) {
       drift.push(`tool count changed: ${fixture.frozenFacts.toolCount} -> ${live.toolCount}`);
     }
@@ -1304,11 +1403,37 @@ function main(argv) {
         }
       }
     }
-    if (drift.length === 0) {
-      process.stdout.write('MATCH  frozen H02 capability facts still match the Java source\n');
+
+    // Descriptor/manifest-schema freshness. Supplying the paths opts in to the
+    // provenance gate; --java-only narrows the check deliberately instead of
+    // letting an unverified provenance look clean.
+    const dIndex = argv.indexOf('--descriptors');
+    const mIndex = argv.indexOf('--manifest-schema');
+    let freshness = { ok: true, issues: [], orderOnly: 0 };
+    if (!argv.includes('--java-only')) {
+      if (dIndex < 0 || !argv[dIndex + 1] || mIndex < 0 || !argv[mIndex + 1]) {
+        process.stderr.write(
+          'DRIFT  provenance UNVERIFIED: --check needs --descriptors <path> --manifest-schema <path> (or --java-only)\n',
+        );
+        return 1;
+      }
+      freshness = checkSourceFreshness(fixture.frozenFacts, {
+        descriptorsPath: argv[dIndex + 1],
+        manifestSchemaPath: argv[mIndex + 1],
+      });
+    }
+
+    if (drift.length === 0 && freshness.ok) {
+      process.stdout.write('MATCH  frozen H02 facts match the live Java source and descriptor export\n');
+      if (freshness.orderOnly > 0) {
+        process.stdout.write(`NOTE   ${freshness.orderOnly} schema difference(s) are required-ordering only\n`);
+      }
       return 0;
     }
     for (const item of drift) process.stderr.write(`DRIFT  ${item}\n`);
+    for (const issue of freshness.issues) {
+      process.stderr.write(`DRIFT  [${issue.severity}] ${issue.kind} ${JSON.stringify(issue)}\n`);
+    }
     return 1;
   }
 

@@ -208,12 +208,13 @@ MiniMax 的 H02 契约草案与生成产物本轮已出现，本端**只读**核
 
 | 项 | 观测 | 结论 |
 | --- | --- | --- |
-| 位置 | `project-harness-h02-minimax` @ `da3bae15bbc74978b5cff82ef7b26f357bd50837`；`manifest.schema.json`（sha256 `fcce0b3d…`）、`README.md`、`generated/descriptors.json`（sha256 `0e7cf625…`，65 条真实描述符）、`generated/manifest.json` | 契约与真实描述符产物均已产出；本端只读 |
+| 位置 | `project-harness-h02-minimax` @ `6f131ec6ca1859031478ad659e5e1fb5d325d1eb`（实现 `4cc2176…`）；`manifest.schema.json`（sha256 `73d6b5a3…`）、`README.md`、`generated/descriptors.json`（sha256 `90fa1956…`，65 条真实描述符，含权威 `handler`）、`generated/manifest.json` | 契约与产物均为最新；本端只读（§3.4 逐工具复核） |
 | 元数据字段约定 | README §2 要求的字段与本端 `metadata.yaml` **一致**：`cost_hint{local,external_dependency,notes}`、`exposure{state,reason}`（allowed/disabled/pending 同义）、`confirmation{mode,waiting_status,notes}`、`examples{name,input,expect,outcome,可选 output/error/fixture_kind/fixture_source}`、`source_provenance{registration,handler,output_schema}` | **字段级对齐**；`authoritative_facts` 在其约定中可选，本端更严（必需） |
 | schema 必填项 | `manifestToolEntry` 不含 `input_schema`/`output_schema` 之外的 Java 事实重复要求；`side_effect`/`permission`/`idempotency`/`timeout_ms` 由 Java 描述符注入 | 与本端"不重复 Java 事实"的切分一致 |
 | wire name 集合 | 其 `generated/manifest.json` 65 条 vs 本端 65 条，**集合完全相等**（无单侧多余） | **名称级对齐**（独立于本端的静态提取） |
-| 编译溯源 | 其 `sources.metadata_hash` = `5905c36b…`，与本端当前 `metadata.yaml` sha256 **不一致**；且其 `roadmap.current.get` 只有 1 个示例，本端现为 2 个 | 其 manifest 由较早一版本端元数据编译而来，相对本轮改动**已过期**；需重编译后再做跨端复验 |
+| 编译溯源（最新） | 其 `sources.metadata_hash` = `0c5f714d…`，与本端当前 `metadata.yaml` sha256 **完全一致**；`descriptors_hash` = `90fa1956…`；`commit` = `4cc2176…`；`roadmap.current.get` 为 2 个示例；示例 `fixture_kind` 分布 = `{synthetic_typed: 66, nullable_empty: 1, rejection: 1, contract_defect: 5}`，与本端**完全一致** | 跨端编译**已跟上**本端元数据（不再过期） |
 | 描述符 schema 健全性（本端独立复核） | 65 个工具 × (input+output) 共 130 个 schema：`type` 关键字**无一畸形**（全为字符串或字符串数组）、`required` **无一项**不在 `properties` 中、**无任何**子集外关键字 | 真实描述符可用于驱动类型化实例，无需 BLOCKED |
+| 权威绑定字段 | 最新导出按工具给出 `handler`（如 `QuizService.listMastery`、`NavigationToolHandler.invoke`）；本端 65/65 声明均包含该绑定，并已加入校验器强制 | 绑定对齐可机器校验，不再依赖单一端的静态推理 |
 
 > **仍然 PENDING / BLOCKED（不记为已完成）**：完整输出一致性校验（逐字段类型、嵌套 schema、`required` 集合）与跨端消费复验，需要在**本轮提交之后**由 MiniMax 用真实描述符重新编译、ZCode 独立消费，才能成立。当前 MiniMax/ZCode 额度受阻，本端**不重复派任务**，也不把他端的既有产物当作已通过本端校验。名称级对齐已确认，但它不替代类型化实例校验与跨端消费。
 
@@ -241,6 +242,38 @@ MiniMax 的 H02 契约草案与生成产物本轮已出现，本端**只读**核
 | **无成功路径**（D1–D4 静态推导的契约缺陷） | `outcome: unavailable` + `fixture_kind: contract_defect` + 显式 `null` + 真实错误 | 5 |
 
 `shape_placeholder` 已从契约与数据中**完全移除**，并有测试断言"占位符时代已结束"（不得出现该 kind、不得残留 `<shape-placeholder>` 值）。
+
+## 3.4 R-D5 最新上游来源的逐工具复核与来源冻结重建
+
+初步复验指出：本端 `descriptorProvenance` 仍停留在旧上游（descriptor `0e7cf625…` / Manifest Schema `fcce0b3d…`，来源 `da3bae15`）。本轮**只补来源冻结与报告**，不重复 R-D4。
+
+**只读读取的最新上游**：MiniMax HEAD `6f131ec6ca1859031478ad659e5e1fb5d325d1eb`，实现 `4cc217692e4436abc3c7433ce941efc703fd5368`；descriptor sha256 `90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f`、manifest.schema sha256 `73d6b5a3bcefb413f2598db4ec62a39e2357471da00fd83184c7e13fa01159cb`（与初步复验记录一致）。
+
+**逐工具复核结果**（不是只改 hash）：
+
+| 复核项 | 结果 |
+| --- | --- |
+| wire name 集合 | 65 vs 65，**无单侧多余/缺失** |
+| 130 个 schema（65 × input/output）的**语义**比较（忽略 `required` 顺序） | **0 处差异** |
+| 字节级差异 | 仅 **18 个 input schema 的 `required` 数组顺序**不同（集合相同、属性集合相同、属性 schema 相同、`additionalProperties` 相同）⇒ 纯序列化顺序，非契约变化 |
+| 全部 output schema | 与冻结版**逐字节相同**，故 R-D4 的类型化实例继续有效 |
+| 真实绑定 | 最新导出新增权威 `handler` 字段；**65/65** 个工具的声明绑定都包含该权威绑定（含 `navigation.resolve` → `NavigationToolHandler.invoke`） |
+| 合法类型化实例 | 依最新 schema 重新生成 65/65 通过；冻结实例在最新 schema 下仍全部通过 |
+
+**来源冻结已重建**（非手改既有哈希）：逐工具刷新冻结的 `inputSchema`/`outputSchema` 为最新字节，记录每工具权威 `handler`，并写入最新 `artifactSha256`/`manifestSchemaSha256`/`sourceCommit`（HEAD）与 `implementationCommit`（`4cc2176`）。
+
+**过期来源检测（正反例）**：新增 `checkSourceFreshness` 与 `--check --descriptors <path> --manifest-schema <path>`；检测器区分**语义变化**与**仅顺序变化**，且未提供路径时明确报 UNVERIFIED 而非静默通过。fixture 记录 6 条用例：
+
+| 用例 | 变异 | 期望 |
+| --- | --- | --- |
+| S1 | 无（现场即冻结） | `ok`，无 issue |
+| S2 | 仅 `required` 顺序反转 | 过期，且标记为 `order-only`（**不**判为语义变化） |
+| S3 | 属性类型语义变化 | `semantic` + `descriptor_schema` |
+| S4 | 删除一个工具 | `semantic` + `descriptor_tool_set` |
+| S5 | 绑定变化 | `semantic` + `descriptor_handler` |
+| S6 | manifest.schema 变化 | `manifest_schema_hash` |
+
+**`metadata.yaml` 字节未变**：本轮复核后本端 `metadata.yaml` 的 sha256 仍为 `0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a`，与 R-D4 提交**逐字节相同**。因此**本端无需元数据变更，也不触发 MiniMax 重编译**（若将来必须变更，会在本节列明原因并留给 MiniMax 原 Owner 重编译）。
 
 ## 4. 能力矩阵漂移（文档 vs 代码）
 
@@ -333,7 +366,7 @@ MiniMax 的 H02 契约草案与生成产物本轮已出现，本端**只读**核
 
 ### 6.4 人工正反例与 RED→GREEN
 
-`agent-service/tests/fixtures/capability-semantics.json` 含 5 条正例与 **55 条反例**，每条反例声明 `ops`（对真实元数据的变异）与 `expectErrorCode`。反例覆盖任务书要求的全部检测面：
+`agent-service/tests/fixtures/capability-semantics.json` 含 5 条正例、**55 条反例**与 **6 条过期来源检测用例**（§3.4），每条反例声明 `ops`（对真实元数据的变异）与 `expectErrorCode`。反例覆盖任务书要求的全部检测面：
 
 - 来源遗漏 N01、重复 wire name N02、未实现工具/伪造 wire name N03（`studypilot.quiz.answer`）
 - 写操作错误开放 N04、coding/runner 能力错误开放 N05
@@ -382,11 +415,16 @@ malformed schemas  0
 generator failures 0
 tools using schema keywords outside the validator subset: 0
 
-$ node scripts/harness/capability-semantics.mjs --check
-MATCH  frozen H02 capability facts still match the Java source
+$ node scripts/harness/capability-semantics.mjs --check \
+    --descriptors <minimax>/contracts/agent-capabilities/generated/descriptors.json \
+    --manifest-schema <minimax>/contracts/agent-capabilities/manifest.schema.json
+MATCH  frozen H02 facts match the live Java source and descriptor export
+
+$ node scripts/harness/capability-semantics.mjs --check            # 未给路径：显式 UNVERIFIED，退出 1
+$ node scripts/harness/capability-semantics.mjs --check --java-only # 仅 Java 来源：退出 0
 
 $ node --test scripts/harness/capability-semantics.test.mjs
-ℹ tests 63   ℹ pass 63   ℹ fail 0
+ℹ tests 69   ℹ pass 69   ℹ fail 0
 ```
 
 **独立第三方解析器核对**（只作一次性独立验证，未把 Python 引入交付链）：
@@ -409,15 +447,16 @@ PyYAML tools: 65 | equal to source: True
 
 ## 8. 限制与未覆盖项
 
-1. **上游 Schema 已不再缺失**：MiniMax 已于 commit `da3bae15…` 交付 `manifest.schema.json`、`README.md` 与 `generated/{descriptors,manifest}.json`。此前"上游无 Schema、仍停在基线"的表述**已作废**；本端只读其文件，未写入。（该旧表述与 §3.2、§3.3 矛盾，本轮已修正。）
+1. **上游 Schema 已不再缺失**：MiniMax 当前 HEAD `6f131ec6…`（实现 `4cc2176…`）交付 `manifest.schema.json`（sha256 `73d6b5a3…`）、`README.md` 与 `generated/{descriptors.json,manifest.json,tool-bindings.json}`（descriptor sha256 `90fa1956…`）。此前"上游无 Schema、仍停在基线 `16b37d34`"的表述**已作废**；本端只读其文件，未写入。（R-D4 时记录的来源为 `da3bae15…`，R-D5 已按最新上游重建，见 §3.4。）
 2. **本端已完成**：类型化 fixtures 依真实描述符生成并逐项对冻结 schema 校验（§3.3）；66 个 `shape_placeholder` 已被 66 个契约合法实例取代，契约与数据中均不再保留占位符正例。
-3. **PENDING — 跨端消费复验**：MiniMax 的 `generated/manifest.json` 仍是较早版本（其 `sources.metadata_hash` 与本端当前 `metadata.yaml` sha256 不一致，且其 `roadmap.current.get` 只有 1 个示例、本端为 2 个）。需要其用真实描述符**重新编译**后，由 ZCode 独立消费才能成立。MiniMax/ZCode 额度仍受限，本端**不重试、不重复派任务**。
-4. **PENDING — 服务/模型行为证明**：本端未启动后端、未访问数据库、未调用模型。所有证据为离线静态/契约级。
-5. **静态提取与配对不等于注册证明**：`boundPairs` 只能证明声明的绑定出现在该工具的注册上下文里，不能证明运行期必然走到该调用；最终注册证明仍以 MiniMax 的描述符导出为准。
-6. **D1–D4 是静态源码推导**，未运行 Java 行为复现；它们应由 Java Owner 用真实测试确认，业务修复另行授权。
-7. **输出契约一致性**：类型化实例已按真实契约校验类型/必填/闭包/嵌套/数组；但"handler 实际返回值是否等于契约"仍属静态推导（D2/D3）。
-8. 红线检查是结构性的，不构成行为保证（见 §6.3）。
-9. `cost_hint` 不含任何 token/费用数值；延迟 worker 侧真实开销未实测，只按"成本发生在请求之外"如实标注。
+3. **已完成 — 跨端编译与消费不再是本端的阻塞项**：MiniMax 最新 `generated/manifest.json` 的 `sources.metadata_hash` = `0c5f714d…`，与本端 `metadata.yaml` sha256 **完全一致**；`roadmap.current.get` 为 2 个示例，示例 `fixture_kind` 分布与本端一致。Codex 记录最新三端显式路径 consumer CLI **29/29、退出 0**。⇒ 此前"其 manifest 已过期、需重编译"的表述**已作废**（§3.2/§3.4 已更新）。
+4. **PENDING（不属于本端 Owner 范围）**：Codex 的最终门禁仍包括全部公开 Controller 操作/路由业务覆盖、治理与禁用原因、稳定生成 hash 与 fail-closed 的最终交叉验收。本端只提供语义元数据与离线校验，不代他端完成该门禁。
+5. **PENDING — 服务/模型行为证明**：本端未启动后端、未访问数据库、未调用模型。所有证据为离线静态/契约级。
+6. **静态提取与配对不等于注册证明**：`boundPairs` 只能证明声明的绑定出现在该工具的注册上下文里，不能证明运行期必然走到该调用；最终注册证明仍以 MiniMax 的描述符导出为准。
+7. **D1–D4 是静态源码推导**，未运行 Java 行为复现；它们应由 Java Owner 用真实测试确认，业务修复另行授权。
+8. **输出契约一致性**：类型化实例已按真实契约校验类型/必填/闭包/嵌套/数组；但"handler 实际返回值是否等于契约"仍属静态推导（D2/D3）。
+9. 红线检查是结构性的，不构成行为保证（见 §6.3）。
+10. `cost_hint` 不含任何 token/费用数值；延迟 worker 侧真实开销未实测，只按"成本发生在请求之外"如实标注。
 
 ---
 
@@ -425,12 +464,12 @@ PyYAML tools: 65 | equal to source: True
 
 | 项 | 值 |
 | --- | --- |
-| 状态 | **READY_FOR_CODEX（ROUND 4）** |
+| 状态 | **READY_FOR_CODEX（ROUND 5 / R-D5）** |
 | cwd | `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek` |
 | 分支 | `codex/harness-h02-deepseek` |
 | 基线 | `16b37d34c882a17e7bc45c69c84411f28f52bff8` |
-| 交付提交 | `6f92ce976cd2b2f70789b7ada20f1e52d80fe8c4`（R-D4 类型化 fixtures，含 7 个 Owner 文件；本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
-| 测试 | 元数据 65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 **55/55** 以预期错误码被拒；`--check` 无漂移；`node --test` **63/63**；PyYAML 严格解析与源事实逐字段相等；65 个工具的类型化实例全部通过真实 output_schema 校验 |
+| 交付提交 | 见本节末「提交」行（R-D5 来源冻结重建与过期检测） |
+| 测试 | 元数据 65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 **55/55** 以预期错误码被拒；`node --test` **69/69**；`--check`（含最新描述符与 Schema 路径）**新鲜**；65 个类型化实例全部通过真实 output_schema 校验；130 个 schema 语义比较 **0 差异**；65/65 权威绑定对齐 |
 | 元数据统计 | 65 条 = 43 READ + 21 WRITE + 1 NAVIGATE；`always_user_confirmation` 11、`conditional_scope_grant` 10、`none` 44；`authoritative_facts` 274 条；`examples` 73 条 = 67 `ok` + 1 `rejected` + 5 `unavailable`（`fixture_kind`：66 类型化实例 + 1 可空空态 + 1 拒绝 + 5 缺陷）；`cost_hint.local:false` 5 条 |
 | 证据层级 | mock/offline（无模型、无服务、无数据库） |
 | 未覆盖项 | 见第 8 节 |

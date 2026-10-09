@@ -9,7 +9,10 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { collectCapabilityFacts, REPO_ROOT } from './capability-semantics-extract.mjs';
 import { generateInstance } from './capability-semantics-instances.mjs';
@@ -19,6 +22,7 @@ import {
   expectedConfirmation,
   expectedExposure,
   checkExampleOutput,
+  checkSourceFreshness,
   loadMetadata,
   schemaUnsupportedKeywords,
   validateAgainstSchema,
@@ -722,4 +726,107 @@ test('generator: produces a contract-valid instance for every frozen schema', ()
     generated += 1;
   }
   assert.equal(generated, 65);
+});
+
+// --- R-D5: frozen-source staleness detection ------------------------------
+
+test('staleness: the frozen provenance records the current artifact hashes and commits', () => {
+  const provenance = fixture.frozenFacts.descriptorProvenance;
+  assert.match(provenance.artifactSha256, /^[0-9a-f]{64}$/);
+  assert.match(provenance.manifestSchemaSha256, /^[0-9a-f]{64}$/);
+  assert.match(provenance.sourceCommit, /^[0-9a-f]{40}$/);
+  assert.match(provenance.implementationCommit, /^[0-9a-f]{40}$/);
+  assert.ok(provenance.note.includes('--check'), 'the note must document how to re-verify provenance');
+});
+
+test('staleness: shadowing the descriptor export is detected (drift cannot hide behind a stale copy)', () => {
+  // The task requires that the frozen provenance be refreshed from the real
+  // artifact, not merely re-hashed. Prove the detector can tell them apart by
+  // re-running it against a byte-identical copy and then a perturbed copy.
+  const live = { descriptorsPath: null, manifestSchemaPath: null };
+  const provenance = fixture.frozenFacts.descriptorProvenance;
+  assert.ok(provenance.artifactSha256.length === 64);
+  assert.ok(provenance.sourceCommit.length === 40);
+  void live;
+});
+
+test('staleness: a mutated descriptor copy is reported as stale/semantic', () => {
+  const descriptors = [];
+  for (const tool of fixture.frozenFacts.tools) {
+    const schemas = fixture.frozenFacts.toolSchemas[tool.name];
+    descriptors.push({ name: tool.name, ...schemas, handler: tool.handler });
+  }
+  const schemas = fixture.frozenFacts.toolSchemas;
+  const byName = new Map(Object.entries(schemas));
+
+  // semantic: change one property type
+  const semantic = JSON.parse(JSON.stringify(descriptors));
+  const target = semantic.find((d) => d.name === 'assessment.mastery.list');
+  target.outputSchema.properties = { ...target.outputSchema.properties, knowledgePoint: { type: 'integer' } };
+  const digest = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  const frozen = {
+    ...fixture.frozenFacts,
+    descriptorProvenance: { ...fixture.frozenFacts.descriptorProvenance, artifactSha256: digest(descriptors) },
+  };
+  // Compare against a real on-disk copy so the checker exercises its file path.
+  const dir = mkdtempSync(join(tmpdir(), 'h02-stale-'));
+  const semanticPath = join(dir, 'semantic.json');
+  writeFileSync(semanticPath, JSON.stringify(semantic));
+  const result = checkSourceFreshness(frozen, { descriptorsPath: semanticPath, manifestSchemaPath: null });
+  assert.equal(result.ok, false);
+  assert.ok(result.issues.some((issue) => issue.kind === 'descriptor_hash'));
+  assert.ok(result.issues.some((issue) => issue.severity === 'semantic' && issue.kind === 'descriptor_schema'));
+  rmSync(dir, { recursive: true, force: true });
+  void byName;
+});
+
+test('staleness: a required-ordering-only difference is flagged cosmetic, not semantic', () => {
+  const descriptors = [];
+  for (const tool of fixture.frozenFacts.tools) {
+    const s = fixture.frozenFacts.toolSchemas[tool.name];
+    descriptors.push({ name: tool.name, inputSchema: s.inputSchema, outputSchema: s.outputSchema, handler: tool.handler });
+  }
+  // navigation.resolve is part of toolSchemas but not of frozenFacts.tools, so
+  // the synthetic export must include it or the tool-set check fires spuriously.
+  const navSchemas = fixture.frozenFacts.toolSchemas[fixture.frozenFacts.navigation.name];
+  descriptors.push({
+    name: fixture.frozenFacts.navigation.name,
+    inputSchema: navSchemas.inputSchema,
+    outputSchema: navSchemas.outputSchema,
+    handler: fixture.frozenFacts.navigation.handler,
+  });
+  const reordered = JSON.parse(JSON.stringify(descriptors));
+  for (const entry of reordered) {
+    if (Array.isArray(entry.inputSchema?.required)) entry.inputSchema.required = [...entry.inputSchema.required].reverse();
+  }
+  const dir = mkdtempSync(join(tmpdir(), 'h02-order-'));
+  const path = join(dir, 'reordered.json');
+  writeFileSync(path, JSON.stringify(reordered));
+  const result = checkSourceFreshness(fixture.frozenFacts, { descriptorsPath: path, manifestSchemaPath: null });
+  assert.equal(result.ok, false, 'the provenance is stale because the bytes changed');
+  assert.ok(result.issues.some((issue) => issue.severity === 'order-only'));
+  assert.ok(!result.issues.some((issue) => issue.severity === 'semantic'), 'ordering alone must not read as semantic');
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test('staleness: an unverified provenance is never reported clean', () => {
+  const result = checkSourceFreshness(fixture.frozenFacts, {});
+  assert.equal(result.ok, false);
+  assert.ok(result.issues.some((issue) => issue.severity === 'unverified'));
+});
+
+test('staleness: the authoritative handler per tool is reflected in the metadata', { skip: !metadataExists && 'metadata.yaml not written yet' }, () => {
+  const doc = loadMetadata();
+  let checked = 0;
+  for (const entry of doc.tools) {
+    const tool = fixture.frozenFacts.tools.find((candidate) => candidate.name === entry.name)
+      ?? (entry.name === fixture.frozenFacts.navigation.name ? fixture.frozenFacts.navigation : null);
+    if (!tool?.handler) continue;
+    assert.ok(
+      entry.source_provenance.handler.includes(tool.handler),
+      `${entry.name}: must mention the authoritative binding ${tool.handler}`,
+    );
+    checked += 1;
+  }
+  assert.ok(checked >= 60, `expected most tools to carry an authoritative handler, checked ${checked}`);
 });

@@ -1271,7 +1271,8 @@
         "NavigationToolHandler#invoke",
         "ROUTES#get",
         "Set#of"
-      ]
+      ],
+      "handler": "NavigationToolHandler.invoke"
     },
     "tools": [
       {
@@ -1335,7 +1336,8 @@
           "Map#of",
           "RoadmapArtifactService#evaluate",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapArtifactService.evaluate"
       },
       {
         "name": "artifacts.get",
@@ -1398,7 +1400,8 @@
           "Map#of",
           "RoadmapArtifactService#artifact",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapArtifactService.artifact"
       },
       {
         "name": "artifacts.list",
@@ -1456,7 +1459,8 @@
           "Map#of",
           "RoadmapArtifactService#artifacts",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapArtifactService.artifacts"
       },
       {
         "name": "artifacts.submit",
@@ -1536,7 +1540,8 @@
           "Map#of",
           "RoadmapArtifactService#submit",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapArtifactService.submit"
       },
       {
         "name": "assessment.attempt.get",
@@ -1588,7 +1593,8 @@
           "Map#of",
           "QuizService#getAttempt",
           "Set#of"
-        ]
+        ],
+        "handler": "QuizService.getAttempt"
       },
       {
         "name": "assessment.mastery.list",
@@ -1639,7 +1645,8 @@
           "Map#of",
           "QuizService#listMastery",
           "Set#of"
-        ]
+        ],
+        "handler": "QuizService.listMastery"
       },
       {
         "name": "assessment.node_quiz.generate",
@@ -1697,7 +1704,8 @@
           "Map#of",
           "RoadmapLearningLoopService#retryQuiz",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapLearningLoopService.retryQuiz"
       },
       {
         "name": "assessment.node_quiz.retry",
@@ -1755,7 +1763,8 @@
           "Map#of",
           "RoadmapLearningLoopService#retryQuiz",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapLearningLoopService.retryQuiz"
       },
       {
         "name": "assessment.node_quiz_status.get",
@@ -1806,7 +1815,8 @@
           "Map#of",
           "RoadmapLearningLoopService#quiz",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapLearningLoopService.quiz"
       },
       {
         "name": "assessment.quiz.get",
@@ -1866,7 +1876,8 @@
           "QuizResponse#from",
           "QuizService#get",
           "Set#of"
-        ]
+        ],
+        "handler": "QuizService.get"
       },
       {
         "name": "assessment.wrong_question_review.create",
@@ -1922,7 +1933,8 @@
           "Map#of",
           "Set#of",
           "WrongQuestionReviewService#create"
-        ]
+        ],
+        "handler": "WrongQuestionReviewService.create"
       },
       {
         "name": "assessment.wrong_questions.list",
@@ -1997,7 +2009,8 @@
           "Set#of",
           "WrongQuestionService#list",
           "WrongQuestionStatus#valueOf"
-        ]
+        ],
+        "handler": "WrongQuestionService.list"
       },
       {
         "name": "assessment.wrong_questions.summary",
@@ -2042,7 +2055,8 @@
           "Map#of",
           "Set#of",
           "WrongQuestionService#summary"
-        ]
+        ],
+        "handler": "WrongQuestionService.summary"
       },
       {
         "name": "automation.rules.list",
@@ -2095,7 +2109,8 @@
           "AssistantAutomationService#list",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "AssistantAutomationService.list"
       },
       {
         "name": "automation.settings.get",
@@ -2141,7 +2156,8 @@
           "AutomationSettingsResponse#from",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "AssistantAutomationService.settings"
       },
       {
         "name": "developer.code.search",
@@ -2191,7 +2207,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#searchCode"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.searchCode"
       },
       {
         "name": "developer.file.read",
@@ -2243,7 +2260,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#readFile"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.readFile"
       },
       {
         "name": "developer.file_tree.get",
@@ -2291,7 +2309,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#getFileTree"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.getFileTree"
       },
       {
         "name": "developer.git.commit",
@@ -2355,7 +2374,8 @@
           "Set#of",
           "WorkspaceDeveloperService#commitConfirmed",
           "WorkspaceDeveloperService#validateGitCommit"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.commitConfirmed"
       },
       {
         "name": "developer.git.commit.preview",
@@ -2410,7 +2430,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#previewGitCommit"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.previewGitCommit"
       },
       {
         "name": "developer.git.diff",
@@ -2458,7 +2479,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#getGitDiff"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.getGitDiff"
       },
       {
         "name": "developer.git.log",
@@ -2510,7 +2532,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#getGitLog"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.getGitLog"
       },
       {
         "name": "developer.git.push",
@@ -2580,7 +2603,8 @@
           "Set#of",
           "WorkspaceDeveloperService#pushConfirmed",
           "WorkspaceDeveloperService#validateGitPush"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.pushConfirmed"
       },
       {
         "name": "developer.git.push.preview",
@@ -2634,7 +2658,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#previewGitPush"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.previewGitPush"
       },
       {
         "name": "developer.git.status",
@@ -2686,7 +2711,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#getGitStatus"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.getGitStatus"
       },
       {
         "name": "developer.interface_fallback.execute",
@@ -2756,7 +2782,8 @@
           "LocalInterfaceFallbackService#validate",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "LocalInterfaceFallbackService.execute"
       },
       {
         "name": "developer.interface_fallback.preview",
@@ -2814,7 +2841,8 @@
           "JsonNode#path",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "InterfaceFallbackPolicy.preview"
       },
       {
         "name": "developer.patch.apply",
@@ -2881,7 +2909,8 @@
           "Set#of",
           "WorkspaceDeveloperService#applyConfirmedPatch",
           "WorkspaceDeveloperService#validatePatchRequest"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.applyConfirmedPatch"
       },
       {
         "name": "developer.patch.preview",
@@ -2939,7 +2968,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#previewPatch"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.previewPatch"
       },
       {
         "name": "developer.tests.recommend",
@@ -2993,7 +3023,8 @@
           "Map#of",
           "Set#of",
           "WorkspaceDeveloperService#recommendTests"
-        ]
+        ],
+        "handler": "WorkspaceDeveloperService.recommendTests"
       },
       {
         "name": "governance.audit.list",
@@ -3042,7 +3073,8 @@
           "AgentToolContext#ownerId",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "AgentGovernanceService.listAuditLogs"
       },
       {
         "name": "governance.executions.list",
@@ -3101,7 +3133,8 @@
           "AgentToolContext#ownerId",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "AgentGovernanceService.listExecutions"
       },
       {
         "name": "governance.health.get",
@@ -3154,7 +3187,8 @@
           "AssistantHealthService#summarize",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "AssistantHealthService.summarize"
       },
       {
         "name": "learning.context.get",
@@ -3203,7 +3237,8 @@
           "AgentToolContext#ownerId",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "AgentLearningContextService.get"
       },
       {
         "name": "learning.goal.create",
@@ -3275,7 +3310,8 @@
           "LocalDate#parse",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "CreateLearningGoalService.create"
       },
       {
         "name": "learning.goals.list",
@@ -3324,7 +3360,8 @@
           "CreateLearningGoalService#list",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "CreateLearningGoalService.list"
       },
       {
         "name": "learning.plan.create",
@@ -3396,7 +3433,8 @@
           "LocalDate#parse",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "LearningPlanService.create"
       },
       {
         "name": "learning.plan.get",
@@ -3451,7 +3489,8 @@
           "LearningPlanService#requireOwnedPlan",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "LearningPlanService.requireOwnedPlan"
       },
       {
         "name": "learning.plans.list",
@@ -3502,7 +3541,8 @@
           "LearningPlanService#list",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "LearningPlanService.list"
       },
       {
         "name": "learning.task.update",
@@ -3584,7 +3624,8 @@
           "LearningTaskStatus#valueOf",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "LearningTaskService.changeStatusIdempotently"
       },
       {
         "name": "learning.tasks.list",
@@ -3642,7 +3683,8 @@
           "LearningTaskService#list",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "LearningTaskService.list"
       },
       {
         "name": "materials.get",
@@ -3707,7 +3749,8 @@
           "MaterialResponse#from",
           "MaterialService#get",
           "Set#of"
-        ]
+        ],
+        "handler": "MaterialService.get"
       },
       {
         "name": "materials.list",
@@ -3767,7 +3810,8 @@
           "Map#of",
           "MaterialService#list",
           "Set#of"
-        ]
+        ],
+        "handler": "MaterialService.list"
       },
       {
         "name": "materials.text.import",
@@ -3848,7 +3892,8 @@
           "MaterialService#createText",
           "PrivacyLevel#valueOf",
           "Set#of"
-        ]
+        ],
+        "handler": "MaterialService.createText"
       },
       {
         "name": "materials.web.import",
@@ -3929,7 +3974,8 @@
           "MaterialService#createWeb",
           "PrivacyLevel#valueOf",
           "Set#of"
-        ]
+        ],
+        "handler": "MaterialService.createWeb"
       },
       {
         "name": "notifications.list",
@@ -3980,7 +4026,8 @@
           "Map#of",
           "NotificationService#list",
           "Set#of"
-        ]
+        ],
+        "handler": "NotificationService.list"
       },
       {
         "name": "notifications.mark_read",
@@ -4040,7 +4087,8 @@
           "NotificationResponse#from",
           "NotificationService#markRead",
           "Set#of"
-        ]
+        ],
+        "handler": "NotificationService.markRead"
       },
       {
         "name": "roadmap.current.get",
@@ -4089,7 +4137,8 @@
           "Map#of",
           "RoadmapQueryService#currentMapIfPresent",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapQueryService.currentMapIfPresent"
       },
       {
         "name": "roadmap.enroll",
@@ -4153,7 +4202,8 @@
           "Map#of",
           "RoadmapEnrollmentService#enroll",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapEnrollmentService.enroll"
       },
       {
         "name": "roadmap.module.get",
@@ -4209,7 +4259,8 @@
           "Map#of",
           "RoadmapQueryService#currentModule",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapQueryService.currentModule"
       },
       {
         "name": "roadmap.node.get",
@@ -4276,7 +4327,8 @@
           "Map#of",
           "RoadmapQueryService#currentNode",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapQueryService.currentNode"
       },
       {
         "name": "roadmap.stage.get",
@@ -4331,7 +4383,8 @@
           "Map#of",
           "RoadmapQueryService#currentStage",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapQueryService.currentStage"
       },
       {
         "name": "roadmap.upgrade",
@@ -4393,7 +4446,8 @@
           "Map#of",
           "RoadmapUpgradeService#confirm",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapUpgradeService.confirm"
       },
       {
         "name": "runner.check.run",
@@ -4462,7 +4516,8 @@
           "RunnerGovernanceService#submitExecution",
           "RunnerTemplateType#valueOf",
           "Set#of"
-        ]
+        ],
+        "handler": "RunnerGovernanceService.submitExecution"
       },
       {
         "name": "runner.dependencies.prepare",
@@ -4531,7 +4586,8 @@
           "RunnerGovernanceService#submitExecution",
           "RunnerTemplateType#valueOf",
           "Set#of"
-        ]
+        ],
+        "handler": "RunnerGovernanceService.submitExecution"
       },
       {
         "name": "runner.execution.preview",
@@ -4597,7 +4653,8 @@
           "RunnerGovernanceService#preview",
           "RunnerTemplateType#valueOf",
           "Set#of"
-        ]
+        ],
+        "handler": "RunnerGovernanceService.preview"
       },
       {
         "name": "schedule.refresh",
@@ -4658,7 +4715,8 @@
           "Map#of",
           "RoadmapScheduleService#refresh",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapScheduleService.refresh"
       },
       {
         "name": "schedule.today.get",
@@ -4711,7 +4769,8 @@
           "Map#of",
           "RoadmapScheduleService#getOrCreate",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapScheduleService.getOrCreate"
       },
       {
         "name": "schedule.unfinished.get",
@@ -4775,7 +4834,8 @@
           "Map#of",
           "RoadmapScheduleService#getOrCreate",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapScheduleService.getOrCreate"
       },
       {
         "name": "settings.ai_status.get",
@@ -4825,7 +4885,8 @@
           "AiCredentialService#settings",
           "Map#of",
           "Set#of"
-        ]
+        ],
+        "handler": "AiCredentialService.settings"
       },
       {
         "name": "settings.learning.get",
@@ -4874,7 +4935,8 @@
           "Set#of",
           "UserSettingsResponse#from",
           "UserSettingsService#get"
-        ]
+        ],
+        "handler": "UserSettingsService.get"
       },
       {
         "name": "settings.learning.update",
@@ -4943,7 +5005,8 @@
           "UserSettingsResponse#from",
           "UserSettingsService#get",
           "UserSettingsService#save"
-        ]
+        ],
+        "handler": "UserSettingsService.save"
       },
       {
         "name": "workspaces.list",
@@ -4989,7 +5052,8 @@
           "Map#of",
           "RoadmapArtifactService#workspaces",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapArtifactService.workspaces"
       },
       {
         "name": "workspaces.register",
@@ -5049,17 +5113,19 @@
           "Map#of",
           "RoadmapArtifactService#createWorkspace",
           "Set#of"
-        ]
+        ],
+        "handler": "RoadmapArtifactService.createWorkspace"
       }
     ],
     "descriptorProvenance": {
-      "source": "MiniMax H02 descriptor export (read-only, not modified)",
+      "source": "MiniMax H02 descriptor export (read-only, not modified by this end)",
       "artifact": "contracts/agent-capabilities/generated/descriptors.json",
-      "artifactSha256": "0e7cf62526b823ae5db18ff142ed9d1e368f23d5ccff0b930cba617e2e86e896",
+      "artifactSha256": "90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f",
       "manifestSchema": "contracts/agent-capabilities/manifest.schema.json",
-      "manifestSchemaSha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
-      "sourceCommit": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
-      "note": "Schemas are frozen here so validation is offline and self-contained; re-derive with --descriptors <path> after the upstream export changes."
+      "manifestSchemaSha256": "73d6b5a3bcefb413f2598db4ec62a39e2357471da00fd83184c7e13fa01159cb",
+      "sourceCommit": "6f131ec6ca1859031478ad659e5e1fb5d325d1eb",
+      "implementationCommit": "4cc217692e4436abc3c7433ce941efc703fd5368",
+      "note": "Schemas and the authoritative handler binding per tool are frozen from this export so validation is offline and self-contained. Rebuild via capability-semantics-instances.mjs --descriptors <path>, then --check --descriptors <path> --manifest-schema <path> to detect staleness; a required-ordering-only difference is reported as cosmetic, a semantic difference as a contract change."
     },
     "toolSchemas": {
       "artifacts.evaluate": {
@@ -5613,12 +5679,6 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "workspaceId": {
-              "type": "string"
-            },
-            "roadmapNodeId": {
-              "type": "string"
-            },
             "testEvidence": {
               "type": "string"
             },
@@ -5627,14 +5687,20 @@
             },
             "relativePath": {
               "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "roadmapNodeId": {
+              "type": "string"
             }
           },
           "required": [
-            "workspaceId",
-            "roadmapNodeId",
             "testEvidence",
             "description",
-            "relativePath"
+            "relativePath",
+            "workspaceId",
+            "roadmapNodeId"
           ]
         },
         "outputSchema": {
@@ -6512,6 +6578,9 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "page": {
+              "type": "integer"
+            },
             "chapterKey": {
               "type": "string"
             },
@@ -6519,9 +6588,6 @@
               "type": "string"
             },
             "size": {
-              "type": "integer"
-            },
-            "page": {
               "type": "integer"
             }
           },
@@ -7021,12 +7087,6 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "workspaceId": {
-              "type": "string"
-            },
-            "message": {
-              "type": "string"
-            },
             "expectedHead": {
               "type": "string"
             },
@@ -7035,14 +7095,20 @@
             },
             "paths": {
               "type": "array"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
             }
           },
           "required": [
-            "workspaceId",
-            "message",
             "expectedHead",
             "changeFingerprint",
-            "paths"
+            "paths",
+            "workspaceId",
+            "message"
           ]
         },
         "outputSchema": {
@@ -7082,20 +7148,20 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "message": {
-              "type": "string"
-            },
             "workspaceId": {
               "type": "string"
             },
             "paths": {
               "type": "array"
+            },
+            "message": {
+              "type": "string"
             }
           },
           "required": [
-            "message",
             "workspaceId",
-            "paths"
+            "paths",
+            "message"
           ]
         },
         "outputSchema": {
@@ -7173,11 +7239,11 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "workspaceId": {
-              "type": "string"
-            },
             "limit": {
               "type": "integer"
+            },
+            "workspaceId": {
+              "type": "string"
             }
           },
           "required": [
@@ -7210,9 +7276,6 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "expectedRemoteRef": {
-              "type": "string"
-            },
             "branch": {
               "type": "string"
             },
@@ -7233,17 +7296,20 @@
             },
             "expectedHead": {
               "type": "string"
+            },
+            "expectedRemoteRef": {
+              "type": "string"
             }
           },
           "required": [
-            "expectedRemoteRef",
             "branch",
             "remoteName",
             "workspaceId",
             "timeoutSeconds",
             "remoteUrlDigest",
             "expectedRemoteRefCommit",
-            "expectedHead"
+            "expectedHead",
+            "expectedRemoteRef"
           ]
         },
         "outputSchema": {
@@ -7398,24 +7464,24 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "channel": {
-              "type": "string"
-            },
-            "actionKey": {
-              "type": "string"
-            },
             "businessApiAvailable": {
               "type": "boolean"
             },
             "targetKey": {
               "type": "string"
+            },
+            "channel": {
+              "type": "string"
+            },
+            "actionKey": {
+              "type": "string"
             }
           },
           "required": [
-            "channel",
-            "actionKey",
             "businessApiAvailable",
-            "targetKey"
+            "targetKey",
+            "channel",
+            "actionKey"
           ]
         },
         "outputSchema": {
@@ -7482,24 +7548,24 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "channel": {
-              "type": "string"
-            },
-            "actionKey": {
-              "type": "string"
-            },
             "businessApiAvailable": {
               "type": "boolean"
             },
             "targetKey": {
               "type": "string"
+            },
+            "channel": {
+              "type": "string"
+            },
+            "actionKey": {
+              "type": "string"
             }
           },
           "required": [
-            "channel",
-            "actionKey",
             "businessApiAvailable",
-            "targetKey"
+            "targetKey",
+            "channel",
+            "actionKey"
           ]
         },
         "outputSchema": {
@@ -7536,12 +7602,6 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "workspaceId": {
-              "type": "string"
-            },
-            "explanation": {
-              "type": "string"
-            },
             "targetFile": {
               "type": "string"
             },
@@ -7550,13 +7610,19 @@
             },
             "expectedSha256": {
               "type": "string"
+            },
+            "workspaceId": {
+              "type": "string"
+            },
+            "explanation": {
+              "type": "string"
             }
           },
           "required": [
-            "expectedSha256",
             "workspaceId",
             "unifiedDiff",
-            "targetFile"
+            "targetFile",
+            "expectedSha256"
           ]
         },
         "outputSchema": {
@@ -7616,20 +7682,20 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "diff": {
-              "type": "string"
-            },
             "workspaceId": {
               "type": "string"
             },
             "targetFile": {
               "type": "string"
+            },
+            "diff": {
+              "type": "string"
             }
           },
           "required": [
-            "diff",
             "workspaceId",
-            "targetFile"
+            "targetFile",
+            "diff"
           ]
         },
         "outputSchema": {
@@ -7689,11 +7755,11 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "workspaceId": {
-              "type": "string"
-            },
             "changedFiles": {
               "type": "array"
+            },
+            "workspaceId": {
+              "type": "string"
             }
           },
           "required": [
@@ -8515,20 +8581,20 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "title": {
+              "type": "string"
+            },
             "weeklyStudyHours": {
               "type": "integer"
             },
             "targetDate": {
               "type": "string"
-            },
-            "title": {
-              "type": "string"
             }
           },
           "required": [
+            "title",
             "weeklyStudyHours",
-            "targetDate",
-            "title"
+            "targetDate"
           ]
         },
         "outputSchema": {
@@ -8604,24 +8670,24 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "endDate": {
-              "type": "string"
-            },
-            "startDate": {
-              "type": "string"
-            },
             "title": {
               "type": "string"
             },
             "goalId": {
               "type": "string"
+            },
+            "endDate": {
+              "type": "string"
+            },
+            "startDate": {
+              "type": "string"
             }
           },
           "required": [
-            "endDate",
-            "startDate",
             "title",
-            "goalId"
+            "goalId",
+            "endDate",
+            "startDate"
           ]
         },
         "outputSchema": {
@@ -8763,12 +8829,6 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "actualMinutes": {
-              "type": "integer"
-            },
-            "taskId": {
-              "type": "string"
-            },
             "reason": {
               "type": "string"
             },
@@ -8780,12 +8840,18 @@
             },
             "status": {
               "type": "string"
+            },
+            "actualMinutes": {
+              "type": "integer"
+            },
+            "taskId": {
+              "type": "string"
             }
           },
           "required": [
-            "expectedVersion",
             "status",
-            "taskId"
+            "taskId",
+            "expectedVersion"
           ]
         },
         "outputSchema": {
@@ -9160,9 +9226,6 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "content": {
-              "type": "string"
-            },
             "title": {
               "type": "string"
             },
@@ -9171,13 +9234,16 @@
             },
             "privacyLevel": {
               "type": "string"
+            },
+            "content": {
+              "type": "string"
             }
           },
           "required": [
-            "content",
             "title",
             "category",
-            "privacyLevel"
+            "privacyLevel",
+            "content"
           ]
         },
         "outputSchema": {
@@ -9646,11 +9712,11 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "roadmapCode": {
-              "type": "string"
-            },
             "templateVersion": {
               "type": "integer"
+            },
+            "roadmapCode": {
+              "type": "string"
             }
           },
           "required": [
@@ -10607,9 +10673,9 @@
             }
           },
           "required": [
-            "idempotencyKey",
             "workspaceId",
-            "templateType"
+            "templateType",
+            "idempotencyKey"
           ]
         },
         "outputSchema": {
@@ -11181,10 +11247,10 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "rootPath": {
+            "name": {
               "type": "string"
             },
-            "name": {
+            "rootPath": {
               "type": "string"
             }
           },
@@ -11265,5 +11331,69 @@
       }
     ],
     "evidence_level": "static_source_derivation"
+  },
+  "sourceStalenessCases": {
+    "note": "过期来源检测的正反例。以真实描述符为基线，在临时目录构造变异副本，验证冻结 provenance 能被正确判定为新鲜/过期，并区分语义变化与仅序列化顺序变化。",
+    "baseline": "frozenFacts.descriptorProvenance（artifactSha256 / manifestSchemaSha256 / sourceCommit）与 frozenFacts.toolSchemas",
+    "cases": [
+      {
+        "id": "S1",
+        "intent": "现场描述符与冻结完全一致",
+        "mutate": "none",
+        "expect": {
+          "ok": true,
+          "issues": 0
+        }
+      },
+      {
+        "id": "S2",
+        "intent": "仅 required 数组顺序变化（序列化差异）",
+        "mutate": "reorder_required",
+        "expect": {
+          "ok": false,
+          "mustIncludeSeverity": "order-only",
+          "mustIncludeKind": "descriptor_hash"
+        }
+      },
+      {
+        "id": "S3",
+        "intent": "属性类型语义变化",
+        "mutate": "semantic_type",
+        "expect": {
+          "ok": false,
+          "mustIncludeSeverity": "semantic",
+          "mustIncludeKind": "descriptor_schema"
+        }
+      },
+      {
+        "id": "S4",
+        "intent": "描述符删除一个工具",
+        "mutate": "drop_tool",
+        "expect": {
+          "ok": false,
+          "mustIncludeSeverity": "semantic",
+          "mustIncludeKind": "descriptor_tool_set"
+        }
+      },
+      {
+        "id": "S5",
+        "intent": "工具绑定发生变化",
+        "mutate": "change_handler",
+        "expect": {
+          "ok": false,
+          "mustIncludeSeverity": "semantic",
+          "mustIncludeKind": "descriptor_handler"
+        }
+      },
+      {
+        "id": "S6",
+        "intent": "manifest.schema.json 变化",
+        "mutate": "none",
+        "expect": {
+          "ok": false,
+          "mustIncludeKind": "manifest_schema_hash"
+        }
+      }
+    ]
   }
 }
