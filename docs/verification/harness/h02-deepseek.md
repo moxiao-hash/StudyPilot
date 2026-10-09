@@ -468,14 +468,14 @@ PyYAML tools: 65 | equal to source: True
 | cwd | `/Users/moxiao/IdeaProjects/project-harness-h02-deepseek` |
 | 分支 | `codex/harness-h02-deepseek` |
 | 基线 | `16b37d34c882a17e7bc45c69c84411f28f52bff8` |
-| 交付提交 | 见本节末「提交」行（R-D5 来源冻结重建与过期检测） |
+| 交付提交 | `f228f9b0f43c45cd1af157315403395fda745d11`（R-D5，含 4 个 Owner 文件；`metadata.yaml` 字节未变故未提交；本地提交，无 push/merge/deploy）；本文档该行的 hash 回填为 md-only 后续提交，最终 HEAD 见回执 |
 | 测试 | 元数据 65 条全部通过（allowed 28 / disabled 33 / pending 4）；反例 **55/55** 以预期错误码被拒；`node --test` **69/69**；`--check`（含最新描述符与 Schema 路径）**新鲜**；65 个类型化实例全部通过真实 output_schema 校验；130 个 schema 语义比较 **0 差异**；65/65 权威绑定对齐 |
 | 元数据统计 | 65 条 = 43 READ + 21 WRITE + 1 NAVIGATE；`always_user_confirmation` 11、`conditional_scope_grant` 10、`none` 44；`authoritative_facts` 274 条；`examples` 73 条 = 67 `ok` + 1 `rejected` + 5 `unavailable`（`fixture_kind`：66 类型化实例 + 1 可空空态 + 1 拒绝 + 5 缺陷）；`cost_hint.local:false` 5 条 |
 | 证据层级 | mock/offline（无模型、无服务、无数据库） |
 | 未覆盖项 | 见第 8 节 |
 | 下一步 | 停在 H02，等 Codex 独立验收；**不进入 H03** |
 
-**提交内容**：仅本端 Owner 文件。一轮交付提交 `c94cbc9`，二轮整改 `9b6f9c4`，三轮整改 `b7847e1`，四轮 R-D4 `6f92ce9`（本轮新增 `scripts/harness/capability-semantics-instances.mjs`，共 7 个 Owner 文件）。
+**提交内容**：仅本端 Owner 文件。一轮交付提交 `c94cbc9`，二轮整改 `9b6f9c4`，三轮整改 `b7847e1`，四轮 R-D4 `6f92ce9`（新增 `scripts/harness/capability-semantics-instances.mjs`），五轮 R-D5 `f228f9b`（来源冻结重建，`metadata.yaml` 无需变更）。
 
 ```
 A  contracts/agent-capabilities/metadata.yaml
