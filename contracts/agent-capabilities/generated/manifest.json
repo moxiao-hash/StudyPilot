@@ -1,12 +1,12 @@
 {
   "manifest_version": "1.0-draft",
-  "generated_at": "2026-10-08T19:09:20.606Z",
+  "generated_at": "2026-10-08T07:01:21.509Z",
   "sources": {
     "descriptor_count": 65,
-    "descriptors_hash": "bf95c7ef0beae9823129c7ca77654bd34115642aec89ab6e8406422c496d02ea",
+    "descriptors_hash": "90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f",
     "metadata_hash": "0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a",
     "java_source_hash": "13ff8548e69cf9c4d7fecb99e299b0f44d005afc25347cf7964847c0468ba6c8",
-    "commit": "50544d505cefd30fc5550f6247c8175aa0ccb57b"
+    "commit": "4cc217692e4436abc3c7433ce941efc703fd5368"
   },
   "tools": [
     {
@@ -887,28 +887,28 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "roadmapNodeId": {
-            "type": "string"
-          },
-          "workspaceId": {
-            "type": "string"
-          },
-          "relativePath": {
+          "testEvidence": {
             "type": "string"
           },
           "description": {
             "type": "string"
           },
-          "testEvidence": {
+          "relativePath": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "roadmapNodeId": {
             "type": "string"
           }
         },
         "required": [
-          "roadmapNodeId",
-          "workspaceId",
-          "relativePath",
+          "testEvidence",
           "description",
-          "testEvidence"
+          "relativePath",
+          "workspaceId",
+          "roadmapNodeId"
         ]
       },
       "output_schema": {
@@ -2605,14 +2605,14 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "status": {
-            "type": "string"
+          "page": {
+            "type": "integer"
           },
           "chapterKey": {
             "type": "string"
           },
-          "page": {
-            "type": "integer"
+          "status": {
+            "type": "string"
           },
           "size": {
             "type": "integer"
@@ -3317,8 +3317,8 @@
           }
         },
         "required": [
-          "q",
-          "workspaceId"
+          "workspaceId",
+          "q"
         ]
       },
       "output_schema": {
@@ -3462,8 +3462,8 @@
           }
         },
         "required": [
-          "path",
-          "workspaceId"
+          "workspaceId",
+          "path"
         ]
       },
       "output_schema": {
@@ -3733,28 +3733,28 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "message": {
+          "expectedHead": {
             "type": "string"
           },
-          "workspaceId": {
+          "changeFingerprint": {
             "type": "string"
           },
           "paths": {
             "type": "array"
           },
-          "changeFingerprint": {
+          "workspaceId": {
             "type": "string"
           },
-          "expectedHead": {
+          "message": {
             "type": "string"
           }
         },
         "required": [
-          "message",
-          "workspaceId",
-          "paths",
+          "expectedHead",
           "changeFingerprint",
-          "expectedHead"
+          "paths",
+          "workspaceId",
+          "message"
         ]
       },
       "output_schema": {
@@ -3890,20 +3890,20 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "message": {
+          "workspaceId": {
             "type": "string"
           },
           "paths": {
             "type": "array"
           },
-          "workspaceId": {
+          "message": {
             "type": "string"
           }
         },
         "required": [
-          "message",
+          "workspaceId",
           "paths",
-          "workspaceId"
+          "message"
         ]
       },
       "output_schema": {
@@ -4289,40 +4289,40 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "expectedRemoteRef": {
-            "type": "string"
-          },
-          "expectedHead": {
-            "type": "string"
-          },
-          "expectedRemoteRefCommit": {
-            "type": "string"
-          },
-          "remoteUrlDigest": {
-            "type": "string"
-          },
-          "timeoutSeconds": {
-            "type": "integer"
-          },
-          "workspaceId": {
+          "branch": {
             "type": "string"
           },
           "remoteName": {
             "type": "string"
           },
-          "branch": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "timeoutSeconds": {
+            "type": "integer"
+          },
+          "remoteUrlDigest": {
+            "type": "string"
+          },
+          "expectedRemoteRefCommit": {
+            "type": "string"
+          },
+          "expectedHead": {
+            "type": "string"
+          },
+          "expectedRemoteRef": {
             "type": "string"
           }
         },
         "required": [
-          "expectedRemoteRef",
-          "expectedHead",
-          "expectedRemoteRefCommit",
-          "remoteUrlDigest",
-          "timeoutSeconds",
-          "workspaceId",
+          "branch",
           "remoteName",
-          "branch"
+          "workspaceId",
+          "timeoutSeconds",
+          "remoteUrlDigest",
+          "expectedRemoteRefCommit",
+          "expectedHead",
+          "expectedRemoteRef"
         ]
       },
       "output_schema": {
@@ -4769,23 +4769,23 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "channel": {
-            "type": "string"
+          "businessApiAvailable": {
+            "type": "boolean"
           },
           "targetKey": {
             "type": "string"
           },
-          "businessApiAvailable": {
-            "type": "boolean"
+          "channel": {
+            "type": "string"
           },
           "actionKey": {
             "type": "string"
           }
         },
         "required": [
-          "channel",
-          "targetKey",
           "businessApiAvailable",
+          "targetKey",
+          "channel",
           "actionKey"
         ]
       },
@@ -4981,23 +4981,23 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "channel": {
-            "type": "string"
+          "businessApiAvailable": {
+            "type": "boolean"
           },
           "targetKey": {
             "type": "string"
           },
-          "businessApiAvailable": {
-            "type": "boolean"
+          "channel": {
+            "type": "string"
           },
           "actionKey": {
             "type": "string"
           }
         },
         "required": [
-          "channel",
-          "targetKey",
           "businessApiAvailable",
+          "targetKey",
+          "channel",
           "actionKey"
         ]
       },
@@ -5149,26 +5149,26 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "explanation": {
-            "type": "string"
-          },
-          "workspaceId": {
-            "type": "string"
-          },
-          "expectedSha256": {
+          "targetFile": {
             "type": "string"
           },
           "unifiedDiff": {
             "type": "string"
           },
-          "targetFile": {
+          "expectedSha256": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "explanation": {
             "type": "string"
           }
         },
         "required": [
-          "targetFile",
-          "unifiedDiff",
           "workspaceId",
+          "unifiedDiff",
+          "targetFile",
           "expectedSha256"
         ]
       },
@@ -5329,20 +5329,20 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "diff": {
+          "workspaceId": {
             "type": "string"
           },
           "targetFile": {
             "type": "string"
           },
-          "workspaceId": {
+          "diff": {
             "type": "string"
           }
         },
         "required": [
-          "diff",
+          "workspaceId",
           "targetFile",
-          "workspaceId"
+          "diff"
         ]
       },
       "output_schema": {
@@ -5512,8 +5512,8 @@
           }
         },
         "required": [
-          "changedFiles",
-          "workspaceId"
+          "workspaceId",
+          "changedFiles"
         ]
       },
       "output_schema": {
@@ -6906,20 +6906,20 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "targetDate": {
+          "title": {
             "type": "string"
           },
           "weeklyStudyHours": {
             "type": "integer"
           },
-          "title": {
+          "targetDate": {
             "type": "string"
           }
         },
         "required": [
-          "targetDate",
+          "title",
           "weeklyStudyHours",
-          "title"
+          "targetDate"
         ]
       },
       "output_schema": {
@@ -7169,13 +7169,13 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "endDate": {
+          "title": {
             "type": "string"
           },
           "goalId": {
             "type": "string"
           },
-          "title": {
+          "endDate": {
             "type": "string"
           },
           "startDate": {
@@ -7183,9 +7183,9 @@
           }
         },
         "required": [
-          "endDate",
-          "goalId",
           "title",
+          "goalId",
+          "endDate",
           "startDate"
         ]
       },
@@ -7597,29 +7597,29 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "taskId": {
-            "type": "string"
-          },
-          "actualMinutes": {
-            "type": "integer"
-          },
-          "status": {
-            "type": "string"
-          },
-          "scheduledDate": {
+          "reason": {
             "type": "string"
           },
           "expectedVersion": {
             "type": "integer"
           },
-          "reason": {
+          "scheduledDate": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "actualMinutes": {
+            "type": "integer"
+          },
+          "taskId": {
             "type": "string"
           }
         },
         "required": [
-          "expectedVersion",
+          "status",
           "taskId",
-          "status"
+          "expectedVersion"
         ]
       },
       "output_schema": {
@@ -8417,13 +8417,13 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "privacyLevel": {
+          "title": {
             "type": "string"
           },
           "category": {
             "type": "string"
           },
-          "title": {
+          "privacyLevel": {
             "type": "string"
           },
           "content": {
@@ -8431,9 +8431,9 @@
           }
         },
         "required": [
-          "privacyLevel",
-          "category",
           "title",
+          "category",
+          "privacyLevel",
           "content"
         ]
       },
@@ -8648,24 +8648,24 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "sourceUrl": {
-            "type": "string"
-          },
-          "privacyLevel": {
+          "title": {
             "type": "string"
           },
           "category": {
             "type": "string"
           },
-          "title": {
+          "privacyLevel": {
+            "type": "string"
+          },
+          "sourceUrl": {
             "type": "string"
           }
         },
         "required": [
-          "sourceUrl",
-          "privacyLevel",
+          "title",
           "category",
-          "title"
+          "privacyLevel",
+          "sourceUrl"
         ]
       },
       "output_schema": {
@@ -9518,16 +9518,16 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "roadmapCode": {
-            "type": "string"
-          },
           "templateVersion": {
             "type": "integer"
+          },
+          "roadmapCode": {
+            "type": "string"
           }
         },
         "required": [
-          "templateVersion",
-          "roadmapCode"
+          "roadmapCode",
+          "templateVersion"
         ]
       },
       "output_schema": {
@@ -10894,22 +10894,22 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "templateType": {
-            "type": "string"
-          },
-          "workingDirectory": {
+          "workspaceId": {
             "type": "string"
           },
           "idempotencyKey": {
             "type": "string"
           },
-          "workspaceId": {
+          "workingDirectory": {
+            "type": "string"
+          },
+          "templateType": {
             "type": "string"
           }
         },
         "required": [
-          "templateType",
-          "workspaceId"
+          "workspaceId",
+          "templateType"
         ]
       },
       "output_schema": {
@@ -11086,22 +11086,22 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "templateType": {
-            "type": "string"
-          },
-          "workingDirectory": {
+          "workspaceId": {
             "type": "string"
           },
           "idempotencyKey": {
             "type": "string"
           },
-          "workspaceId": {
+          "workingDirectory": {
+            "type": "string"
+          },
+          "templateType": {
             "type": "string"
           }
         },
         "required": [
-          "templateType",
-          "workspaceId"
+          "workspaceId",
+          "templateType"
         ]
       },
       "output_schema": {
@@ -11273,23 +11273,23 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "templateType": {
-            "type": "string"
-          },
-          "workingDirectory": {
+          "workspaceId": {
             "type": "string"
           },
           "idempotencyKey": {
             "type": "string"
           },
-          "workspaceId": {
+          "workingDirectory": {
+            "type": "string"
+          },
+          "templateType": {
             "type": "string"
           }
         },
         "required": [
-          "idempotencyKey",
+          "workspaceId",
           "templateType",
-          "workspaceId"
+          "idempotencyKey"
         ]
       },
       "output_schema": {
@@ -11464,16 +11464,16 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "from": {
+          "to": {
             "type": "string"
           },
-          "to": {
+          "from": {
             "type": "string"
           }
         },
         "required": [
-          "to",
-          "from"
+          "from",
+          "to"
         ]
       },
       "output_schema": {
@@ -11842,16 +11842,16 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "from": {
+          "to": {
             "type": "string"
           },
-          "to": {
+          "from": {
             "type": "string"
           }
         },
         "required": [
-          "to",
-          "from"
+          "from",
+          "to"
         ]
       },
       "output_schema": {
@@ -12609,8 +12609,8 @@
           }
         },
         "required": [
-          "rootPath",
-          "name"
+          "name",
+          "rootPath"
         ]
       },
       "output_schema": {

@@ -1,6 +1,6 @@
-# H02 证据与接口约定：MiniMax Code（Round 4 审查整改交付）
+# H02 证据与接口约定：MiniMax Code（Round 5 审查整改交付）
 
-状态：**READY_FOR_CODEX**（H02 第四轮审查 R-M9 / R-M10 整改已完成，停止等待 Codex 独立验收）。
+状态：**READY_FOR_CODEX**（H02 第五轮审查 R-M11 整改已完成，停止等待 Codex 独立验收）。
 
 ## 0. ACKNOWLEDGED（环境与核验基准）
 
@@ -9,82 +9,77 @@
 | 工作树 / cwd | `/Users/moxiao/IdeaProjects/project-harness-h02-minimax`（显式进入新树，未在原 Task33 目录操作） |
 | 分支 | `codex/harness-h02-minimax` |
 | 共同基线 HEAD | `16b37d34c882a17e7bc45c69c84411f28f52bff8` |
-| 审查基准 (Round 4) | `6c2b7e90e33c6a877b7d4464da3c1f455997307a`（实现 `727b7b815193759310c3405cc92f050561c42bcb`） |
-| Codex 审阅意见 | `CHANGES_REQUESTED`（见 `docs/verification/harness/h02-codex-minimax-round4.md` 及 `h02-codex-minimax-round4-extra-probes.json/mjs`） |
+| 审查基准 (Round 5) | `a354f5a7f64cf12e795c3482387c7c1d38056386`（实现 `50544d505cefd30fc5550f6247c8175aa0ccb57b`） |
+| Codex 审阅意见 | `CHANGES_REQUESTED`（见 `docs/verification/harness/h02-codex-minimax-round5.md` 及 `h02-codex-minimax-round5-extra-probes.json/mjs`） |
 | 当前 UI 模型标签 | `MiniMax Code`（系统 prompt 声明）；真实 provider model ID：**未知** |
 | 边界遵从 | 离线执行，未 push / merge / deploy，未改动模型配置或密钥，未重启服务，未动数据库，未进入 H03 |
 
 ---
 
-## 1. Codex 第四轮审查缺陷与 R-M9 / R-M10 整改清单
+## 1. Codex 第五轮审查缺陷与 R-M11 整改清单
 
-### 1.1 R-M9: 真实注册集合与描述符/元数据双向完全相等（防协同删除）
-- **严格双向相等核对**：
-  - 编译器不仅检查输入条目是否都在已注册集合中，还强制检查描述符集合与元数据集合必须与 Java 源码真实注册的 65 个工具集合完全双向一致；
-  - 任何试图同时从描述符与元数据中删除真实工具（如双方协同删除 `governance.health.get`）的行为均被捕获并失败关闭，报错 `描述符遗漏了 Java 源码中已注册的工具`（彻底拦截 `descriptor omission`）；
-  - 双方共同添加未注册工具的行为同样被双向拦截，报错 `未在 Java 源码配置中注册`。
-
-### 1.2 R-M10: 完整 Schema 深度约束（not / if-then / boolean schema）与产物校验失败关闭
-- **执行 not / if-then / boolean false 约束**：
-  - `validateValueAgainstSchema` 与 `capability-source-verifier.mjs` 完整实现并执行：
-    - `not`: 匹配成功即抛出 `值违反 not 约束`（拦截 `not constraint`）；
-    - `if` / `then` / `else`: 条件匹配成功时递归应用 `then`，失败时递归应用 `else`（拦截 `conditional then constraint`）；
-    - 布尔 Schema `false`: 明确拒绝任何提供的属性值（拦截 `false property schema`）；
-  - 绝不因关键字在 allowlist 中而静默忽略，所有已声明的约束必须真实执行；
-- **缺失 manifest.schema.json 失败关闭**：
-  - 移除对模式文件缺失时的静默跳过 `existsSync` 逻辑，若 `manifest.schema.json` 契约定义文件不存在，编译器直接报错退出；
-  - 在写入磁盘前对最终生成的单体 Manifest 进行完整递归 Schema 校验。
+### 1.1 R-M11: 正确 root 上下文解析本地 $ref，执行 Schema 形式 additionalProperties，对齐关键字执行与声明
+- **本地 $ref 解析与失败关闭**：
+  - 在 `validateValueAgainstSchema` 及 `capability-source-verifier.mjs` 中实现 `resolveRef(ref, rootSchema)`：
+    - 正确在根模式（如当前工具的 `inputSchema` 或 `outputSchema`）上下文中解析形如 `#/$defs/N` 的本地引用；
+    - 严格校验引用格式：必须是以 `#/` 开头的内部路径，对未解析路径（如 `#/$defs/missing`）或非标准格式直接抛出异常拒绝（拦截 `unresolved ref`）；
+    - 对引用解析后的目标 Schema 递归执行完整类型与约束校验（拦截 `local ref invalid value`）；
+- **执行 Schema 形式的 additionalProperties**：
+  - 当 `additionalProperties` 为对象（子 Schema）时，对未在 `properties` 中显式声明的额外字段值递归执行该子 Schema 校验（拦截 `schema additionalProperties` 非法字符串传给 integer 属性）；
+  - 当 `additionalProperties` 为布尔值时：`false` 拒绝任何未允许属性，`true` 允许通过；
+  - 对任何非法类型（非布尔且非对象）的 `additionalProperties` 在模式检查阶段直接报错失败关闭；
+- **编译器与结构验证器行为及关键字盘点完全对齐**：
+  - `compile-agent-capabilities.mjs` 与 `capability-source-verifier.mjs` 逻辑完全对齐，白名单内所有 assertion 关键字（`$ref`, `type`, `properties`, `required`, `additionalProperties`, `items`, `enum`, `const`, `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `minLength`, `maxLength`, `pattern`, `format`, `minItems`, `maxItems`, `uniqueItems`, `anyOf`, `oneOf`, `allOf`, `not`, `if`, `then`, `else`）均具备真实执行语义，遇到不支持关键字直接拒绝；
+  - 修正过往陈述：精准描述当前实现的白名单校验集合，声明与执行严格一致；
+  - 增补合法控制用例与非法语义用例，不依赖魔术命名或哨兵硬编码。
 
 ---
 
-## 2. RED 证据（整改前 4 项额外探针与单元测试失败记录）
+## 2. RED 证据（整改前 3 项额外探针失败记录）
 
-在整改前运行 Codex 第四轮额外探针 `h02-codex-minimax-round4-extra-probes.mjs`，4 项非法变异探针被接受：
+在整改前运行 Codex 第五轮额外探针 `h02-codex-minimax-round5-extra-probes.mjs`，3 项非法变异探针被接受：
 ```
-✖ not constraint: actual accept (expected reject)
-✖ conditional then constraint: actual accept (expected reject)
-✖ false property schema: actual accept (expected reject)
-✖ descriptor omission: actual accept (expected reject)
+✖ local ref invalid value: actual accept (expected reject)
+✖ unresolved ref: actual accept (expected reject)
+✖ schema additional properties: actual accept (expected reject)
 ```
-在 `scripts/compile-agent-capabilities.test.mjs` 中预先添加对应单元测试，整改前同样全部失败：
+在 `scripts/compile-agent-capabilities.test.mjs` 中预先添加对应负例及合法控制断言：
 ```
-✖ negative: compiler rejects not constraint violation in example input
-✖ negative: compiler rejects conditional if-then constraint violation in example input
-✖ negative: compiler rejects boolean schema false for property when provided
-✖ negative: compiler rejects omission of registered tool even if descriptors and metadata both omit it
-✖ negative: compiler fails closed when manifest.schema.json is missing
-ℹ tests 38, pass 33, fail 5
+✖ negative: compiler rejects local $ref invalid value
+✖ negative: compiler rejects unresolved $ref
+✖ negative: compiler rejects schema additionalProperties invalid value
+✔ control: compiler accepts valid value resolved through local $ref
+✔ control: compiler accepts valid value conforming to schema additionalProperties
 ```
 
 ---
 
 ## 3. GREEN 证据（整改后）
 
-### 3.1 Codex 第四轮独立探针全量通过（15/15 + 5/5 全绿）
-1. **第四轮额外探针（5/5 PASS）**：
-   运行 `cd /Users/moxiao/IdeaProjects/project && node docs/verification/harness/h02-codex-minimax-round4-extra-probes.mjs`：
+### 3.1 Codex 第五轮独立探针全量通过（4/4 + 4/4 全绿）
+1. **第五轮额外探针（4/4 PASS）**：
+   运行 `cd /Users/moxiao/IdeaProjects/project && node docs/verification/harness/h02-codex-minimax-round5-extra-probes.mjs`：
    ```json
    [
      { "name": "latest typed baseline", "expect": "accept", "actual": "accept", "pass": true },
-     { "name": "not constraint", "expect": "reject", "actual": "reject", "pass": true, "error": "值违反 not 约束: governance.health.get.examples[overall assistant health].input.n 不应满足 not 模式" },
-     { "name": "conditional then constraint", "expect": "reject", "actual": "reject", "pass": true, "error": "数值低于最小值: governance.health.get.examples[overall assistant health].input.n.then 最小值 2，实际 1" },
-     { "name": "false property schema", "expect": "reject", "actual": "reject", "pass": true, "error": "Schema 为 false，任何值均不允许: governance.health.get.examples[overall assistant health].input.n" },
-     { "name": "descriptor omission", "expect": "reject", "actual": "reject", "pass": true, "error": "描述符遗漏了 Java 源码中已注册的工具 (1): governance.health.get" }
+     { "name": "local ref invalid value", "expect": "reject", "actual": "reject", "pass": true, "error": "值类型不匹配: governance.health.get.examples[overall assistant health].input.n->$ref(#/$defs/N) 期望 integer，实际 string" },
+     { "name": "unresolved ref", "expect": "reject", "actual": "reject", "pass": true, "error": "未解析的 Schema 引用: #/$defs/missing (在路径 \"$defs\" 无法解析)" },
+     { "name": "schema additional properties", "expect": "reject", "actual": "reject", "pass": true, "error": "值类型不匹配: governance.health.get.examples[overall assistant health].input.extra 期望 integer，实际 string" }
    ]
    ```
-2. **第四轮全量探针（15/15 PASS）**：
-   运行 `cd /Users/moxiao/IdeaProjects/project && node docs/verification/harness/h02-codex-minimax-round4-probes.mjs`：15 项探针全绿。
+2. **第五轮基准探针（4/4 PASS）**：
+   运行 `cd /Users/moxiao/IdeaProjects/project && node docs/verification/harness/h02-codex-minimax-round5-probes.mjs`：4 项探针全绿。
 
-### 3.2 编译器单元与负例全量测试套件（38/38 PASS）
+### 3.2 编译器单元与负例全量测试套件（43/43 PASS）
 ```bash
 $ cd /Users/moxiao/IdeaProjects/project-harness-h02-minimax
 $ node --test scripts/compile-agent-capabilities.test.mjs
-ℹ tests 38, pass 38, fail 0
+ℹ tests 43, pass 43, fail 0
 ```
 
-### 3.3 描述符导出与结构验证测试（4/4 PASS）
+### 3.3 描述符导出与结构验证测试（6/6 PASS）
 - `node --test scripts/harness/capability-source-exporter.test.mjs`: `pass 1, fail 0`
-- `node --test scripts/harness/capability-source-verifier.test.mjs`: `pass 3, fail 0`
+- `node --test scripts/harness/capability-source-verifier.test.mjs`: `pass 5, fail 0`（包含完整结构校验、缺失文件拦截、枚举类型非法拦截、子模式 additionalProperties 违规拦截、本地 $ref 违规拦截）
 - `cd backend && ./mvnw -o test -Dtest=HarnessCapabilityDescriptorExportTest`: `BUILD SUCCESS`
 
 ### 3.4 H01 存量回归测试（91/91 PASS）
@@ -94,7 +89,7 @@ $ node --test scripts/compile-agent-capabilities.test.mjs
 
 ## 4. 交付文件清单与提交溯源
 
-- **实现提交 Hash**：`50544d505cefd30fc5550f6247c8175aa0ccb57b`
+- **实现提交 Hash**：`4cc217692e4436abc3c7433ce941efc703fd5368`
 - **证据提交 Hash**：`<本提交>`
 - 分支：`codex/harness-h02-minimax`
 - 共同基线：`16b37d34c882a17e7bc45c69c84411f28f52bff8`
