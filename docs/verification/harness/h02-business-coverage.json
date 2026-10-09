@@ -2656,7 +2656,7 @@
         "GET /api/materials",
         "GET /api/materials/{materialId}",
         "POST /api/materials",
-        "POST /api/materials",
+        "POST /api/materials/files",
         "POST /api/materials/text",
         "POST /api/materials/web"
       ],

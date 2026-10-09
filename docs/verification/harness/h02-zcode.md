@@ -102,11 +102,23 @@
 
 ## 5. Codex 独立跨端探针全量实测矩阵 (全量通过)
 
-### 5.1 第五轮 Recheck 10 项探针实测结果 (10/10 PASS)
-直接复跑 `/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round5-recheck.mjs` 中定义的 10 项探针：
+### 5.1 第六轮 Final Controls 6 项探针实测结果 (6/6 PASS)
+直接复跑 `/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round6-final-controls.mjs` 中定义的 6 项探针：
 
 | 探针编号 | 探针名称 | 注入破坏操作 | 预期行为 | 实测行为 | 退出状态 | 判定 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **0** | `current baseline` | 当前最新三端正本输入 | `accept` | `accept` | `exit: 0` | **PASS** |
+| **1** | `omit one endpoint within retained controller` | 在保留的 Controller 审计中剔除 1 个真实端点 (集合不相等) | `reject` | `reject` | `exit: 1` | **PASS** |
+| **2** | `duplicate endpoint within controller` | 在同一 Controller 审计项中注入重复端点 | `reject` | `reject` | `exit: 1` | **PASS** |
+| **3** | `real service method paired to wrong fact` | 将 `roadmap_progress` 的 javaService 篡改为 `AgentLearningContextService.get` | `reject` | `reject` | `exit: 1` | **PASS** |
+| **4** | `real endpoint paired to wrong authoritative fact` | 将 `roadmap_progress` 的端点篡改为 `GET /api/mastery` (属于 MasteryController) | `reject` | `reject` | `exit: 1` | **PASS** |
+| **5** | `mismatched source commit with explicit current descriptors`| 注入旧 commit `da3bae15...` 配合外部传入当前 `--descriptors` 文件 | `reject` | `reject` | `exit: 1` | **PASS** |
+
+### 5.2 第五轮 Recheck 10 项探针实测结果 (10/10 PASS)
+直接复跑 `/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round5-recheck.mjs` 中定义的 10 项探针：
+
+| 探针编号 | 探针名称 | 注入破坏操作 | 预期行为 | 实测行为 | 退出状态 | 判定 |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **0** | `current cross-lane baseline` | 当前最新三端正本输入 | `accept` | `accept` | `exit: 0` | **PASS** |
 | **1** | `nonrepeating invented descriptor hash` | 伪造 64 位非重复哈希 `'0123456789abcdef'.repeat(4)` | `reject` | `reject` | `exit: 1` | **PASS** |
 | **2** | `existing unrelated baseline commit` | 注入存在但无关的共同基线提交 `16b37d34...` | `reject` | `reject` | `exit: 1` | **PASS** |
@@ -118,7 +130,7 @@
 | **8** | `real endpoint paired to wrong controller` | 真实端点 `GET /api/mastery` 错配给 `WebSearchResultController` | `reject` | `reject` | `exit: 1` | **PASS** |
 | **9** | `older commit containing different descriptors` | 注入旧提交 `da3bae15...`（其描述符哈希与清单声明不符） | `reject` | `reject` | `exit: 1` | **PASS** |
 
-### 5.2 历史所有变异探针回归实测结果
+### 5.3 历史所有变异探针全量回归实测结果
 对第四轮、第三轮及第二轮定义的全部 27 项负例变异进行回归实测：全部 27/27 项变异坏输入均被非零退出拦截，零假阳性，零漏判。
 
 ---
@@ -145,7 +157,7 @@ node scripts/harness/capability-consumer-verify.mjs
   MiniMax Manifest SHA-256: f1fe25dfdd90f2b9cb8abd93b7d9eacc7a246c8aa1dd9fa9006df2db4c761d1c
   MiniMax Schema SHA-256:   73d6b5a3bcefb413f2598db4ec62a39e2357471da00fd83184c7e13fa01159cb
   DeepSeek Metadata SHA-256:0c5f714d0c28c9788c31cf4ba45d0c945f2c52d91c0610fa8a1a0a6b34d4741a
-  Coverage Audit SHA-256:   ab5df0cdf173ece18b1e55950cb779a0ed7a3a9b12b469c117a61d3df5e4acf2
+  Coverage Audit SHA-256:   85568788e76f16dcf0210924ee5e428320cc209c91dde37e1285f4c23e51b8b4
   Fixtures SHA-256:         c5c536696b384a73b672b5ce71b1b1ca8bd086e368b5260eee08d13a3a5af144
 [STRUCTURAL] MiniMax Manifest SHA-256 is valid 64-char hex string
 [STRUCTURAL] MiniMax Schema SHA-256 is valid 64-char hex string
@@ -164,15 +176,15 @@ node scripts/harness/capability-consumer-verify.mjs
 [STRUCTURAL] All 31 routes in coverage correspond strictly to real router.ts definitions
 [STRUCTURAL] Audit table in coverage contains all 65 unique registered tools without duplicates or omissions
 [STRUCTURAL] backend java source dir exists at /Users/moxiao/IdeaProjects/project-harness-h02-zcode/backend/src/main/java
-[STRUCTURAL] Extracted real controllers from backend sources (found: 52 controllers, 183 endpoints)
+[STRUCTURAL] Extracted real controllers from backend sources (found: 52 controllers, 184 endpoints)
 [STRUCTURAL] All controller audit entries correspond to real Controller source files, exact endpoint pairing, and bidirectional completeness
-[STRUCTURAL] All authoritative fact sources correspond to real Java services and real Controller endpoints
+[CROSS_CONTRACT] Exact 65 Java handler bindings loaded for receiver/method pairing
+[STRUCTURAL] All authoritative fact sources correspond to real Java services, verified tool bindings, and real Controller endpoints
 
 --- 5. [MANIFEST_INTEGRITY] Validating Actual Input Manifest ---
 [CROSS_CONTRACT] Manifest metadata source hash strictly matches current metadata file SHA-256
 [CROSS_CONTRACT] Manifest source commit exists and contains descriptors source artifact
-[CROSS_CONTRACT] Manifest descriptors_hash matches real content hash (90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f)
-[CROSS_CONTRACT] Exact 65 Java handler bindings loaded for receiver/method pairing
+[CROSS_CONTRACT] Manifest descriptors_hash matches real content hash in commit and input files (90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f)
 [CROSS_CONTRACT] Actual input Manifest strictly conforms to Draft 2020-12 manifest.schema.json
 [CROSS_CONTRACT] Actual input Manifest strictly passes comprehensive schema, governance, and boundary validation
 [STRUCTURAL] Exactly 28 safe read/navigate tools marked 'allowed' (found: 28)

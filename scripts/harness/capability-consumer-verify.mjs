@@ -767,6 +767,15 @@ function findJavaFiles(dir, filter) {
   return results;
 }
 
+function parseMapping(attrString) {
+  if (!attrString) return '';
+  const namedMatch = attrString.match(/(?:value|path)\s*=\s*['"]([^'"]*)['"]/);
+  if (namedMatch) return namedMatch[1];
+  const directMatch = attrString.match(/['"]([^'"]*)['"]/);
+  if (directMatch) return directMatch[1];
+  return '';
+}
+
 function extractBackendControllerEndpoints(backendJavaDir) {
   const controllers = findJavaFiles(backendJavaDir, (n) => n.endsWith('Controller.java'));
   const endpoints = new Map();
@@ -779,15 +788,15 @@ function extractBackendControllerEndpoints(backendJavaDir) {
     const cName = path.basename(cPath, '.java');
     controllerMap.set(cName, cPath);
 
-    const classReqMatch = content.match(/@RequestMapping\((?:value\s*=\s*)?['"]([^'"]+)['"]\)/);
+    const classReqMatch = content.match(/@RequestMapping\((?:(?:value|path)\s*=\s*)?['"]([^'"]+)['"]\)/);
     const basePath = classReqMatch ? classReqMatch[1] : '';
 
-    const methodRegex = /@(Get|Post|Put|Delete|Patch)Mapping(?:\((?:value\s*=\s*)?(?:['"]([^'"]*)['"])?[^)]*\))?/g;
+    const methodRegex = /@(Get|Post|Put|Delete|Patch)Mapping(?:\(([^)]*)\))?/g;
     let m;
     const ctrlEps = new Set();
     while ((m = methodRegex.exec(content)) !== null) {
       const httpMethod = m[1].toUpperCase();
-      const subPath = m[2] || '';
+      const subPath = parseMapping(m[2]);
       let fullPath = (basePath + (subPath ? (subPath.startsWith('/') ? subPath : '/' + subPath) : '')).replace(/\/+/g, '/');
       if (fullPath.endsWith('/') && fullPath.length > 1) fullPath = fullPath.slice(0, -1);
       const key = `${httpMethod} ${fullPath}`;
@@ -831,9 +840,34 @@ for (const cAudit of coverage.backend_controller_audit) {
     process.exit(1);
   }
   const realEndpointsForThisCtrl = controllerToEndpoints.get(cAudit.controllerName);
+  if (!realEndpointsForThisCtrl) {
+    console.error(`[FAIL - STRUCTURAL] ERR_UNKNOWN_CONTROLLER_ENDPOINTS: Controller '${cAudit.controllerName}' has no mapped endpoints`);
+    process.exit(1);
+  }
+
+  // 1. Check for duplicate endpoints within the controller
+  const seenAuditEndpoints = new Set();
   for (const ep of cAudit.endpoints) {
-    if (!realEndpointsForThisCtrl || !realEndpointsForThisCtrl.has(ep)) {
+    if (seenAuditEndpoints.has(ep)) {
+      console.error(`[FAIL - STRUCTURAL] ERR_DUPLICATE_CONTROLLER_ENDPOINT: Duplicate endpoint '${ep}' in Controller '${cAudit.controllerName}'`);
+      process.exit(1);
+    }
+    seenAuditEndpoints.add(ep);
+
+    if (!realEndpointsForThisCtrl.has(ep)) {
       console.error(`[FAIL - STRUCTURAL] ERR_CONTROLLER_ENDPOINT_MISMATCH: Endpoint '${ep}' does not belong to Controller '${cAudit.controllerName}'`);
+      process.exit(1);
+    }
+  }
+
+  // 2. Bidirectional equality: every real endpoint of this Controller must be audited
+  if (seenAuditEndpoints.size !== realEndpointsForThisCtrl.size) {
+    console.error(`[FAIL - STRUCTURAL] ERR_CONTROLLER_ENDPOINTS_COUNT_MISMATCH: Controller '${cAudit.controllerName}' has ${realEndpointsForThisCtrl.size} real endpoints, but audit declared ${seenAuditEndpoints.size}`);
+    process.exit(1);
+  }
+  for (const realEp of realEndpointsForThisCtrl) {
+    if (!seenAuditEndpoints.has(realEp)) {
+      console.error(`[FAIL - STRUCTURAL] ERR_CONTROLLER_ENDPOINT_OMITTED: Missing endpoint '${realEp}' in Controller '${cAudit.controllerName}' audit`);
       process.exit(1);
     }
   }
@@ -848,6 +882,25 @@ for (const expectedCtrl of publicControllerSet) {
 }
 assert(true, 'All controller audit entries correspond to real Controller source files, exact endpoint pairing, and bidirectional completeness', 'STRUCTURAL');
 
+// Extract exact Java handler bindings from source early
+const backendDir = path.join(rootDir, 'backend');
+const verifiedBindings = fs.existsSync(backendDir)
+  ? extractBindingsFromJavaSource(backendDir)
+  : FALLBACK_HANDLER_BINDINGS;
+assert(verifiedBindings.size === 65 || Object.keys(verifiedBindings).length === 65, 'Exact 65 Java handler bindings loaded for receiver/method pairing', 'CROSS_CONTRACT');
+
+// Build tool -> allowed controllers map from frontend_route_coverage + internal tool controllers
+const toolAllowedControllers = new Map();
+for (const r of coverage.frontend_route_coverage || []) {
+  for (const t of r.associatedRegisteredTools || []) {
+    if (!toolAllowedControllers.has(t)) toolAllowedControllers.set(t, new Set());
+    for (const c of r.mappedBackendControllers || []) {
+      toolAllowedControllers.get(t).add(c);
+    }
+  }
+}
+toolAllowedControllers.get('learning.context.get')?.add('InternalLearningToolController');
+
 // Verify authoritative_facts_sources (R-Z10)
 if (!Array.isArray(coverage.authoritative_facts_sources) || coverage.authoritative_facts_sources.length === 0) {
   console.error('[FAIL - STRUCTURAL] ERR_EMPTY_AUTHORITATIVE_FACTS_SOURCES: authoritative_facts_sources must not be empty');
@@ -855,6 +908,19 @@ if (!Array.isArray(coverage.authoritative_facts_sources) || coverage.authoritati
 }
 
 for (const afs of coverage.authoritative_facts_sources) {
+  if (!FROZEN_JAVA_REGISTERED_TOOLS.has(afs.authoritativeTool)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_UNREGISTERED_AUTHORITATIVE_TOOL: Tool '${afs.authoritativeTool}' is not registered`);
+    process.exit(1);
+  }
+
+  const expectedService = verifiedBindings instanceof Map
+    ? verifiedBindings.get(afs.authoritativeTool)
+    : verifiedBindings[afs.authoritativeTool];
+  if (!expectedService || afs.javaService !== expectedService) {
+    console.error(`[FAIL - STRUCTURAL] ERR_AUTHORITATIVE_SERVICE_TOOL_MISMATCH: Authoritative fact '${afs.metric}' tool '${afs.authoritativeTool}' is bound to '${expectedService}', but javaService declared '${afs.javaService}'`);
+    process.exit(1);
+  }
+
   const parts = afs.javaService.split('.');
   if (parts.length < 2) {
     console.error(`[FAIL - STRUCTURAL] ERR_INVALID_JAVA_SERVICE_FORMAT: Java service '${afs.javaService}' must specify ClassName.methodName`);
@@ -873,12 +939,26 @@ for (const afs of coverage.authoritative_facts_sources) {
     console.error(`[FAIL - STRUCTURAL] ERR_NONEXISTENT_SERVICE_METHOD: Method '${methodName}' does not exist in service '${serviceClass}' (${afs.javaService})`);
     process.exit(1);
   }
-  if (!realBackendEndpoints.has(afs.endpoint)) {
+
+  const epInfo = realBackendEndpoints.get(afs.endpoint);
+  if (!epInfo) {
     console.error(`[FAIL - STRUCTURAL] ERR_INVENTED_AUTHORITATIVE_ENDPOINT: Authoritative fact endpoint '${afs.endpoint}' does not exist in backend Controller sources`);
     process.exit(1);
   }
+
+  const allowedControllers = toolAllowedControllers.get(afs.authoritativeTool);
+  if (!allowedControllers || !allowedControllers.has(epInfo.controller)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_AUTHORITATIVE_ENDPOINT_CONTROLLER_MISMATCH: Authoritative fact '${afs.metric}' tool '${afs.authoritativeTool}' does not map to Controller '${epInfo.controller}' of endpoint '${afs.endpoint}'`);
+    process.exit(1);
+  }
+
+  const ctrlSource = fs.readFileSync(epInfo.file, 'utf8');
+  if (!ctrlSource.includes(methodName) && !ctrlSource.includes(serviceClass)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_CONTROLLER_SERVICE_DELEGATION_MISMATCH: Controller '${epInfo.controller}' handling '${afs.endpoint}' does not invoke service/method '${afs.javaService}' for fact '${afs.metric}'`);
+    process.exit(1);
+  }
 }
-assert(true, 'All authoritative fact sources correspond to real Java services and real Controller endpoints', 'STRUCTURAL');
+assert(true, 'All authoritative fact sources correspond to real Java services, verified tool bindings, and real Controller endpoints', 'STRUCTURAL');
 
 // -----------------------------------------------------------------------------
 // 5. [MANIFEST_INTEGRITY] Real Manifest Validation
@@ -919,38 +999,47 @@ if (treeCheck.status !== 0) {
 }
 assert(true, 'Manifest source commit exists and contains descriptors source artifact', 'CROSS_CONTRACT');
 
-// Obtain actual descriptors bytes and verify hash
+// Unconditionally verify descriptors from declared source commit
+let commitDescContent;
+try {
+  commitDescContent = execFileSync('git', ['show', `${sourceCommit}:contracts/agent-capabilities/generated/descriptors.json`], { encoding: 'utf8' });
+} catch (err) {
+  console.error(`[FAIL - CROSS_CONTRACT] ERR_MISSING_COMMIT_DESCRIPTORS: Failed to read descriptors from source commit ${sourceCommit}: ${err.message}`);
+  process.exit(1);
+}
+
+const commitDescHash = crypto.createHash('sha256').update(commitDescContent).digest('hex');
+if (commitDescHash !== manifest.sources?.descriptors_hash) {
+  console.error(`[FAIL - CROSS_CONTRACT] ERR_COMMIT_DESCRIPTORS_HASH_MISMATCH: Descriptors in source commit ${sourceCommit} has hash ${commitDescHash}, which does not match manifest.sources.descriptors_hash ${manifest.sources?.descriptors_hash}`);
+  process.exit(1);
+}
+
+// Obtain and check explicit descriptors if provided
 const descriptorsArg = getArg('--descriptors', null);
-let descContent = null;
-if (descriptorsArg && fs.existsSync(descriptorsArg)) {
-  descContent = fs.readFileSync(descriptorsArg, 'utf8');
-} else {
-  const adjacent = path.join(path.dirname(manifestPath), 'descriptors.json');
-  if (fs.existsSync(adjacent)) {
-    descContent = fs.readFileSync(adjacent, 'utf8');
-  } else {
-    try {
-      descContent = execFileSync('git', ['show', `${sourceCommit}:contracts/agent-capabilities/generated/descriptors.json`], { encoding: 'utf8' });
-    } catch (err) {
-      console.error(`[FAIL - CROSS_CONTRACT] ERR_MISSING_DESCRIPTORS_SOURCE: Failed to read descriptors from source commit ${sourceCommit}: ${err.message}`);
-      process.exit(1);
-    }
+if (descriptorsArg) {
+  if (!fs.existsSync(descriptorsArg)) {
+    console.error(`[FAIL - CROSS_CONTRACT] ERR_MISSING_EXPLICIT_DESCRIPTORS: Explicit descriptors file at ${descriptorsArg} does not exist`);
+    process.exit(1);
+  }
+  const explicitDescContent = fs.readFileSync(descriptorsArg, 'utf8');
+  const explicitDescHash = crypto.createHash('sha256').update(explicitDescContent).digest('hex');
+  if (explicitDescHash !== commitDescHash) {
+    console.error(`[FAIL - CROSS_CONTRACT] ERR_EXPLICIT_DESCRIPTORS_MISMATCH: Explicit descriptors file hash ${explicitDescHash} does not match source commit descriptors hash ${commitDescHash}`);
+    process.exit(1);
   }
 }
 
-const computedDescHash = crypto.createHash('sha256').update(descContent).digest('hex');
-if (computedDescHash !== manifest.sources?.descriptors_hash) {
-  console.error(`[FAIL - CROSS_CONTRACT] ERR_DESCRIPTORS_HASH_MISMATCH: Manifest descriptors_hash (${manifest.sources?.descriptors_hash}) does not match real descriptors SHA-256 (${computedDescHash})`);
-  process.exit(1);
+// Obtain and check adjacent descriptors if present
+const adjacentDescPath = path.join(path.dirname(manifestPath), 'descriptors.json');
+if (fs.existsSync(adjacentDescPath)) {
+  const adjacentDescContent = fs.readFileSync(adjacentDescPath, 'utf8');
+  const adjacentDescHash = crypto.createHash('sha256').update(adjacentDescContent).digest('hex');
+  if (adjacentDescHash !== commitDescHash) {
+    console.error(`[FAIL - CROSS_CONTRACT] ERR_ADJACENT_DESCRIPTORS_MISMATCH: Adjacent descriptors file hash ${adjacentDescHash} does not match source commit descriptors hash ${commitDescHash}`);
+    process.exit(1);
+  }
 }
-assert(true, `Manifest descriptors_hash matches real content hash (${computedDescHash})`, 'CROSS_CONTRACT');
-
-// Extract exact Java handler bindings from source
-const backendDir = path.join(rootDir, 'backend');
-const verifiedBindings = fs.existsSync(backendDir)
-  ? extractBindingsFromJavaSource(backendDir)
-  : FALLBACK_HANDLER_BINDINGS;
-assert(verifiedBindings.size === 65 || Object.keys(verifiedBindings).length === 65, 'Exact 65 Java handler bindings loaded for receiver/method pairing', 'CROSS_CONTRACT');
+assert(true, `Manifest descriptors_hash matches real content hash in commit and input files (${commitDescHash})`, 'CROSS_CONTRACT');
 
 // Validate manifest document against parsed JSON schema
 const schemaErrors = [];
