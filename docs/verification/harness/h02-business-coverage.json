@@ -2321,8 +2321,8 @@
     {
       "metric": "roadmap_progress",
       "authoritativeTool": "roadmap.current.get",
-      "javaService": "RoadmapService.getCurrentRoadmap",
-      "endpoint": "GET /api/roadmap/current",
+      "javaService": "RoadmapQueryService.currentMapIfPresent",
+      "endpoint": "GET /api/roadmaps/current",
       "keyFields": [
         "enrolled",
         "stage_progress",
@@ -2335,7 +2335,7 @@
       "metric": "learning_context",
       "authoritativeTool": "learning.context.get",
       "javaService": "AgentLearningContextService.get",
-      "endpoint": "GET /api/learning/context",
+      "endpoint": "GET /internal/users/{ownerId}/learning-context",
       "keyFields": [
         "active_goal",
         "current_plan",
@@ -2348,8 +2348,8 @@
     {
       "metric": "today_schedule",
       "authoritativeTool": "schedule.today.get",
-      "javaService": "RoadmapScheduleService.getTodaySchedule",
-      "endpoint": "GET /api/schedule/today",
+      "javaService": "RoadmapScheduleService.getOrCreate",
+      "endpoint": "GET /api/roadmaps/current/schedule",
       "keyFields": [
         "tasks",
         "focus_nodes",
@@ -2361,7 +2361,7 @@
       "metric": "learning_tasks",
       "authoritativeTool": "learning.tasks.list",
       "javaService": "LearningTaskService.list",
-      "endpoint": "GET /api/learning/tasks",
+      "endpoint": "GET /api/learning-tasks",
       "keyFields": [
         "id",
         "title",
@@ -2373,7 +2373,7 @@
     {
       "metric": "assessment_mastery",
       "authoritativeTool": "assessment.mastery.list",
-      "javaService": "MasteryService.getMastery",
+      "javaService": "QuizService.listMastery",
       "endpoint": "GET /api/mastery",
       "keyFields": [
         "radar_dimensions",
@@ -2386,7 +2386,7 @@
     {
       "metric": "wrong_questions_summary",
       "authoritativeTool": "assessment.wrong_questions.summary",
-      "javaService": "WrongQuestionService.getSummary",
+      "javaService": "WrongQuestionService.summary",
       "endpoint": "GET /api/wrong-questions/summary",
       "keyFields": [
         "total_count",

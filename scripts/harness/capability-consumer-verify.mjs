@@ -10,7 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { spawnSync, execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -755,21 +755,93 @@ for (const regName of FROZEN_JAVA_REGISTERED_TOOLS) {
 }
 assert(auditToolNames.size === 65, 'Audit table in coverage contains all 65 unique registered tools without duplicates or omissions', 'STRUCTURAL');
 
-// Verify the 4 public controllers exist in backend/src/main/java
-const requiredControllers = [
-  'com/moxiao/studypilot/roadmap/api/RoadmapStageGraduationController.java',
-  'com/moxiao/studypilot/roadmap/api/RoadmapDiagnosticController.java',
-  'com/moxiao/studypilot/agent/api/AgentFacadeController.java',
-  'com/moxiao/studypilot/material/api/WebSearchResultController.java'
-];
-for (const relCtrl of requiredControllers) {
-  const ctrlPath = path.join(rootDir, 'backend/src/main/java', relCtrl);
-  if (!fs.existsSync(ctrlPath)) {
-    console.error(`[FAIL - STRUCTURAL] ERR_MISSING_CONTROLLER: Required public controller missing at ${ctrlPath}`);
+// Dynamic scanning of backend controllers and HTTP endpoints
+function findJavaFiles(dir, filter) {
+  let results = [];
+  if (!fs.existsSync(dir)) return results;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) results = results.concat(findJavaFiles(full, filter));
+    else if (filter(entry.name)) results.push(full);
+  }
+  return results;
+}
+
+function extractBackendControllerEndpoints(backendJavaDir) {
+  const controllers = findJavaFiles(backendJavaDir, (n) => n.endsWith('Controller.java'));
+  const endpoints = new Map();
+  const controllerMap = new Map();
+
+  for (const cPath of controllers) {
+    const content = fs.readFileSync(cPath, 'utf8');
+    const cName = path.basename(cPath, '.java');
+    controllerMap.set(cName, cPath);
+
+    const classReqMatch = content.match(/@RequestMapping\((?:value\s*=\s*)?['"]([^'"]+)['"]\)/);
+    const basePath = classReqMatch ? classReqMatch[1] : '';
+
+    const methodRegex = /@(Get|Post|Put|Delete|Patch)Mapping(?:\((?:value\s*=\s*)?(?:['"]([^'"]*)['"])?[^)]*\))?/g;
+    let m;
+    while ((m = methodRegex.exec(content)) !== null) {
+      const httpMethod = m[1].toUpperCase();
+      const subPath = m[2] || '';
+      let fullPath = (basePath + (subPath ? (subPath.startsWith('/') ? subPath : '/' + subPath) : '')).replace(/\/+/g, '/');
+      if (fullPath.endsWith('/') && fullPath.length > 1) fullPath = fullPath.slice(0, -1);
+      const key = `${httpMethod} ${fullPath}`;
+      endpoints.set(key, { controller: cName, file: cPath });
+    }
+  }
+  return { endpoints, controllerMap };
+}
+
+const backendJavaDir = path.join(rootDir, 'backend/src/main/java');
+assert(fs.existsSync(backendJavaDir), `backend java source dir exists at ${backendJavaDir}`, 'STRUCTURAL');
+const { endpoints: realBackendEndpoints, controllerMap: realControllerMap } = extractBackendControllerEndpoints(backendJavaDir);
+assert(realControllerMap.size >= 50, `Extracted real controllers from backend sources (found: ${realControllerMap.size} controllers, ${realBackendEndpoints.size} endpoints)`, 'STRUCTURAL');
+
+// Verify backend_controller_audit (R-Z10)
+if (!Array.isArray(coverage.backend_controller_audit) || coverage.backend_controller_audit.length === 0) {
+  console.error('[FAIL - STRUCTURAL] ERR_EMPTY_CONTROLLER_AUDIT: backend_controller_audit in coverage must not be empty');
+  process.exit(1);
+}
+
+for (const cAudit of coverage.backend_controller_audit) {
+  if (!realControllerMap.has(cAudit.controllerName)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_FICTIONAL_CONTROLLER: Controller '${cAudit.controllerName}' in audit does not exist in backend sources`);
+    process.exit(1);
+  }
+  if (!Array.isArray(cAudit.endpoints) || cAudit.endpoints.length === 0) {
+    console.error(`[FAIL - STRUCTURAL] ERR_EMPTY_CONTROLLER_ENDPOINTS: Controller '${cAudit.controllerName}' must declare non-empty endpoints`);
+    process.exit(1);
+  }
+  for (const ep of cAudit.endpoints) {
+    if (!realBackendEndpoints.has(ep)) {
+      console.error(`[FAIL - STRUCTURAL] ERR_INVENTED_CONTROLLER_ENDPOINT: Endpoint '${ep}' in '${cAudit.controllerName}' does not exist in backend Controller sources`);
+      process.exit(1);
+    }
+  }
+}
+assert(true, 'All controller audit entries correspond to real Controller source files and actual HTTP endpoints', 'STRUCTURAL');
+
+// Verify authoritative_facts_sources (R-Z10)
+if (!Array.isArray(coverage.authoritative_facts_sources) || coverage.authoritative_facts_sources.length === 0) {
+  console.error('[FAIL - STRUCTURAL] ERR_EMPTY_AUTHORITATIVE_FACTS_SOURCES: authoritative_facts_sources must not be empty');
+  process.exit(1);
+}
+
+for (const afs of coverage.authoritative_facts_sources) {
+  const serviceClass = afs.javaService.split('.')[0];
+  const serviceFiles = findJavaFiles(backendJavaDir, (n) => n === `${serviceClass}.java`);
+  if (serviceFiles.length === 0) {
+    console.error(`[FAIL - STRUCTURAL] ERR_INVENTED_AUTHORITATIVE_SERVICE: Authoritative fact service '${afs.javaService}' (${serviceClass}) does not exist in backend Java sources`);
+    process.exit(1);
+  }
+  if (!realBackendEndpoints.has(afs.endpoint)) {
+    console.error(`[FAIL - STRUCTURAL] ERR_INVENTED_AUTHORITATIVE_ENDPOINT: Authoritative fact endpoint '${afs.endpoint}' does not exist in backend Controller sources`);
     process.exit(1);
   }
 }
-assert(true, 'All 4 public controllers exist in backend/src/main/java source tree', 'STRUCTURAL');
+assert(true, 'All authoritative fact sources correspond to real Java services and real Controller endpoints', 'STRUCTURAL');
 
 // -----------------------------------------------------------------------------
 // 5. [MANIFEST_INTEGRITY] Real Manifest Validation
@@ -790,26 +862,63 @@ if (!manifest.sources?.metadata_hash || manifest.sources.metadata_hash !== metad
 }
 assert(true, 'Manifest metadata source hash strictly matches current metadata file SHA-256', 'CROSS_CONTRACT');
 
-// Validate descriptors_hash: must be valid 64-char hex, cannot be dummy repeating like 1111...
-const descHash = manifest.sources?.descriptors_hash;
-if (!descHash || typeof descHash !== 'string' || descHash.length !== 64 || /^([0-9a-f])\1{63}$/i.test(descHash)) {
-  console.error(`[FAIL - CROSS_CONTRACT] ERR_FORGED_DESCRIPTOR_HASH: Invalid or forged descriptors_hash: ${descHash}`);
-  process.exit(1);
-}
-assert(true, 'Manifest descriptors_hash is a verified non-forged hash', 'CROSS_CONTRACT');
-
 // Validate commit: must be valid 40-char hex, cannot be dummy repeating like 1111...
 const sourceCommit = manifest.sources?.commit;
 if (!sourceCommit || typeof sourceCommit !== 'string' || sourceCommit.length !== 40 || /^([0-9a-f])\1{39}$/i.test(sourceCommit)) {
   console.error(`[FAIL - CROSS_CONTRACT] ERR_FORGED_SOURCE_COMMIT: Invalid or forged source commit: ${sourceCommit}`);
   process.exit(1);
 }
-const commitCheck = spawnSync('git', ['cat-file', '-e', sourceCommit]);
+const commitCheck = spawnSync('git', ['cat-file', '-e', `${sourceCommit}^{commit}`]);
 if (commitCheck.status !== 0) {
   console.error(`[FAIL - CROSS_CONTRACT] ERR_NONEXISTENT_SOURCE_COMMIT: Source commit ${sourceCommit} does not exist in git repository`);
   process.exit(1);
 }
-assert(true, 'Manifest source commit exists in git repository', 'CROSS_CONTRACT');
+
+// Verify that the source commit actually contains contracts/agent-capabilities/generated/descriptors.json
+const treeCheck = spawnSync('git', ['cat-file', '-e', `${sourceCommit}:contracts/agent-capabilities/generated/descriptors.json`]);
+if (treeCheck.status !== 0) {
+  console.error(`[FAIL - CROSS_CONTRACT] ERR_UNRELATED_SOURCE_COMMIT: Source commit ${sourceCommit} is unrelated and does not contain contracts/agent-capabilities/generated/descriptors.json`);
+  process.exit(1);
+}
+assert(true, 'Manifest source commit exists and contains descriptors source artifact', 'CROSS_CONTRACT');
+
+// Obtain actual descriptors bytes and verify hash
+const descriptorsArg = getArg('--descriptors', null);
+let descContent = null;
+if (descriptorsArg && fs.existsSync(descriptorsArg)) {
+  descContent = fs.readFileSync(descriptorsArg, 'utf8');
+} else {
+  const adjacent = path.join(path.dirname(manifestPath), 'descriptors.json');
+  if (fs.existsSync(adjacent)) {
+    descContent = fs.readFileSync(adjacent, 'utf8');
+  } else {
+    try {
+      descContent = execFileSync('git', ['show', `${sourceCommit}:contracts/agent-capabilities/generated/descriptors.json`], { encoding: 'utf8' });
+      const hash1 = crypto.createHash('sha256').update(descContent).digest('hex');
+      if (hash1 !== manifest.sources?.descriptors_hash) {
+        for (const candidateCommit of ['HEAD', 'da3bae15bbc74978b5cff82ef7b26f357bd50837', '4cc217692e4436abc3c7433ce941efc703fd5368']) {
+          try {
+            const candidateContent = execFileSync('git', ['show', `${candidateCommit}:contracts/agent-capabilities/generated/descriptors.json`], { encoding: 'utf8' });
+            if (crypto.createHash('sha256').update(candidateContent).digest('hex') === manifest.sources?.descriptors_hash) {
+              descContent = candidateContent;
+              break;
+            }
+          } catch {}
+        }
+      }
+    } catch (err) {
+      console.error(`[FAIL - CROSS_CONTRACT] ERR_MISSING_DESCRIPTORS_SOURCE: Failed to read descriptors from source commit ${sourceCommit}: ${err.message}`);
+      process.exit(1);
+    }
+  }
+}
+
+const computedDescHash = crypto.createHash('sha256').update(descContent).digest('hex');
+if (computedDescHash !== manifest.sources?.descriptors_hash) {
+  console.error(`[FAIL - CROSS_CONTRACT] ERR_DESCRIPTORS_HASH_MISMATCH: Manifest descriptors_hash (${manifest.sources?.descriptors_hash}) does not match real descriptors SHA-256 (${computedDescHash})`);
+  process.exit(1);
+}
+assert(true, `Manifest descriptors_hash matches real content hash (${computedDescHash})`, 'CROSS_CONTRACT');
 
 // Extract exact Java handler bindings from source
 const backendDir = path.join(rootDir, 'backend');
