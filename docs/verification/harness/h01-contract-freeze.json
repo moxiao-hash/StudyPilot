@@ -1,0 +1,16 @@
+{
+  "task": "H01",
+  "status": "TECHNICAL_PASS_AWAITING_USER_REVIEW",
+  "protocol_version": "1.0-draft",
+  "schema_sha256": "df5950c9f9b482b4bea8a21c67e7cad4c5098bd342ce11139199ec9cc6bc5923",
+  "schema_implementation_commit": "d3a491db26811461ba692a1fc85a92b4522a4daf",
+  "reviewed_heads": {
+    "minimax": "14f6529c08ebe21fcdb0b6b2cbf76679f2a38823",
+    "zcode": "9d6061a1254939380759e10395c766cbdacbe022",
+    "deepseek": "70ab27605de448382ee483ecb329fe3a33f08eeb"
+  },
+  "baseline_commit": "f7311079a83b84c5e7f3a9076ce4efccb3044c86",
+  "frozen_at": "2026-10-08T11:00:00.583492+08:00",
+  "freeze_scope": "H01 design baseline by exact content hash; not a shipped runtime version; further schema changes require owner implementation and renewed affected consumer review",
+  "h02_authorized": false
+}

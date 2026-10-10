@@ -1,0 +1,98 @@
+{
+  "head": "82ec83b0f94a09448b68b5b45c67db59ad7bc9d0",
+  "results": [
+    {
+      "name": "actual current baseline",
+      "expected": true,
+      "actual": true,
+      "pass": true
+    },
+    {
+      "name": "omitted registered descriptor",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "issues": [
+        {
+          "kind": "descriptor_hash",
+          "severity": "stale",
+          "expected": "90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f",
+          "actual": "21a41417651d865f94527c3cf9ea1e4d9f7b212fe2e025285e62544fb24aa04f"
+        },
+        {
+          "kind": "descriptor_tool_set",
+          "severity": "semantic",
+          "onlyFresh": [],
+          "onlyFrozen": [
+            "workspaces.register"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "changed input type",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "issues": [
+        {
+          "kind": "descriptor_hash",
+          "severity": "stale",
+          "expected": "90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f",
+          "actual": "454edcb654df9ed8fd8f8e29bac3edb31fe2eebc787189d871bd4736a4930402"
+        },
+        {
+          "kind": "descriptor_schema",
+          "severity": "semantic",
+          "tool": "artifacts.evaluate",
+          "side": "inputSchema"
+        }
+      ]
+    },
+    {
+      "name": "changed handler receiver",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "issues": [
+        {
+          "kind": "descriptor_hash",
+          "severity": "stale",
+          "expected": "90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f",
+          "actual": "11f963fbd1cbd7049e26745246b6f1834f6f8f84c0e30155e3dc56962d70f984"
+        }
+      ]
+    },
+    {
+      "name": "missing explicit provenance paths",
+      "expected": false,
+      "actual": false,
+      "pass": true,
+      "issues": [
+        {
+          "kind": "descriptor_path",
+          "severity": "unverified",
+          "detail": "no --descriptors path supplied; the frozen provenance was not compared"
+        },
+        {
+          "kind": "manifest_schema_path",
+          "severity": "unverified",
+          "detail": "no --manifest-schema path supplied"
+        }
+      ]
+    },
+    {
+      "name": "source commit exact artifact",
+      "pass": true,
+      "commit": "6f131ec6ca1859031478ad659e5e1fb5d325d1eb"
+    },
+    {
+      "name": "source commit exact manifest schema",
+      "pass": true
+    },
+    {
+      "name": "metadata unchanged from accepted typed delivery",
+      "pass": true
+    }
+  ]
+}

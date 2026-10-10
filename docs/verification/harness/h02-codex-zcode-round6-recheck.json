@@ -1,0 +1,85 @@
+{
+  "head": "4aec808f382522dbb30168b99bc029095d3b948a",
+  "results": [
+    {
+      "name": "current cross-lane baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "nonrepeating invented descriptor hash",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_DESCRIPTORS_HASH_MISMATCH: Manifest descriptors_hash (0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef) does not match real descriptors SHA-256 (90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f)\n"
+    },
+    {
+      "name": "existing unrelated baseline commit",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_UNRELATED_SOURCE_COMMIT: Source commit 16b37d34c882a17e7bc45c69c84411f28f52bff8 is unrelated and does not contain contracts/agent-capabilities/generated/descriptors.json\n"
+    },
+    {
+      "name": "missing all controller operations",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_EMPTY_CONTROLLER_AUDIT: backend_controller_audit in coverage must not be empty\n"
+    },
+    {
+      "name": "invented controller endpoint",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_CONTROLLER_ENDPOINT_MISMATCH: Endpoint 'POST /api/imaginary-business-action' does not belong to Controller 'AgentExecutionController'\n"
+    },
+    {
+      "name": "invented coverage authoritative service",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_INVENTED_AUTHORITATIVE_SERVICE: Authoritative fact service 'ImaginaryService.makeUpProgress' (ImaginaryService) does not exist in backend Java sources\n"
+    },
+    {
+      "name": "omit three real audited controllers",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_MISSING_CONTROLLER_AUDIT: Missing required public controller in audit: AgentFacadeController\n"
+    },
+    {
+      "name": "existing class with nonexistent fact method",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_NONEXISTENT_SERVICE_METHOD: Method 'noSuchFactMethod' does not exist in service 'RoadmapQueryService' (RoadmapQueryService.noSuchFactMethod)\n"
+    },
+    {
+      "name": "real endpoint paired to wrong controller",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_CONTROLLER_ENDPOINT_MISMATCH: Endpoint 'GET /api/mastery' does not belong to Controller 'AgentExecutionController'\n"
+    },
+    {
+      "name": "older commit containing different descriptors",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_DESCRIPTORS_HASH_MISMATCH: Manifest descriptors_hash (90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f) does not match real descriptors SHA-256 (0e7cf62526b823ae5db18ff142ed9d1e368f23d5ccff0b930cba617e2e86e896)\n"
+    }
+  ]
+}

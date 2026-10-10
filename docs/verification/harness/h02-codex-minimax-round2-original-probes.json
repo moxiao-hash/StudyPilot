@@ -1,0 +1,94 @@
+{
+  "head": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
+  "results": [
+    {
+      "name": "baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true
+    },
+    {
+      "name": "missing-description",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get 缺少非空 description"
+    },
+    {
+      "name": "fictional-binding",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get 来源绑定错误: 期望绑定 AssistantHealthService.summarize，实际声明 \"NonexistentService.nonexistent\""
+    },
+    {
+      "name": "invalid-input",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: governance.health.get.examples[overall assistant health].input.illegalUnknownParameter"
+    },
+    {
+      "name": "invalid-output",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 learning.context.get 示例输出类型错误: 期望 object，实际 number"
+    },
+    {
+      "name": "nested-owner",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "示例数据包含被禁止的鉴权/隐私字段: governance.health.get.examples[overall assistant health].input.params.ownerId"
+    },
+    {
+      "name": "write-enabled",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 artifacts.submit (effect=WRITE) 在 H02 阶段必须禁用，禁止 exposure.state=allowed"
+    },
+    {
+      "name": "coding-enabled",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 runner.check.run (effect=WRITE) 在 H02 阶段必须禁用，禁止 exposure.state=allowed"
+    },
+    {
+      "name": "fictional-fact",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get 声明了未在 outputSchema 中存在的权威事实: inventedField"
+    },
+    {
+      "name": "unknown-metadata-field",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "元数据工具 governance.health.get 包含未知字段: inventedField"
+    },
+    {
+      "name": "unknown-schema-constraint",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "Schema 包含未知约束关键字: artifacts.evaluate.inputSchema.inventedConstraint"
+    },
+    {
+      "name": "default-determinism",
+      "expected": "identical",
+      "actual": "identical",
+      "pass": true
+    },
+    {
+      "name": "verifier-types-and-enums",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true
+    }
+  ],
+  "note": "Round2 rerun of original probes; historical round1 outcomes are documented in h02-codex-minimax-round1.md."
+}

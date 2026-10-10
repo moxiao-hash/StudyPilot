@@ -1,0 +1,20 @@
+import {readFileSync,writeFileSync,mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';import {join} from 'node:path';import {spawnSync,execFileSync} from 'node:child_process';import {createHash} from 'node:crypto';
+const mini='/Users/moxiao/IdeaProjects/project-harness-h02-minimax',ds='/Users/moxiao/IdeaProjects/project-harness-h02-deepseek',zc='/Users/moxiao/IdeaProjects/project-harness-h02-zcode';const temp=mkdtempSync(join(tmpdir(),'h02-z-r2-'));
+const miniCommit='da3bae15bbc74978b5cff82ef7b26f357bd50837',dsCommit='e92fc157c85f340f6464bc13b0e1c5c7e2207f03';
+const show=(p,c,f)=>execFileSync('git',['show',c+':'+f],{cwd:p,encoding:'utf8'});
+const manifest=JSON.parse(show(mini,miniCommit,'contracts/agent-capabilities/generated/manifest.json'));
+const schema=show(mini,miniCommit,'contracts/agent-capabilities/manifest.schema.json');const meta=show(ds,dsCommit,'contracts/agent-capabilities/metadata.yaml');
+const coverage=JSON.parse(readFileSync(zc+'/docs/verification/harness/h02-business-coverage.json'));const results=[];
+function test(name,change,expected='reject'){const d=structuredClone(manifest),c=structuredClone(coverage),o={schema,meta};change(d,c,o);const mp=join(temp,'manifest.json'),sp=join(temp,'schema.json'),yp=join(temp,'metadata.yaml'),cp=join(temp,'coverage.json');for(const[p,s]of [[mp,JSON.stringify(d)],[sp,o.schema],[yp,o.meta],[cp,JSON.stringify(c)]])writeFileSync(p,s);const r=spawnSync('node',[zc+'/scripts/harness/capability-consumer-verify.mjs','--manifest',mp,'--schema',sp,'--metadata',yp,'--coverage',cp],{cwd:zc,encoding:'utf8'});const actual=r.status===0?'accept':'reject';results.push({name,expected,actual,pass:actual===expected,exit:r.status,stderr:r.stderr.slice(-700)});}
+test('aligned immutable baseline',()=>{},'accept');
+test('known class nonexistent method',d=>{d.tools[0].source_provenance.handler='AssistantHealthService.imaginaryMethod';});
+test('known handler wrong tool receiver',d=>{d.tools[0].source_provenance.handler=d.tools.find(t=>t.name==='governance.health.get').source_provenance.handler;});
+test('duplicate registered audit replacing omitted tool',(d,c)=>{c.registered_tool_catalog_audit[1]=structuredClone(c.registered_tool_catalog_audit[0]);});
+test('forged descriptor hash',d=>{d.sources.descriptors_hash='1'.repeat(64);});
+test('forged source commit',d=>{d.sources.commit='1'.repeat(40);});
+test('input below minimum',d=>{d.tools[0].input_schema={type:'object',properties:{n:{type:'integer',minimum:1}},required:['n']};d.tools[0].examples[0].input={n:0};});
+test('input violates oneOf',d=>{d.tools[0].input_schema={type:'object',properties:{n:{oneOf:[{type:'integer'}]}}};d.tools[0].examples[0].input={n:'wrong'};});
+test('input violates uniqueItems',d=>{d.tools[0].input_schema={type:'object',properties:{n:{type:'array',uniqueItems:true,items:{type:'integer'}}}};d.tools[0].examples[0].input={n:[1,1]};});
+test('aligned hash duplicate metadata with omitted actual tool',(d,c,o)=>{const r=spawnSync('python3',['-c','import yaml,json,sys; d=yaml.safe_load(sys.stdin.read());d["tools"][1]=d["tools"][0];print(json.dumps(d))'],{input:meta,encoding:'utf8'});if(r.status!==0)throw new Error(r.stderr);o.meta=r.stdout;d.sources.metadata_hash=createHash('sha256').update(o.meta).digest('hex');});
+const artifact={zcHead:execFileSync('git',['rev-parse','HEAD'],{cwd:zc,encoding:'utf8'}).trim(),inputs:{miniCommit,dsCommit,schemaSha256:createHash('sha256').update(schema).digest('hex'),metadataSha256:createHash('sha256').update(meta).digest('hex')},results};writeFileSync('docs/verification/harness/h02-codex-zcode-round4-recheck.json',JSON.stringify(artifact,null,2)+'\n');console.log(JSON.stringify(results));rmSync(temp,{recursive:true});

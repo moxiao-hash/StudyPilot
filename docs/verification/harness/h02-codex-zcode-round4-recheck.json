@@ -1,0 +1,91 @@
+{
+  "zcHead": "748c2056b9c5d4ac2d4dcc9c56f71c89d4443130",
+  "inputs": {
+    "miniCommit": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
+    "dsCommit": "e92fc157c85f340f6464bc13b0e1c5c7e2207f03",
+    "schemaSha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
+    "metadataSha256": "8d4460c681833ffccf8485ce901d71029ec72460cd6ea35ad4ebaa37cd62eaf6"
+  },
+  "results": [
+    {
+      "name": "aligned immutable baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "known class nonexistent method",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_HANDLER_BINDING_MISMATCH: Tool 'artifacts.evaluate' declared handler 'AssistantHealthService.imaginaryMethod' does not match registered receiver/method 'RoadmapArtifactService.evaluate'\n"
+    },
+    {
+      "name": "known handler wrong tool receiver",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_HANDLER_BINDING_MISMATCH: Tool 'artifacts.evaluate' declared handler 'AssistantHealthService.summarize — bean assistantHealthTool calls service.summarize with the caller identity injected by Java' does not match registered receiver/method 'RoadmapArtifactService.evaluate'\n"
+    },
+    {
+      "name": "duplicate registered audit replacing omitted tool",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_DUPLICATE_AUDIT_TOOL: Duplicate tool 'artifacts.evaluate' in registered_tool_catalog_audit\n"
+    },
+    {
+      "name": "forged descriptor hash",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_FORGED_DESCRIPTOR_HASH: Invalid or forged descriptors_hash: 1111111111111111111111111111111111111111111111111111111111111111\n"
+    },
+    {
+      "name": "forged source commit",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_FORGED_SOURCE_COMMIT: Invalid or forged source commit: 1111111111111111111111111111111111111111\n"
+    },
+    {
+      "name": "input below minimum",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_INVALID_INPUT_INSTANCE: Tool artifacts.evaluate example 'attempted rubric evaluation' input violates schema: SCHEMA: artifacts.evaluate.examples[attempted rubric evaluation].input.n value (0) < minimum (1)\n"
+    },
+    {
+      "name": "input violates oneOf",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_INVALID_INPUT_INSTANCE: Tool artifacts.evaluate example 'attempted rubric evaluation' input violates schema: SCHEMA: artifacts.evaluate.examples[attempted rubric evaluation].input.n must match exactly one oneOf branch, matched 0\n"
+    },
+    {
+      "name": "input violates uniqueItems",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_INVALID_INPUT_INSTANCE: Tool artifacts.evaluate example 'attempted rubric evaluation' input violates schema: SCHEMA: artifacts.evaluate.examples[attempted rubric evaluation].input.n contains duplicate items with uniqueItems: true (1)\n"
+    },
+    {
+      "name": "aligned hash duplicate metadata with omitted actual tool",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_DUPLICATE_METADATA_TOOL: Duplicate tool 'governance.health.get' in metadata.yaml\n"
+    }
+  ]
+}

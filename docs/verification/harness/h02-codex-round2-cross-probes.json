@@ -1,0 +1,186 @@
+{
+  "heads": {
+    "/Users/moxiao/IdeaProjects/project-harness-h02-minimax": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
+    "/Users/moxiao/IdeaProjects/project-harness-h02-deepseek": "e92fc157c85f340f6464bc13b0e1c5c7e2207f03",
+    "/Users/moxiao/IdeaProjects/project-harness-h02-zcode": "1c52a3bd0e693708ef14b1234b5d21ea59f9297c"
+  },
+  "results": [
+    {
+      "lane": "minimax",
+      "name": "valid-baseline",
+      "expected": "accept",
+      "actual": "reject",
+      "pass": false,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "missing-exported-binding",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "forged-binding-and-metadata-agree",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "enum-constraint-ignored",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "minimum-constraint-ignored",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "placeholder-empty-required-output",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "missing-cost-and-exposure",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "non-string-purpose-array",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "unknown-nested-confirmation",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "对象包含未允许属性: developer.tests.recommend.examples[recommend tests for changed files].output.templateType"
+    },
+    {
+      "lane": "minimax",
+      "name": "missing-java-source-cwd",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "缺少 Java 源码配置文件，无法核验 Handler 真实绑定: /private/var/folders/dh/wntx38ln18n5nksw2jwwlj380000gn/T/h02-codex-cross-7KL3iw"
+    },
+    {
+      "lane": "zcode",
+      "name": "valid-baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "summary": "   All H02 Capability Consumer Checks PASSED! (20/20 checks, 0 failures)"
+    },
+    {
+      "lane": "zcode",
+      "name": "missing-description",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "unknown-tool-field",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "invalid-output-instance",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "nested-owner-in-output",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "arbitrary-fabricated-fact",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "fictional-handler",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "schema-not-json",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "metadata-not-yaml",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "coverage-fictional-route",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "stale-source-hash",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    },
+    {
+      "lane": "zcode",
+      "name": "missing-upstream",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1
+    }
+  ]
+}

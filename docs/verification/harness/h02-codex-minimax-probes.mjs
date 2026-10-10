@@ -1,0 +1,26 @@
+import {compileCapabilities,parseYaml} from '/Users/moxiao/IdeaProjects/project-harness-h02-minimax/scripts/compile-agent-capabilities.mjs';
+import {verifyManifestStructure} from '/Users/moxiao/IdeaProjects/project-harness-h02-minimax/scripts/harness/capability-source-verifier.mjs';
+import {readFileSync,writeFileSync,mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {execFileSync} from 'node:child_process';
+const root='/Users/moxiao/IdeaProjects/project-harness-h02-minimax', temp=mkdtempSync(join(tmpdir(),'h02-codex-mini-'));
+const descriptors=JSON.parse(readFileSync(root+'/contracts/agent-capabilities/generated/descriptors.json'));
+const metadata=parseYaml('/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/contracts/agent-capabilities/metadata.yaml');
+const results=[];
+function check(name,mutate,expected='reject') {let d=structuredClone(descriptors),m=structuredClone(metadata);mutate(d,m); const dp=join(temp,'d.json'),mp=join(temp,'m.json');writeFileSync(dp,JSON.stringify(d));writeFileSync(mp,JSON.stringify(m));let actual='accept',error;try{compileCapabilities({descriptorsPath:dp,metadataPath:mp});}catch(e){actual='reject';error=e.message;}results.push({name,expected,actual,pass:expected===actual,error});}
+check('baseline',()=>{},'accept');
+check('missing-description',(d,m)=>{delete m.tools[0].description;});
+check('fictional-binding',(d,m)=>{m.tools[0].source_provenance.handler='NonexistentService.nonexistent';});
+check('invalid-input',(d,m)=>{m.tools[0].examples[0].input={illegalUnknownParameter:42};});
+check('invalid-output',(d,m)=>{const t=m.tools.find(t=>t.examples.some(e=>e.outcome==='ok'));t.examples.find(e=>e.outcome==='ok').output=42;});
+check('nested-owner',(d,m)=>{m.tools[0].examples[0].input={params:{ownerId:123}};});
+check('write-enabled',(d,m)=>{const n=d.find(t=>t.effect==='WRITE').name; m.tools.find(t=>t.name===n).exposure={state:'allowed',reason:'allow'};});
+check('coding-enabled',(d,m)=>{const t=m.tools.find(t=>/^(developer|runner)\./.test(t.name));t.exposure={state:'allowed',reason:'allow'};});
+check('fictional-fact',(d,m)=>{m.tools[0].authoritative_facts=[{fact:'inventedField',meaning:'authority'}];});
+check('unknown-metadata-field',(d,m)=>{m.tools[0].inventedField=42;});
+check('unknown-schema-constraint',(d,m)=>{d[0].inputSchema.inventedConstraint=true;});
+const options={descriptorsPath:root+'/contracts/agent-capabilities/generated/descriptors.json',metadataPath:'/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/contracts/agent-capabilities/metadata.yaml'};
+const a=compileCapabilities(options);await new Promise(r=>setTimeout(r,20));const b=compileCapabilities(options);results.push({name:'default-determinism',expected:'identical',actual:JSON.stringify(a)===JSON.stringify(b)?'identical':'different',pass:JSON.stringify(a)===JSON.stringify(b)});
+a.tools[0].version='invalid';a.tools[0].exposure.state='INVALID';const vp=join(temp,'v.json');writeFileSync(vp,JSON.stringify(a));let accepted=true;try{verifyManifestStructure(vp,root+'/contracts/agent-capabilities/manifest.schema.json');}catch{accepted=false;}results.push({name:'verifier-types-and-enums',expected:'reject',actual:accepted?'accept':'reject',pass:!accepted});
+writeFileSync('/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-current-probes.json',JSON.stringify({head:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),results},null,2)+'\n');console.log(JSON.stringify(results));rmSync(temp,{recursive:true});

@@ -1,0 +1,353 @@
+{
+  "head": "8ad8ea521493eb0f4e70b8adc628a13646f800cb",
+  "result": [
+    {
+      "name": "current descriptor hash",
+      "pass": true
+    },
+    {
+      "name": "schema hash",
+      "pass": true
+    },
+    {
+      "name": "declared source commit artifact hash",
+      "pass": true
+    },
+    {
+      "name": "frozen schema artifacts.evaluate",
+      "pass": true
+    },
+    {
+      "name": "frozen schema artifacts.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema artifacts.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema artifacts.submit",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.attempt.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.mastery.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.node_quiz.generate",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.node_quiz.retry",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.node_quiz_status.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.quiz.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.wrong_question_review.create",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.wrong_questions.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema assessment.wrong_questions.summary",
+      "pass": true
+    },
+    {
+      "name": "frozen schema automation.rules.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema automation.settings.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.code.search",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.file.read",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.file_tree.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.git.commit",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.git.commit.preview",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.git.diff",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.git.log",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.git.push",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.git.push.preview",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.git.status",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.interface_fallback.execute",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.interface_fallback.preview",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.patch.apply",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.patch.preview",
+      "pass": true
+    },
+    {
+      "name": "frozen schema developer.tests.recommend",
+      "pass": true
+    },
+    {
+      "name": "frozen schema governance.audit.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema governance.executions.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema governance.health.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema learning.context.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema learning.goal.create",
+      "pass": true
+    },
+    {
+      "name": "frozen schema learning.goals.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema learning.plan.create",
+      "pass": true
+    },
+    {
+      "name": "frozen schema learning.plan.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema learning.plans.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema learning.task.update",
+      "pass": true
+    },
+    {
+      "name": "frozen schema learning.tasks.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema materials.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema materials.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema materials.text.import",
+      "pass": true
+    },
+    {
+      "name": "frozen schema materials.web.import",
+      "pass": true
+    },
+    {
+      "name": "frozen schema navigation.resolve",
+      "pass": true
+    },
+    {
+      "name": "frozen schema notifications.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema notifications.mark_read",
+      "pass": true
+    },
+    {
+      "name": "frozen schema roadmap.current.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema roadmap.enroll",
+      "pass": true
+    },
+    {
+      "name": "frozen schema roadmap.module.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema roadmap.node.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema roadmap.stage.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema roadmap.upgrade",
+      "pass": true
+    },
+    {
+      "name": "frozen schema runner.check.run",
+      "pass": true
+    },
+    {
+      "name": "frozen schema runner.dependencies.prepare",
+      "pass": true
+    },
+    {
+      "name": "frozen schema runner.execution.preview",
+      "pass": true
+    },
+    {
+      "name": "frozen schema schedule.refresh",
+      "pass": true
+    },
+    {
+      "name": "frozen schema schedule.today.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema schedule.unfinished.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema settings.ai_status.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema settings.learning.get",
+      "pass": true
+    },
+    {
+      "name": "frozen schema settings.learning.update",
+      "pass": true
+    },
+    {
+      "name": "frozen schema workspaces.list",
+      "pass": true
+    },
+    {
+      "name": "frozen schema workspaces.register",
+      "pass": true
+    },
+    {
+      "name": "independent actual-schema instances",
+      "pass": true,
+      "details": {
+        "inputs": 72,
+        "outputs": 67,
+        "deliberateRejections": 1,
+        "errors": []
+      }
+    },
+    {
+      "name": "no placeholder positive fixtures",
+      "pass": true
+    },
+    {
+      "name": "metadata mutation baseline",
+      "pass": true,
+      "details": {
+        "expected": "accept",
+        "actual": "accept"
+      }
+    },
+    {
+      "name": "metadata mutation nested numeric type",
+      "pass": true,
+      "details": {
+        "expected": "reject",
+        "actual": "reject",
+        "error": "learning.context.get: output violates the registered output_schema: $.learning.goals[0].weeklyStudyHours: expected integer, got string"
+      }
+    },
+    {
+      "name": "metadata mutation top-level output type",
+      "pass": true,
+      "details": {
+        "expected": "reject",
+        "actual": "reject",
+        "error": "learning.context.get: output violates the registered output_schema: $: expected object, got integer"
+      }
+    },
+    {
+      "name": "metadata mutation required output property",
+      "pass": true,
+      "details": {
+        "expected": "reject",
+        "actual": "reject",
+        "error": "learning.context.get: output violates the registered output_schema: $: missing required property \"generatedAt\""
+      }
+    },
+    {
+      "name": "metadata mutation unknown output property",
+      "pass": true,
+      "details": {
+        "expected": "reject",
+        "actual": "reject",
+        "error": "learning.context.get: output violates the registered output_schema: $: undeclared property \"unknown\""
+      }
+    },
+    {
+      "name": "metadata mutation missing nullable output",
+      "pass": true,
+      "details": {
+        "expected": "reject",
+        "actual": "reject",
+        "error": "roadmap.current.get: the example must declare an explicit output field (a missing result is not a null result)"
+      }
+    },
+    {
+      "name": "metadata mutation placeholder output",
+      "pass": true,
+      "details": {
+        "expected": "reject",
+        "actual": "reject",
+        "error": "learning.context.get: output violates the registered output_schema: $: missing required property \"generatedAt\"; $: missing required property \"learning\"; $: missing required property \"wrongQuestions\"; $: missing required property \"unreadNotificationCount\""
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "head": "b23dd9d72e2d23d4da8a2edbfcfb3653a77a89ae",
+  "results": [
+    {
+      "name": "current baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "wrong endpoint within real RoadmapController",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "invented authoritative output field",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "mismatched source commit with explicit current descriptors",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_COMMIT_DESCRIPTORS_HASH_MISMATCH: Descriptors in source commit da3bae15bbc74978b5cff82ef7b26f357bd50837 has hash 0e7cf62526b823ae5db18ff142ed9d1e368f23d5ccff0b930cba617e2e86e896, which does not match manifest.sources.descriptors_hash 90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f\n"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+import {compileCapabilities,parseYaml} from '/Users/moxiao/IdeaProjects/project-harness-h02-minimax/scripts/compile-agent-capabilities.mjs';
+import {readFileSync,writeFileSync,mkdtempSync,rmSync} from 'node:fs';import {tmpdir} from 'node:os';import {join} from 'node:path';import {execFileSync} from 'node:child_process';
+const root='/Users/moxiao/IdeaProjects/project-harness-h02-minimax',temp=mkdtempSync(join(tmpdir(),'h02-mini-r3-'));const ds=JSON.parse(readFileSync(root+'/contracts/agent-capabilities/generated/descriptors.json'));const meta=parseYaml('/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/contracts/agent-capabilities/metadata.yaml');const results=[];
+function test(name,mutate,expect='reject'){const d=structuredClone(ds),m=structuredClone(meta);mutate(d,m);const dp=join(temp,'d.json'),mp=join(temp,'m.json');writeFileSync(dp,JSON.stringify(d));writeFileSync(mp,JSON.stringify(m));let actual='accept',error;try{compileCapabilities({descriptorsPath:dp,metadataPath:mp,sourceRoot:root});}catch(e){actual='reject';error=e.message;}results.push({name,expect,actual,pass:expect===actual,error});}
+const pair=(d,m)=>[d.find(t=>t.name==='governance.health.get'),m.tools.find(t=>t.name==='governance.health.get')];
+test('latest typed baseline',()=>{},'accept');
+test('missing binding',(d,m)=>{delete pair(d,m)[0].handler;});
+test('joint forged known binding',(d,m)=>{const[x,y]=pair(d,m);x.handler='ImaginaryLearningService.computeEverything';y.source_provenance.handler=x.handler;});
+test('enum',(d,m)=>{const[x,y]=pair(d,m);x.inputSchema.properties.level={type:'string',enum:['A']};y.examples[0].input.level='B';});
+test('minimum',(d,m)=>{const[x,y]=pair(d,m);x.inputSchema.properties.limit={type:'integer',minimum:1};y.examples[0].input.limit=-10;});
+test('cost exposure missing',(d,m)=>{const[x,y]=pair(d,m);delete y.cost_hint;delete y.exposure;});
+test('non-string purpose',(d,m)=>{pair(d,m)[1].when_to_use=[42];});
+test('nested unknown confirmation',(d,m)=>{pair(d,m)[1].confirmation.unrecognized=true;});
+test('unknown jointly added tool',(d,m)=>{const[x,y]=pair(d,m);const a=structuredClone(x),b=structuredClone(y);a.name=b.name='imaginary.query.get';a.handler=b.source_provenance.handler='ImaginaryLearningService.computeEverything';d.push(a);m.tools.push(b);});
+test('navigation fake method',(d,m)=>{const x=d.find(t=>t.name==='navigation.resolve'),y=m.tools.find(t=>t.name===x.name);x.handler=y.source_provenance.handler='NavigationToolHandler.imaginaryMethod';});
+test('scalar placeholder bypass',(d,m)=>{const[x,y]=pair(d,m);x.inputSchema.properties.limit={type:'integer',minimum:1};y.examples[0].input.limit='<shape-placeholder>';});
+test('ignored oneOf',(d,m)=>{const[x,y]=pair(d,m);x.inputSchema.properties.limit={oneOf:[{type:'integer'}]};y.examples[0].input.limit='bad-integer';});
+test('ignored uniqueItems',(d,m)=>{const[x,y]=pair(d,m);x.inputSchema.properties.tags={type:'array',uniqueItems:true,items:{type:'string'}};y.examples[0].input.tags=['a','a'];});
+test('missing example outcome',(d,m)=>{delete pair(d,m)[1].examples[0].outcome;});
+test('invalid cost nested type',(d,m)=>{pair(d,m)[1].cost_hint.external_dependency={not:'string'};});
+writeFileSync('docs/verification/harness/h02-codex-minimax-round3-probes.json',JSON.stringify({head:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),results},null,2)+'\n');console.log(JSON.stringify(results));rmSync(temp,{recursive:true});

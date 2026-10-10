@@ -1,0 +1,34 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {loadContract,validateMessage,validateScenario} from '/Users/moxiao/IdeaProjects/project-harness-h01-minimax/scripts/harness/runtime-contract.mjs';
+import {collectInventory,checkAgainstFixture} from '/Users/moxiao/IdeaProjects/project-harness-h01-deepseek/scripts/harness/baseline-inventory.mjs';
+const root='/Users/moxiao/IdeaProjects/project';
+const mm='/Users/moxiao/IdeaProjects/project-harness-h01-minimax';
+const ds='/Users/moxiao/IdeaProjects/project-harness-h01-deepseek';
+const contract=loadContract();
+const fixtures=JSON.parse(readFileSync(mm+'/scripts/harness/runtime-contract.fixtures.json'));
+const happy=fixtures.validScenarios[0].messages;
+const event=(type)=>structuredClone(happy.find(x=>x.type===type));
+const results=[];
+function probe(name,expectedReject,result){results.push({name,expectedReject,actualAccepted:result.ok,errors:result.errors??result.drift??[]});}
+probe('terminal before TURN_STARTED',true,validateScenario(contract,[event('TURN_FINISHED')]));
+const started=event('TURN_STARTED');
+const finished=event('CALL_FINISHED');finished.callId='call-orphan0001';
+probe('CALL_FINISHED without matching CALL_STARTED',true,validateScenario(contract,[started,finished]));
+const duplicate=structuredClone(started);duplicate.sequence=2;duplicate.eventId='evt-duplicate001';
+probe('duplicate TURN_STARTED',true,validateScenario(contract,[started,duplicate]));
+const done=event('TURN_FINISHED');const after=event('ASSISTANT_MESSAGE');after.sequence=6;
+probe('turn content after terminal (control)',true,validateScenario(contract,[started,done,after]));
+const question=structuredClone(fixtures.validMessages.find(x=>x.message?.type==='INTERACTION_REQUIRED')?.message??fixtures.validMessages.find(x=>x.value?.type==='INTERACTION_REQUIRED')?.value);
+if(question){question.payload.question={text:'选择哪一个？',options:['a','b']};probe('question event with renderable question data',false,validateMessage(contract,question));}
+const inv=collectInventory('/Users/moxiao/Desktop/Deepseek Harness');
+const f=JSON.parse(readFileSync(ds+'/agent-service/tests/fixtures/runtime_scenarios.json'));
+probe('unchanged baseline (control)',false,checkAgainstFixture(inv,f));
+const modified=structuredClone(inv);modified.extensionPoints.find(x=>x.id==='loop-main').sha256='f'.repeat(64);modified.harnessDirtyPaths.push(' M packages/core/agent-loop/src/agent.ts');
+probe('same HEAD but modified core loop hash',true,checkAgainstFixture(modified,f));
+const profile=structuredClone(inv);profile.profileFiles.find(x=>x.present).sha256='e'.repeat(64);
+probe('same bundles but changed profile hash',true,checkAgainstFixture(profile,f));
+const z=JSON.parse(readFileSync('/Users/moxiao/IdeaProjects/project-harness-h01-zcode/scripts/harness/frontend-baseline-event-samples.json'));
+const declared=Object.entries(contract.$defs).filter(([k])=>k.startsWith('event.')&&k!=='eventEnvelope').map(([k,v])=>v.allOf?.find(x=>x.properties?.type)?.properties.type.const).filter(Boolean);
+results.push({name:'frontend proposed event names vs Runtime schema',runtimeEventTypes:declared,mappings:z.runtime_event_mappings.map(x=>({legacy:x.legacy_event,target:x.target_runtime_event,inSchema:declared.includes(x.target_runtime_event)}))});
+writeFileSync(root+'/docs/verification/harness/h01-round1-probes.json',JSON.stringify(results,null,2)+'\n');
+console.log(JSON.stringify(results,null,2));

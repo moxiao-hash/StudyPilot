@@ -1,0 +1,53 @@
+{
+  "head": "748c2056b9c5d4ac2d4dcc9c56f71c89d4443130",
+  "results": [
+    {
+      "name": "current cross-lane baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "nonrepeating invented descriptor hash",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "existing unrelated baseline commit",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "missing all controller operations",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "invented controller endpoint",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "invented coverage authoritative service",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    }
+  ]
+}

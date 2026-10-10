@@ -1,0 +1,10 @@
+import {compileCapabilities,parseYaml} from '/Users/moxiao/IdeaProjects/project-harness-h02-minimax/scripts/compile-agent-capabilities.mjs';
+import {readFileSync,writeFileSync,mkdtempSync,rmSync} from 'node:fs';import {tmpdir} from 'node:os';import {join} from 'node:path';import {execFileSync} from 'node:child_process';
+const root='/Users/moxiao/IdeaProjects/project-harness-h02-minimax',temp=mkdtempSync(join(tmpdir(),'h02-mini-r3-'));const ds=JSON.parse(readFileSync(root+'/contracts/agent-capabilities/generated/descriptors.json'));const meta=parseYaml('/Users/moxiao/IdeaProjects/project-harness-h02-deepseek/contracts/agent-capabilities/metadata.yaml');const results=[];
+function test(name,mutate,expect='reject'){const d=structuredClone(ds),m=structuredClone(meta);mutate(d,m);const dp=join(temp,'d.json'),mp=join(temp,'m.json');writeFileSync(dp,JSON.stringify(d));writeFileSync(mp,JSON.stringify(m));let actual='accept',error;try{compileCapabilities({descriptorsPath:dp,metadataPath:mp,sourceRoot:root});}catch(e){actual='reject';error=e.message;}results.push({name,expect,actual,pass:expect===actual,error});}
+const pair=(d,m)=>[d.find(t=>t.name==='governance.health.get'),m.tools.find(t=>t.name==='governance.health.get')];
+test('latest typed baseline',()=>{},'accept');
+test('local ref invalid value',(d,m)=>{const[x,y]=pair(d,m);x.inputSchema.$defs={N:{type:'integer'}};x.inputSchema.properties.n={$ref:'#/$defs/N'};y.examples[0].input.n='wrong';});
+test('unresolved ref',(d,m)=>{const[x,y]=pair(d,m);x.inputSchema.properties.n={$ref:'#/$defs/missing'};y.examples[0].input.n=1;});
+test('schema additional properties',(d,m)=>{const[x,y]=pair(d,m);x.inputSchema.additionalProperties={type:'integer'};y.examples[0].input.extra='wrong';});
+writeFileSync('docs/verification/harness/h02-codex-minimax-round6-recheck.json',JSON.stringify({head:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),results},null,2)+'\n');console.log(JSON.stringify(results));rmSync(temp,{recursive:true});

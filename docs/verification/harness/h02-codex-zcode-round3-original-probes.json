@@ -1,0 +1,147 @@
+{
+  "zcHead": "b20b673a98427423ce1022532d9e133ee387f82b",
+  "inputs": {
+    "miniCommit": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
+    "dsCommit": "e92fc157c85f340f6464bc13b0e1c5c7e2207f03",
+    "schemaSha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
+    "metadataSha256": "8d4460c681833ffccf8485ce901d71029ec72460cd6ea35ad4ebaa37cd62eaf6"
+  },
+  "results": [
+    {
+      "name": "aligned immutable baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "old sentinel fictional handler",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_FICTIONAL_HANDLER: Fictional handler target 'UnregisteredClass.noSuchMethod' in tool artifacts.evaluate does not match any registered service\n"
+    },
+    {
+      "name": "renamed fictional handler",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_FICTIONAL_HANDLER: Fictional handler target 'ImaginaryLearningService.computeEverything' in tool artifacts.evaluate does not match any registered service\n"
+    },
+    {
+      "name": "nonzero mismatched metadata hash",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_STALE_SOURCE_HASH: Manifest sources.metadata_hash (1111111111111111111111111111111111111111111111111111111111111111) does not match current metadata SHA-256 (8d4460c681833ffccf8485ce901d71029ec72460cd6ea35ad4ebaa37cd62eaf6)\n"
+    },
+    {
+      "name": "valid JSON wrong schema",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Manifest failed schema validation against /var/folders/dh/wntx38ln18n5nksw2jwwlj380000gn/T/h02-z-r2-isPZ0Z/schema.json: SCHEMA: $ type must be null, got object\n"
+    },
+    {
+      "name": "valid YAML empty metadata",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_EMPTY_METADATA: Metadata must contain all 65 tools, found: 0\n"
+    },
+    {
+      "name": "missing when_to_use",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Manifest failed schema validation against /var/folders/dh/wntx38ln18n5nksw2jwwlj380000gn/T/h02-z-r2-isPZ0Z/schema.json: SCHEMA: $.tools[0] missing required property 'when_to_use'\n"
+    },
+    {
+      "name": "unknown nested cost field",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Manifest failed schema validation against /var/folders/dh/wntx38ln18n5nksw2jwwlj380000gn/T/h02-z-r2-isPZ0Z/schema.json: SCHEMA: $.tools[0].cost_hint contains unexpected property 'undocumented'\n"
+    },
+    {
+      "name": "empty examples",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Manifest failed schema validation against /var/folders/dh/wntx38ln18n5nksw2jwwlj380000gn/T/h02-z-r2-isPZ0Z/schema.json: SCHEMA: $.tools[0].examples items count (0) < 1\n"
+    },
+    {
+      "name": "missing successful output",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_MISSING_SUCCESSFUL_OUTPUT: Example 'one artifact' in tool artifacts.get with outcome 'ok' must provide an output field\n"
+    },
+    {
+      "name": "missing output required property",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_MISSING_OUTPUT_REQUIRED_PROPERTY: Tool artifacts.get example output missing required property 'id'\n"
+    },
+    {
+      "name": "wrong nested output type",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_WRONG_OUTPUT_PROPERTY_TYPE: Tool artifacts.get example output property 'submissionVersion' expected integer, got string\n"
+    },
+    {
+      "name": "duplicate real route replacing another",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_DUPLICATE_ROUTE: Duplicate route name in coverage: login\n"
+    },
+    {
+      "name": "renamed wrong route path",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_WRONG_ROUTE_PATH: Route login path in coverage (/another-unregistered-path) does not match router.ts path (/login)\n"
+    },
+    {
+      "name": "fictional registered audit name",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_FICTIONAL_AUDIT_TOOL: Tool 'invented.business.operation' in registered_tool_catalog_audit is not in Java registry\n"
+    },
+    {
+      "name": "invalid governance confirmation",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Manifest failed schema validation against /var/folders/dh/wntx38ln18n5nksw2jwwlj380000gn/T/h02-z-r2-isPZ0Z/schema.json: SCHEMA: $.tools[3].confirmation.mode value \"automatically_assumed\" not in allowed enum [none, always_user_confirmation, conditional_scope_grant]\n"
+    },
+    {
+      "name": "root unknown field",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Manifest failed schema validation against /var/folders/dh/wntx38ln18n5nksw2jwwlj380000gn/T/h02-z-r2-isPZ0Z/schema.json: SCHEMA: $ contains unexpected property 'unspecified'\n"
+    }
+  ]
+}

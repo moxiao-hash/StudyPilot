@@ -1,0 +1,39 @@
+{
+  "head": "6f131ec6ca1859031478ad659e5e1fb5d325d1eb",
+  "results": [
+    {
+      "name": "latest typed baseline",
+      "expect": "accept",
+      "actual": "accept",
+      "pass": true
+    },
+    {
+      "name": "not constraint",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "值违反 not 约束: governance.health.get.examples[overall assistant health].input.n 不应满足 not 模式"
+    },
+    {
+      "name": "conditional then constraint",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "数值低于最小值: governance.health.get.examples[overall assistant health].input.n.then 最小值 2，实际 1"
+    },
+    {
+      "name": "false property schema",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "Schema 为 false，任何值均不允许: governance.health.get.examples[overall assistant health].input.n"
+    },
+    {
+      "name": "descriptor omission",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "描述符遗漏了 Java 源码中已注册的工具 (1): governance.health.get"
+    }
+  ]
+}

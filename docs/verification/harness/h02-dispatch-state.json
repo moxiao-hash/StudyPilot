@@ -1,0 +1,243 @@
+{
+  "task": "H02",
+  "authorization": "User accepted H01 and requested next Task on 2026-10-08",
+  "baseline_commit": "16b37d34c882a17e7bc45c69c84411f28f52bff8",
+  "status": "CHANGES_REQUESTED_ZCODE_FACT_OPERATION_FIELDS",
+  "lanes": {
+    "minimax": {
+      "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-minimax",
+      "branch": "codex/harness-h02-minimax",
+      "head": "6f131ec6ca1859031478ad659e5e1fb5d325d1eb",
+      "dispatch": "sent",
+      "sent_at": "2026-10-08T13:44:42.306112+08:00",
+      "state": "TARGETED_REMEDIATION_PASS_AWAITING_FINAL_CROSS_LANE",
+      "acknowledgment": "Native H02 ACK reports cwd project-harness-h02-minimax, branch codex/harness-h02-minimax, baseline 16b37d34; independently checked disk HEAD and only baseline mvnw.cmd artifact.",
+      "dispatch_evidence": "Native chat new user message 1797; generation started, then rate limiting. One Retry clicked; model connection retry 1/5. Retry returned rate-limit error again; current UI has Retry/Continue, no coding ACK.",
+      "connection_evidence": "2026-10-09 12:45 existing Retry once after overnight model unstable error; new edit tool, adjusting direction and Stop Generation observed. Original turn resumed; no new message.",
+      "continuation_sent_at": "2026-10-08T14:45:58.766932+08:00",
+      "working_artifacts": "Stable fifth delivery; Owner files committed, only known wrapper artifact dirty.",
+      "review": "docs/verification/harness/h02-codex-minimax-round5.md",
+      "verification": {
+        "node_tests": "42/42 pass zero skips",
+        "previous_targeted_probes": "5/5 expected outcomes pass",
+        "extra_probes": "baseline accepted; 3 invalid ref/additionalProperties cases accepted",
+        "remaining": "R-M11 schema references/additionalProperties execute or reject; final cross-lane pending"
+      },
+      "pending_remediation": {
+        "dispatch": "sent",
+        "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-round5.md",
+        "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-round5-extra-probes.json",
+        "requirements": "R-M11 supported refs in correct root context, unresolved refs fail closed, schema-valued additionalProperties execute or reject; consistent compiler/verifier and report accuracy",
+        "attempt": "Complete delayed draft verified before Send; actually entered original conversation once. Do not resend.",
+        "sent_at": "2026-10-09T13:33:52.597067+08:00",
+        "dispatch_evidence": "Original native chat message1721 at13:33 contains complete R-M11 report/probe paths and requirements; input cleared, executed5s/adjusting direction and Stop Generation observed after one existing-draft Send click."
+      },
+      "remediation_sent_at": "2026-10-09T13:33:52.597067+08:00",
+      "remediation_history": [
+        {
+          "dispatch": "sent",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-round1.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-probes.json",
+          "requirements": "R-M1 full schema/examples validation; R-M2 real binding/governance/exposure/authority; R-M3 deterministic default source/commit provenance and explicit CLI inputs",
+          "attempt": "Native state read timed out after 120s before message entry; no send claimed. Inspect delayed input/message before retry.",
+          "sent_at": "2026-10-08T16:34:54.168012+08:00",
+          "dispatch_evidence": "Native original StudyPilot chat new user message 2206 at 16:32 contains full report/probe paths and R-M1/R-M2/R-M3. Continue Execution clicked; Stop Generation and calibration observed."
+        },
+        {
+          "dispatch": "sent",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-round2.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-round2-cross-probes.json",
+          "requirements": "R-M4 full Schema/examples without placeholders; R-M5 verified actual registration/receiver bindings; R-M6 explicit source root/commit and CLI fail closed",
+          "sent_at": "2026-10-08T17:03:29.182450+08:00",
+          "dispatch_evidence": "Native new user message 853 at 17:01 contains full round2 report/probe paths and R-M4/R-M5/R-M6; input cleared, Stop Generation/coordination active."
+        },
+        {
+          "dispatch": "sent",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-round3.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-round3-probes.json",
+          "requirements": "R-M7 actual registry set and exact navigation/unknown bindings; R-M8 complete Schema and remove placeholder bypass; validate final manifest before write",
+          "attempt": "Native app user-change guard interrupted first input; refreshed AX, second click/paste left editor empty and Send disabled. No new message. Before retry check delayed draft/submission; do not repeat previous round.",
+          "sent_at": "2026-10-08T17:40:00+08:00",
+          "dispatch_evidence": "Original native chat user message 1151 contains complete R-M7/R-M8 report and probe paths; draft verified, editor cleared, Stop Generation observed."
+        },
+        {
+          "dispatch": "sent",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-round4.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-minimax-round4-extra-probes.json",
+          "requirements": "R-M9 complete real registered sets; R-M10 not/if/boolean schema execute or reject, missing schema fail closed",
+          "dispatch_evidence": "Native original chat new message1455 at12:56, full draft verified, editor cleared, Stop Generation and executing5s observed",
+          "sent_at": "2026-10-09T12:57:32.565770+08:00"
+        }
+      ],
+      "observed_implementation_head": "50544d505cefd30fc5550f6247c8175aa0ccb57b"
+    },
+    "deepseek": {
+      "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-deepseek",
+      "branch": "codex/harness-h02-deepseek",
+      "head": "82ec83b0f94a09448b68b5b45c67db59ad7bc9d0",
+      "dispatch": "sent",
+      "sent_at": "2026-10-08T13:44:42.306112+08:00",
+      "state": "R_D5_PROVENANCE_PASS_AWAITING_ZCODE_FINAL",
+      "acknowledgment": "Verified native command output: worktree exists, branch codex/harness-h02-deepseek, HEAD 16b37d34c882a17e7bc45c69c84411f28f52bff8, only baseline mvnw.cmd change.",
+      "dispatch_evidence": "Native chat new user message 457; worktree command and reading H02 docs, inventory tools running.",
+      "review": "docs/verification/harness/h02-codex-deepseek-round5.md",
+      "verification": {
+        "node_tests": "69/69 zero skips",
+        "independent_probes": "8/8 pass",
+        "current_source_check": "exit0 explicit latest descriptors/schema",
+        "metadata": "byte-identical to8ad8ea52; no MiniMax recompile needed"
+      },
+      "remediation_sent_at": "2026-10-08T14:00:46.528832+08:00",
+      "pending_remediation": {
+        "dispatch": "sent",
+        "sent_at": "2026-10-09T14:41:45.521002+08:00",
+        "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-latest-delivery-precheck.md",
+        "requirements": "R-D5 revalidate latest frozen contracts/navigation invoke and actual descriptor/schema provenance; stale-source controls; correct old report; Owner only",
+        "dispatch_evidence": "Complete draft AX verified; original chat new message464 at14:41; editor cleared and Send disabled. No repeated R-D4."
+      },
+      "remediation_round2_sent_at": "2026-10-08T16:34:00+08:00",
+      "remediation_history": [
+        {
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-deepseek-round2.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-deepseek-round2-probes.json",
+          "dispatch": "sent",
+          "requirements": "R-D1 receiver/class-method pair binding; R-D3 output field existence vs nullable explicit null; full typed output and cross-lane remain blocked upstream",
+          "attempt": "Native readable again; complete delayed English round2 draft now visible, no new chat message. Paste replacement, Send click and Return did not change chat; selected draft persisted. Do not mark delivered. Check for delayed submission before retry.",
+          "sent_at": "2026-10-08T16:34:00+08:00",
+          "dispatch_evidence": "Native chat user message 629 at 16:34 contains complete delayed English round2 report/probe paths and R-D1/R-D3 boundaries. File read and response checking delivered MiniMax schema observed; Stop Generation active. Owner five uncommitted files present."
+        },
+        {
+          "dispatch": "sent",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-deepseek-followup.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-round2-cross-probes.json",
+          "requirements": "R-D4 full typed legal offline examples against real Java schemas; update stale personal report; previously fixed receiver/output gaps remain closed",
+          "sent_at": "2026-10-08T17:03:29.182450+08:00",
+          "dispatch_evidence": "Native sixth turn message at 17:02 contains followup report and current MiniMax HEAD; input cleared and generation active.",
+          "completion": "R-D4 typed examples independently passed at 8ad8ea521493eb0f4e70b8adc628a13646f800cb"
+        }
+      ],
+      "working_artifacts": "Revised committed delivery reviewed; new remediation sent to original Owner; wait a new commit/report.",
+      "current_page_evidence": "App running; native getApp returns noWindowsAvailable; current UI completion not verified. Committed82ec83b0 and artifacts unchanged."
+    },
+    "zcode": {
+      "worktree": "/Users/moxiao/IdeaProjects/project-harness-h02-zcode",
+      "branch": "codex/harness-h02-zcode",
+      "head": "b23dd9d72e2d23d4da8a2edbfcfb3653a77a89ae",
+      "dispatch": "sent",
+      "sent_at": "2026-10-08T13:44:42.306112+08:00",
+      "state": "CHANGES_REQUESTED",
+      "acknowledgment": "Current native page contains H02 ACK with correct worktree, branch and baseline.",
+      "dispatch_evidence": "H02 chat message remains present; auto-reconnect 10/10 and Stop Generation active. New-tree ACK not observed.",
+      "connection_evidence": "Current original native conversation READY delivery at14:59 with d4e820c, editor empty and Send disabled; no active generation.",
+      "working_artifacts": "Native edits observed; not yet accepted as delivery.",
+      "remediation_history": [
+        {},
+        {
+          "dispatch": "sent",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round1.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-round2-cross-probes.json",
+          "requirements": "R-Z1 validate actual Manifest/Schema/metadata; R-Z2 real facts/bindings/provenance; R-Z3 independent public operation and router coverage",
+          "sent_at": "2026-10-08T17:03:29.182450+08:00",
+          "dispatch_evidence": "Native new user message 1650 at 17:02 contains report/probe paths and R-Z1/R-Z2/R-Z3; input cleared, Working/Stop Generation active."
+        },
+        {
+          "dispatch": "sent",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round2.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round2-probes.json",
+          "requirements": "R-Z4 actual full Schema/instances; R-Z5 true source/hash/binding comparisons rather than sentinel strings; R-Z6 real coverage and governance",
+          "sent_at": "2026-10-08T17:20:53.128751+08:00",
+          "dispatch_evidence": "Native original chat new user message 2040; draft full text verified before send, Working/Stop Generation active after send, input cleared."
+        },
+        {
+          "dispatch": "sent",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round3.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round3-probes.json",
+          "requirements": "R-Z7 actual source/receiver bindings/hash/commit/complete sets; R-Z8 full constraints fail closed and report accuracy",
+          "sent_at": "2026-10-08T17:46:18.448870+08:00",
+          "dispatch_evidence": "Original native chat new message 2379 full text verified, editor cleared, Working 1s and Stop Generation observed."
+        },
+        {
+          "dispatch": "sent",
+          "sent_at": "2026-10-09T14:44:49.259963+08:00",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round4.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round4-extra-probes.json",
+          "requirements": "R-Z9 actual descriptor hash/commit byte provenance; R-Z10 real full HTTP operation coverage and fact-source pairings; non-sentinel reject controls",
+          "dispatch_evidence": "Native original conversation message2920 contains new R-Z9/R-Z10; editor cleared, Working15s and Stop Generation observed."
+        },
+        {
+          "dispatch": "sent",
+          "sent_at": "2026-10-09T16:17:34.415463+08:00",
+          "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round5.md",
+          "probes": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round5-recheck.json/mjs",
+          "requirements": "Complete original R-Z9/R-Z10: exact declared commit descriptor bytes without hardcoded fallback; complete public operation inventory; controller endpoint pairing; real fact service method/call pairing",
+          "dispatch_evidence": "Full draft verified before Send. New original conversation user message3037 appeared, editor cleared, Working10s/Stop observed; at28s executing read h02-codex-zcode-round5.md."
+        }
+      ],
+      "pending_remediation": {
+        "dispatch": "sent",
+        "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round6.md",
+        "draft_file": "/Users/moxiao/IdeaProjects/project/docs/dispatch/h02-zcode-round6-remediation.md",
+        "requirements": "Original R-Z9/R-Z10 per-operation complete dedup set, exact commit bytes with explicit input, true authoritative source pairing",
+        "dispatch_evidence": "User manually sent original H02 continuation. Native message3063 contains round6 dispatch path; response3067 says reading it; tool edits target correct H02 capability-consumer-verify.mjs. User followup3171 continue after interruption; Working30s and Stop Generation observed. No duplicate dispatch.",
+        "last_attempt_at": "2026-10-09T17:12:10.987840+08:00",
+        "confirmed_at": "2026-10-09T19:16:47.036371+08:00"
+      },
+      "review": "docs/verification/harness/h02-codex-zcode-round7.md",
+      "verification": {
+        "vitest": "42/42 current pass",
+        "previous_controls": "10/10 expected outcomes",
+        "final_relation_controls": "baseline passes, five invalid inputs wrongly accepted",
+        "evidence": "round6-recheck and round6-final-controls JSON/mjs"
+      },
+      "manual_review_followup": {
+        "dispatch": "sent",
+        "report": "/Users/moxiao/IdeaProjects/project/docs/verification/harness/h02-codex-zcode-round6.md",
+        "draft_file": "/Users/moxiao/IdeaProjects/project/docs/dispatch/h02-zcode-round6-remediation.md",
+        "requirements": "Original R-Z9/R-Z10 per-operation complete dedup set, exact commit bytes with explicit input, true authoritative source pairing",
+        "dispatch_evidence": "User manually sent original H02 continuation. Native message3063 contains round6 dispatch path; response3067 says reading it; tool edits target correct H02 capability-consumer-verify.mjs. User followup3171 continue after interruption; Working30s and Stop Generation observed. No duplicate dispatch.",
+        "last_attempt_at": "2026-10-09T17:12:10.987840+08:00",
+        "confirmed_at": "2026-10-09T19:16:47.036371+08:00"
+      },
+      "verification_current": {
+        "vitest": "42/42 pass",
+        "previous_controls": "6/6 pass",
+        "remaining": "same-controller wrong endpoint and invented keyFields accepted"
+      }
+    }
+  },
+  "automation": {
+    "id": "studypilot-h01",
+    "scope": "H02 delivered; model recovery, owner deliveries and independent acceptance",
+    "status": "PAUSED",
+    "resume_reason": "Explicit user request: resume scheduler; user reports all three agents completed. Independently verify current deliveries before acceptance.",
+    "pause_reason": "User explicitly requested stop scheduled task on 2026-10-09."
+  },
+  "h03_authorized": false,
+  "updated_at": "2026-10-09T20:44:51.040008+08:00",
+  "blocker": "Authoritative facts lack exact endpoint delegation and output-field provenance validation",
+  "monitor": {
+    "checked_at": "2026-10-09T14:39:04.359351+08:00",
+    "native_access": "MiniMax new complete message1721/input cleared/Stop Generation. ZCode historical cooling-down429 details retryable=true; no retry entry or active generation. DeepSeek previous completed delivery awaiting cross-lane.",
+    "decision": "Original ZCode round6 continuation confirmed received and resumed; wait for committed Owner delivery. Automation PAUSED, H03 unauthorized.",
+    "disk_observations": {
+      "minimax": {
+        "head": "a354f5a7f64cf12e795c3482387c7c1d38056386",
+        "status": " M backend/mvnw.cmd"
+      },
+      "zcode": {
+        "head": "b20b673a98427423ce1022532d9e133ee387f82b",
+        "status": " M backend/mvnw.cmd"
+      },
+      "deepseek": {
+        "head": "8ad8ea521493eb0f4e70b8adc628a13646f800cb",
+        "status": " M backend/mvnw.cmd"
+      }
+    },
+    "user_delivery_notice": {
+      "at": "2026-10-09T14:35:43.485375+08:00",
+      "claim": "All three agents completed",
+      "verification": "pending latest delivery review"
+    },
+    "last_manual_review_at": "2026-10-09T15:55:50.467896+08:00"
+  }
+}

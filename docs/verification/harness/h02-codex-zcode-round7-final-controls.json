@@ -1,0 +1,53 @@
+{
+  "head": "b23dd9d72e2d23d4da8a2edbfcfb3653a77a89ae",
+  "results": [
+    {
+      "name": "current baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "omit one endpoint within retained controller",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_CONTROLLER_ENDPOINTS_COUNT_MISMATCH: Controller 'AgentExecutionController' has 2 real endpoints, but audit declared 1\n"
+    },
+    {
+      "name": "duplicate endpoint within controller",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_DUPLICATE_CONTROLLER_ENDPOINT: Duplicate endpoint 'GET /api/agent-executions' in Controller 'AgentExecutionController'\n"
+    },
+    {
+      "name": "real service method paired to wrong fact",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_AUTHORITATIVE_SERVICE_TOOL_MISMATCH: Authoritative fact 'roadmap_progress' tool 'roadmap.current.get' is bound to 'RoadmapQueryService.currentMapIfPresent', but javaService declared 'AgentLearningContextService.get'\n"
+    },
+    {
+      "name": "real endpoint paired to wrong authoritative fact",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - STRUCTURAL] ERR_AUTHORITATIVE_ENDPOINT_CONTROLLER_MISMATCH: Authoritative fact 'roadmap_progress' tool 'roadmap.current.get' does not map to Controller 'MasteryController' of endpoint 'GET /api/mastery'\n"
+    },
+    {
+      "name": "mismatched source commit with explicit current descriptors",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] ERR_COMMIT_DESCRIPTORS_HASH_MISMATCH: Descriptors in source commit da3bae15bbc74978b5cff82ef7b26f357bd50837 has hash 0e7cf62526b823ae5db18ff142ed9d1e368f23d5ccff0b930cba617e2e86e896, which does not match manifest.sources.descriptors_hash 90fa195637ee37c9958d2ccc6d6ab27b6a1dacb22cd8f43c89d014f74502ce9f\n"
+    }
+  ]
+}

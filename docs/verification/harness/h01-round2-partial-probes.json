@@ -1,0 +1,36 @@
+[
+  {
+    "name": "partial replay terminal without snapshot",
+    "accepted": true,
+    "details": []
+  },
+  {
+    "name": "CONFIRM with confirmed false",
+    "accepted": true,
+    "details": []
+  },
+  {
+    "name": "confirmation card missing expectedVersion",
+    "accepted": true,
+    "details": []
+  },
+  {
+    "name": "untyped natural language response",
+    "accepted": true,
+    "details": []
+  },
+  {
+    "name": "changed core hash",
+    "accepted": false,
+    "details": [
+      "mechanism \"loop-main\" content changed: locked 2b238998e1b6, live ffffffffffff (packages/core/agent-loop/src/agent.ts)"
+    ]
+  },
+  {
+    "name": "changed profile hash",
+    "accepted": false,
+    "details": [
+      "profile layer \"profile-web-root\" content changed: locked c300dcf2ebc5, live eeeeeeeeeeee"
+    ]
+  }
+]

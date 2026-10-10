@@ -1,0 +1,99 @@
+{
+  "head": "e92fc157c85f340f6464bc13b0e1c5c7e2207f03",
+  "results": [
+    {
+      "name": "valid metadata",
+      "expectReject": false,
+      "accepted": true,
+      "pass": true
+    },
+    {
+      "name": "nullable tool missing output field",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_OUTPUT_INSTANCE",
+      "error": "roadmap.current.get: the example must declare an explicit output field (a missing result is not a null result)",
+      "pass": true
+    },
+    {
+      "name": "cartesian binding nonexistent service method",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_PROVENANCE",
+      "error": "artifacts.evaluate: no \"Class.method\" in the handler is bound in this tool's registration context",
+      "pass": true
+    },
+    {
+      "name": "cartesian binding wrong method receiver",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_PROVENANCE",
+      "error": "artifacts.evaluate: no \"Class.method\" in the handler is bound in this tool's registration context",
+      "pass": true
+    },
+    {
+      "name": "missing registered tool",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_COVERAGE_MISSING",
+      "error": "registered tool \"developer.interface_fallback.preview\" has no metadata entry",
+      "pass": true
+    },
+    {
+      "name": "duplicate wire",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_DUPLICATE_TOOL",
+      "error": "duplicate metadata entry for \"governance.health.get\"",
+      "pass": true
+    },
+    {
+      "name": "nonexistent method on existing class",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_PROVENANCE",
+      "error": "governance.health.get: no \"Class.method\" in the handler is bound in this tool's registration context",
+      "pass": true
+    },
+    {
+      "name": "wrong existing execution class",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_PROVENANCE",
+      "error": "governance.health.get: no \"Class.method\" in the handler is bound in this tool's registration context",
+      "pass": true
+    },
+    {
+      "name": "navigation invalid route example",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_NAVIGATION_ROUTE",
+      "error": "navigation.resolve: outcome \"ok\" but the input is illegal (navigation.resolve: routeKey \"NOT_A_ROUTE\" is not in the Java route whitelist)",
+      "pass": true
+    },
+    {
+      "name": "navigation nested owner injection",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_OWNER_INJECTION",
+      "error": "navigation.resolve: outcome \"ok\" but the input is illegal (navigation.resolve: nested example argument input.params.ownerId forges the caller identity)",
+      "pass": true
+    },
+    {
+      "name": "illegal output example",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_OUTPUT_INSTANCE",
+      "error": "governance.health.get: a contract-defect example must declare an explicit null result",
+      "pass": true
+    },
+    {
+      "name": "missing expected example result",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_OUTPUT_INSTANCE",
+      "error": "governance.health.get: example expect is required",
+      "pass": true
+    }
+  ]
+}

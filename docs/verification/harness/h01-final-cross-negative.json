@@ -1,0 +1,9 @@
+{
+  "test": "malformed PROGRESS extra ownerId; identical fixture copies in disposable tree",
+  "expected_exit": "nonzero",
+  "actual_exit": 1,
+  "evidence": [
+    "  [INVALID_INSTANCE] PROGRESS failed schema validation: SCHEMA: $ 必须精确匹配 oneOf 的一个分支，实际匹配 0 个; SCHEMA: $ 最接近分支的具体错误: SCHEMA: $/payload 存在未允许的额外字段 \"ownerId\" | SCHEMA: $/payload 存在未允许的额外字段 \"ownerId\"; INVARIANT_FORBIDDEN_FIELD: $/payload/ownerId 禁止出现（模型 Secret 或客户端自报 owner 授权）",
+    "[FAIL] All 12/12 runtime event instances strictly pass MiniMax schema validation (passed: 11/12)"
+  ]
+}

@@ -1,0 +1,10 @@
+# H02 MiniMax 第三轮独立验收
+
+结论CHANGES_REQUESTED。HEAD a34f65f9a033abba571344b27437bec140750f6b，30/30 Node测试通过，最新DeepSeek类型化元数据正本编译65工具成功。独立15探针8项符合预期、7项非法变异仍接受。完整证据h02-codex-minimax-round3-probes.json/mjs。
+
+已改善：缺handler、已知工具两边共同伪造绑定、enum/minimum、缺cost/exposure、用途元素类型与嵌套未知confirmation均拒绝；当前已注册65工具全部提取绑定。仍需本轮原Owner整改：
+
+- R-M7 注册集合与导航绑定必须失败关闭：同时在描述符/metadata增加 imaginary.query.get 和 ImaginaryLearningService.computeEverything，编译成功。源绑定表查不到时只禁止Unregistered/noSuchMethod字面量。应严格比较真实注册工具集合并对任何无法证明的绑定拒绝，别以人工名字数或黑名单替代依据。navigation.resolve的描述符与元数据handler共同改为NavigationToolHandler.imaginaryMethod也成功；不能按类名包含特许任意方法。Java exporter的真实registry.catalog字段与静态接收者绑定来源区分证据层级，不修改生产Java。
+- R-M8 Schema与最终产物校验：validateValueAgainstSchema仍对<shape-placeholder>直接return，标量integer/minimum约束可绕过；删除该例外。oneOf/uniqueItems列为支持关键字但未执行，非法分支类型/重复数组仍通过；实现约束或拒绝不支持约束，不能静默成功。缺example.outcome、cost_hint.external_dependency为对象也可编译。应完整验证元数据字段及生成的Manifest Schema后再写入产物，不只手写部分if。verifier自己的Schema引擎同样须拒绝未实现关键字；Schema功能声明应与实际一致。
+
+先补失败测试，原Owner限定文件修改；最新合法类型化元数据可以通过，合法/不合法路径需分别证明。ZCode仍编码，不替其实现。停止H02等待复验，H03未授权，无push/merge/deploy、生产修改、密钥/数据/服务操作。Codex本轮未重跑SpringBoot导出测试，Node离线与源码审查不等于Java行为证据。

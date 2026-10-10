@@ -1,0 +1,34 @@
+{
+  "baseline_commit": "16b37d34c882a17e7bc45c69c84411f28f52bff8",
+  "parent_snapshot": "f7311079a83b84c5e7f3a9076ce4efccb3044c86",
+  "accepted_h01_heads": {
+    "minimax": "14f6529c08ebe21fcdb0b6b2cbf76679f2a38823",
+    "zcode": "9d6061a1254939380759e10395c766cbdacbe022",
+    "deepseek": "70ab27605de448382ee483ecb329fe3a33f08eeb"
+  },
+  "included_owner_paths": [
+    "contracts/agent-runtime/README.md",
+    "contracts/agent-runtime/runtime.schema.json",
+    "docs/verification/harness/h01-minimax.md",
+    "scripts/harness/runtime-contract.fixtures.json",
+    "scripts/harness/runtime-contract.mjs",
+    "scripts/harness/runtime-contract.test.mjs",
+    "docs/verification/harness/h01-zcode.md",
+    "scripts/harness/frontend-baseline-event-samples.json",
+    "scripts/harness/frontend-baseline-verify.mjs",
+    "web/tests/harness-baseline/event-samples.fixture.json",
+    "web/tests/harness-baseline/frontend-baseline.spec.ts",
+    "agent-service/tests/fixtures/runtime_scenarios.json",
+    "docs/verification/harness/h01-deepseek.md",
+    "scripts/harness/baseline-fixtures.mjs",
+    "scripts/harness/baseline-fixtures.test.mjs",
+    "scripts/harness/baseline-inventory.mjs",
+    "scripts/harness/baseline-inventory.test.mjs"
+  ],
+  "method": "Temporary Git index assembles only accepted H01 owner artifacts; original index and checkout unchanged; no merge/push.",
+  "worktrees": {
+    "minimax": "/Users/moxiao/IdeaProjects/project-harness-h02-minimax",
+    "zcode": "/Users/moxiao/IdeaProjects/project-harness-h02-zcode",
+    "deepseek": "/Users/moxiao/IdeaProjects/project-harness-h02-deepseek"
+  }
+}

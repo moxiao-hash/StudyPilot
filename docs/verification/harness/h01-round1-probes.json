@@ -1,0 +1,145 @@
+[
+  {
+    "name": "terminal before TURN_STARTED",
+    "expectedReject": true,
+    "actualAccepted": false,
+    "errors": [
+      "INVARIANT_TERMINAL_WITHOUT_START: 场景第 0 条 轮次 turn-000000000001 未在消息中启动且不在快照活跃轮次中，禁止终结"
+    ]
+  },
+  {
+    "name": "CALL_FINISHED without matching CALL_STARTED",
+    "expectedReject": true,
+    "actualAccepted": false,
+    "errors": [
+      "INVARIANT_CALL_WITHOUT_START: 场景第 1 条 调用 call-orphan0001 未在消息中启动且不在快照活跃调用中，禁止终结"
+    ]
+  },
+  {
+    "name": "duplicate TURN_STARTED",
+    "expectedReject": true,
+    "actualAccepted": false,
+    "errors": [
+      "INVARIANT_SEQUENCE_MONOTONIC: 场景第 1 条 会话 sess-000000000001 序号 2 未大于前一条 2",
+      "INVARIANT_DUPLICATE_TURN_START: 场景第 1 条 轮次 turn-000000000001 重复启动 (TURN_STARTED)"
+    ]
+  },
+  {
+    "name": "turn content after terminal (control)",
+    "expectedReject": true,
+    "actualAccepted": false,
+    "errors": [
+      "INVARIANT_SEQUENCE_MONOTONIC: 场景第 2 条 会话 sess-000000000001 序号 6 未大于前一条 6",
+      "INVARIANT_EVENT_AFTER_TERMINAL: 场景第 2 条 轮次 turn-000000000001 已终结，仍出现 ASSISTANT_MESSAGE"
+    ]
+  },
+  {
+    "name": "question event with renderable question data",
+    "expectedReject": false,
+    "actualAccepted": true,
+    "errors": []
+  },
+  {
+    "name": "unchanged baseline (control)",
+    "expectedReject": false,
+    "actualAccepted": true,
+    "errors": []
+  },
+  {
+    "name": "same HEAD but modified core loop hash",
+    "expectedReject": true,
+    "actualAccepted": false,
+    "errors": [
+      "mechanism \"loop-main\" content changed: locked 2b238998e1b6, live ffffffffffff (packages/core/agent-loop/src/agent.ts)",
+      "locked core mechanism path(s) appear modified in the working tree: packages/core/agent-loop/src/agent.ts"
+    ]
+  },
+  {
+    "name": "same bundles but changed profile hash",
+    "expectedReject": true,
+    "actualAccepted": false,
+    "errors": [
+      "profile layer \"profile-web-root\" content changed: locked c300dcf2ebc5, live eeeeeeeeeeee"
+    ]
+  },
+  {
+    "name": "frontend proposed event names vs Runtime schema",
+    "runtimeEventTypes": [
+      "SESSION_OPENED",
+      "SESSION_CLOSED",
+      "TURN_STARTED",
+      "TURN_FINISHED",
+      "CALL_STARTED",
+      "CALL_FINISHED",
+      "ASSISTANT_DELTA",
+      "ASSISTANT_MESSAGE",
+      "INTERACTION_REQUIRED",
+      "USAGE_REPORTED",
+      "ERROR",
+      "PROGRESS",
+      "UI_ACTION"
+    ],
+    "mappings": [
+      {
+        "legacy": "TURN_STARTED",
+        "target": "TURN_STARTED",
+        "inSchema": true
+      },
+      {
+        "legacy": "CONTEXT_LOADED",
+        "target": "PROGRESS",
+        "inSchema": true
+      },
+      {
+        "legacy": "PLAN_GENERATED",
+        "target": "PROGRESS",
+        "inSchema": true
+      },
+      {
+        "legacy": "TOOL_STARTED",
+        "target": "CALL_STARTED",
+        "inSchema": true
+      },
+      {
+        "legacy": "TOOL_SUCCEEDED",
+        "target": "CALL_FINISHED",
+        "inSchema": true
+      },
+      {
+        "legacy": "TOOL_FAILED",
+        "target": "CALL_FINISHED",
+        "inSchema": true
+      },
+      {
+        "legacy": "ACTION_PREVIEW",
+        "target": "INTERACTION_REQUIRED",
+        "inSchema": true
+      },
+      {
+        "legacy": "ASSISTANT_DELTA",
+        "target": "ASSISTANT_DELTA",
+        "inSchema": true
+      },
+      {
+        "legacy": "UI_ACTION",
+        "target": "UI_ACTION",
+        "inSchema": true
+      },
+      {
+        "legacy": "TURN_COMPLETED",
+        "target": "TURN_FINISHED",
+        "inSchema": true
+      },
+      {
+        "legacy": "TURN_FAILED",
+        "target": "TURN_FINISHED",
+        "inSchema": true
+      },
+      {
+        "legacy": "TURN_CANCELLED",
+        "target": "TURN_FINISHED",
+        "inSchema": true
+      }
+    ]
+  }
+]

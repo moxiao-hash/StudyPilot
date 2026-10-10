@@ -1,0 +1,32 @@
+{
+  "head": "6f131ec6ca1859031478ad659e5e1fb5d325d1eb",
+  "results": [
+    {
+      "name": "latest typed baseline",
+      "expect": "accept",
+      "actual": "accept",
+      "pass": true
+    },
+    {
+      "name": "local ref invalid value",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "值类型不匹配: governance.health.get.examples[overall assistant health].input.n->$ref(#/$defs/N) 期望 integer，实际 string"
+    },
+    {
+      "name": "unresolved ref",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "未解析的 Schema 引用: #/$defs/missing (在路径 \"$defs\" 无法解析)"
+    },
+    {
+      "name": "schema additional properties",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "值类型不匹配: governance.health.get.examples[overall assistant health].input.extra 期望 integer，实际 string"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+import {readFileSync,writeFileSync,mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';import {join} from 'node:path';import {spawnSync,execFileSync} from 'node:child_process';import {createHash} from 'node:crypto';
+const mini='/Users/moxiao/IdeaProjects/project-harness-h02-minimax',ds='/Users/moxiao/IdeaProjects/project-harness-h02-deepseek',zc='/Users/moxiao/IdeaProjects/project-harness-h02-zcode';const temp=mkdtempSync(join(tmpdir(),'h02-z-r2-'));
+const miniCommit='da3bae15bbc74978b5cff82ef7b26f357bd50837',dsCommit='e92fc157c85f340f6464bc13b0e1c5c7e2207f03';
+const show=(p,c,f)=>execFileSync('git',['show',c+':'+f],{cwd:p,encoding:'utf8'});
+const manifest=JSON.parse(show(mini,miniCommit,'contracts/agent-capabilities/generated/manifest.json'));
+const schema=show(mini,miniCommit,'contracts/agent-capabilities/manifest.schema.json');const meta=show(ds,dsCommit,'contracts/agent-capabilities/metadata.yaml');
+const coverage=JSON.parse(readFileSync(zc+'/docs/verification/harness/h02-business-coverage.json'));const results=[];
+function test(name,change,expected='reject'){const d=structuredClone(manifest),c=structuredClone(coverage),o={schema,meta};change(d,c,o);const mp=join(temp,'manifest.json'),sp=join(temp,'schema.json'),yp=join(temp,'metadata.yaml'),cp=join(temp,'coverage.json');for(const[p,s]of [[mp,JSON.stringify(d)],[sp,o.schema],[yp,o.meta],[cp,JSON.stringify(c)]])writeFileSync(p,s);const r=spawnSync('node',[zc+'/scripts/harness/capability-consumer-verify.mjs','--manifest',mp,'--schema',sp,'--metadata',yp,'--coverage',cp],{cwd:zc,encoding:'utf8'});const actual=r.status===0?'accept':'reject';results.push({name,expected,actual,pass:actual===expected,exit:r.status,stderr:r.stderr.slice(-700)});}
+test('aligned immutable baseline',()=>{},'accept');
+test('old sentinel fictional handler',d=>{d.tools[0].source_provenance.handler='UnregisteredClass.noSuchMethod';});
+test('renamed fictional handler',d=>{d.tools[0].source_provenance.handler='ImaginaryLearningService.computeEverything';});
+test('nonzero mismatched metadata hash',d=>{d.sources.metadata_hash='1'.repeat(64);});
+test('valid JSON wrong schema',(d,c,o)=>{o.schema=JSON.stringify({type:'null'});});
+test('valid YAML empty metadata',(d,c,o)=>{o.meta='tools: []\n';});
+test('missing when_to_use',d=>{delete d.tools[0].when_to_use;});
+test('unknown nested cost field',d=>{d.tools[0].cost_hint.undocumented=true;});
+test('empty examples',d=>{d.tools[0].examples=[];});
+test('missing successful output',d=>{const t=d.tools.find(t=>t.examples.some(e=>e.outcome==='ok'));delete t.examples.find(e=>e.outcome==='ok').output;});
+test('missing output required property',d=>{const t=d.tools.find(t=>t.examples.some(e=>e.outcome==='ok')&&t.output_schema.required?.length);delete t.examples.find(e=>e.outcome==='ok').output[t.output_schema.required[0]];});
+test('wrong nested output type',d=>{const t=d.tools.find(t=>t.name==='artifacts.get');t.examples.find(e=>e.outcome==='ok').output.submissionVersion='wrong-integer';});
+test('duplicate real route replacing another',(d,c)=>{c.frontend_route_coverage[1]=structuredClone(c.frontend_route_coverage[0]);});
+test('renamed wrong route path',(d,c)=>{c.frontend_route_coverage[0].path='/another-unregistered-path';});
+test('fictional registered audit name',(d,c)=>{c.registered_tool_catalog_audit[0].name='invented.business.operation';});
+test('invalid governance confirmation',d=>{d.tools.find(t=>t.side_effect.risk_level==='HIGH').confirmation.mode='automatically_assumed';});
+test('root unknown field',d=>{d.unspecified=123;});
+const artifact={zcHead:execFileSync('git',['rev-parse','HEAD'],{cwd:zc,encoding:'utf8'}).trim(),inputs:{miniCommit,dsCommit,schemaSha256:createHash('sha256').update(schema).digest('hex'),metadataSha256:createHash('sha256').update(meta).digest('hex')},results};writeFileSync('docs/verification/harness/h02-codex-zcode-round2-probes.json',JSON.stringify(artifact,null,2)+'\n');console.log(JSON.stringify(results));rmSync(temp,{recursive:true});

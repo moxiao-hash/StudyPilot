@@ -1,0 +1,109 @@
+{
+  "head": "a34f65f9a033abba571344b27437bec140750f6b",
+  "results": [
+    {
+      "name": "latest typed baseline",
+      "expect": "accept",
+      "actual": "accept",
+      "pass": true
+    },
+    {
+      "name": "missing binding",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get 缺少描述符 handler 绑定"
+    },
+    {
+      "name": "joint forged known binding",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get 描述符声明了未在 Java 源码中注册的非法 handler: 源码真实绑定为 AssistantHealthService.summarize，实际声明 \"ImaginaryLearningService.computeEverything\""
+    },
+    {
+      "name": "enum",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "值不在枚举允许列表中: governance.health.get.examples[overall assistant health].input.level 值 \"B\" 不在枚举 [A] 中"
+    },
+    {
+      "name": "minimum",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "数值低于最小值: governance.health.get.examples[overall assistant health].input.limit 最小值 1，实际 -10"
+    },
+    {
+      "name": "cost exposure missing",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get 缺少 cost_hint 定义"
+    },
+    {
+      "name": "non-string purpose",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get when_to_use 必须是非空字符串数组"
+    },
+    {
+      "name": "nested unknown confirmation",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get confirmation 包含未知字段: unrecognized"
+    },
+    {
+      "name": "unknown jointly added tool",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 imaginary.query.get 未在 Java 源码配置中注册，属于非法/虚构工具"
+    },
+    {
+      "name": "navigation fake method",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 navigation.resolve 描述符声明了未在 Java 源码中注册的非法 handler: 源码真实绑定为 NavigationToolHandler.invoke，实际声明 \"NavigationToolHandler.imaginaryMethod\""
+    },
+    {
+      "name": "scalar placeholder bypass",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "值类型不匹配: governance.health.get.examples[overall assistant health].input.limit 期望 integer，实际 string"
+    },
+    {
+      "name": "ignored oneOf",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "值不满足 oneOf 约束: governance.health.get.examples[overall assistant health].input.limit 匹配分支数 0 (期望 1)"
+    },
+    {
+      "name": "ignored uniqueItems",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "数组元素重复，不满足 uniqueItems 约束: governance.health.get.examples[overall assistant health].input.tags 重复项 \"a\""
+    },
+    {
+      "name": "missing example outcome",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get 示例缺少或包含非法的 outcome: undefined"
+    },
+    {
+      "name": "invalid cost nested type",
+      "expect": "reject",
+      "actual": "reject",
+      "pass": true,
+      "error": "工具 governance.health.get cost_hint.external_dependency 必须是字符串或 null"
+    }
+  ]
+}

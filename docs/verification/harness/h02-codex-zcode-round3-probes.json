@@ -1,0 +1,91 @@
+{
+  "zcHead": "b20b673a98427423ce1022532d9e133ee387f82b",
+  "inputs": {
+    "miniCommit": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
+    "dsCommit": "e92fc157c85f340f6464bc13b0e1c5c7e2207f03",
+    "schemaSha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
+    "metadataSha256": "8d4460c681833ffccf8485ce901d71029ec72460cd6ea35ad4ebaa37cd62eaf6"
+  },
+  "results": [
+    {
+      "name": "aligned immutable baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "known class nonexistent method",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "known handler wrong tool receiver",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "duplicate registered audit replacing omitted tool",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "forged descriptor hash",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "forged source commit",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "input below minimum",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "input violates oneOf",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "input violates uniqueItems",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "aligned hash duplicate metadata with omitted actual tool",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    }
+  ]
+}

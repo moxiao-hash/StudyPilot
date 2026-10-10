@@ -1,0 +1,113 @@
+{
+  "baseline_commit": "f7311079a83b84c5e7f3a9076ce4efccb3044c86",
+  "files_compared_per_worktree": 1018,
+  "worktrees": [
+    "/Users/moxiao/IdeaProjects/project-harness-h01-minimax",
+    "/Users/moxiao/IdeaProjects/project-harness-h01-zcode",
+    "/Users/moxiao/IdeaProjects/project-harness-h01-deepseek"
+  ],
+  "dispatch": {
+    "zcode": "sent; new-tree Git and docs verified in native UI; frontend inventory in progress",
+    "minimax": "sent; target tree verification executed; contracts/scripts files created",
+    "deepseek": "sent; target tree accessible and branch/HEAD match in native UI; coding fixtures and validator"
+  },
+  "updated_at": "2026-10-08T11:00:00.583492+08:00",
+  "acceptance": "USER_ACCEPTED",
+  "known_baseline_artifact": "backend/mvnw.cmd raw CRLF blob vs text eol=crlf clean-filter normalization: worktree bytes match source but git diff reports normalization; outside workers ownership, do not include in delivery",
+  "automation": {
+    "id": "studypilot-h01",
+    "kind": "heartbeat",
+    "status": "PAUSED",
+    "interval_minutes": 10,
+    "scope": "H01 delivery review; stop at user acceptance gate"
+  },
+  "review": {
+    "round": 1,
+    "heads": {
+      "minimax": "6371c8439ae81fba6270a0136d3c3028df74e73d",
+      "zcode": "4bf3841c82041e351661b76729485b5758a435fe",
+      "deepseek": "61e097f56af72f1b98d13f2cc46fbee7298aa6ed"
+    },
+    "report": "docs/verification/harness/h01-codex-round1.md",
+    "findings": [
+      "R1",
+      "R2",
+      "R3",
+      "R4",
+      "R5"
+    ],
+    "remediation_dispatch": "sent to all three native StudyPilot chats; each UI shows running",
+    "verified_tests": {
+      "minimax": 55,
+      "zcode": 5,
+      "deepseek": 57
+    },
+    "first_round_verdict": "CHANGES_REQUESTED"
+  },
+  "monitor": {
+    "checked_at": "2026-10-08T11:00:00.583492+08:00",
+    "lanes": {
+      "minimax": {
+        "head": "14f6529c08ebe21fcdb0b6b2cbf76679f2a38823",
+        "status": "TECHNICALLY_ACCEPTED"
+      },
+      "zcode": {
+        "head": "9d6061a1254939380759e10395c766cbdacbe022",
+        "status": "TECHNICALLY_ACCEPTED"
+      },
+      "deepseek": {
+        "head": "70ab27605de448382ee483ecb329fe3a33f08eeb",
+        "status": "TECHNICALLY_ACCEPTED"
+      }
+    },
+    "decision": "H01 technically accepted; await user review; pause heartbeat."
+  },
+  "partial_review": {
+    "checked_at": "2026-10-08T02:20:00.424Z",
+    "minimax": {
+      "head": "de1b97c6b8d33a72f41fe4f4df9ceda756aed17d",
+      "tests_passed": 79,
+      "verdict": "R2_R3_FOLLOWUP_REQUIRED"
+    },
+    "deepseek": {
+      "head": "f4c0a8b7e0e0364aaf046f885521b0815716d723",
+      "tests_passed": 95,
+      "verdict": "R4_CLOSED_PENDING_CROSS_END_REVIEW"
+    },
+    "zcode": "uncommitted remediation in progress",
+    "report": "docs/verification/harness/h01-round2-partial.md",
+    "dispatch": "minimax followup sent in original native StudyPilot chat; UI message present and running"
+  },
+  "round2_review": {
+    "report": "docs/verification/harness/h01-codex-round2.md",
+    "verified_tests": {
+      "minimax": 85,
+      "zcode": 15,
+      "deepseek": 100
+    },
+    "cross_contract": "exit1_4failures",
+    "verdict": "CHANGES_REQUESTED"
+  },
+  "final_review": {
+    "report": "docs/verification/harness/h01-codex-final.md",
+    "heads": {
+      "minimax": "14f6529c08ebe21fcdb0b6b2cbf76679f2a38823",
+      "zcode": "9d6061a1254939380759e10395c766cbdacbe022",
+      "deepseek": "70ab27605de448382ee483ecb329fe3a33f08eeb"
+    },
+    "tests": {
+      "minimax": 91,
+      "zcode": 15,
+      "deepseek": 100
+    },
+    "cross_contract_instances": "12/12",
+    "contract_freeze": "docs/verification/harness/h01-contract-freeze.json",
+    "schema_sha256": "df5950c9f9b482b4bea8a21c67e7cad4c5098bd342ce11139199ec9cc6bc5923",
+    "h02_authorized": false
+  },
+  "user_acceptance": {
+    "at": "2026-10-08T11:35:09.499864+08:00",
+    "message": "验收通过，进行下一个",
+    "next_task": "H02"
+  }
+}

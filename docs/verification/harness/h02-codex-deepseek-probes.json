@@ -1,0 +1,63 @@
+{
+  "head": "f9d481978fbff9ae19364e3220b65c1332770887",
+  "results": [
+    {
+      "name": "valid metadata",
+      "expectReject": false,
+      "accepted": true,
+      "pass": true
+    },
+    {
+      "name": "missing registered tool",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_COVERAGE_MISSING",
+      "error": "registered tool \"developer.interface_fallback.preview\" has no metadata entry",
+      "pass": true
+    },
+    {
+      "name": "duplicate wire",
+      "expectReject": true,
+      "accepted": false,
+      "code": "E_DUPLICATE_TOOL",
+      "error": "duplicate metadata entry for \"governance.health.get\"",
+      "pass": true
+    },
+    {
+      "name": "nonexistent method on existing class",
+      "expectReject": true,
+      "accepted": true,
+      "pass": false
+    },
+    {
+      "name": "wrong existing execution class",
+      "expectReject": true,
+      "accepted": true,
+      "pass": false
+    },
+    {
+      "name": "navigation invalid route example",
+      "expectReject": true,
+      "accepted": true,
+      "pass": false
+    },
+    {
+      "name": "navigation nested owner injection",
+      "expectReject": true,
+      "accepted": true,
+      "pass": false
+    },
+    {
+      "name": "illegal output example",
+      "expectReject": true,
+      "accepted": true,
+      "pass": false
+    },
+    {
+      "name": "missing expected example result",
+      "expectReject": true,
+      "accepted": true,
+      "pass": false
+    }
+  ]
+}

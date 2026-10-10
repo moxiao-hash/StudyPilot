@@ -1,0 +1,84 @@
+{
+  "head": "ebb6f2b95563d71f6a43ac65b1c56bf3f59b31d5",
+  "results": [
+    {
+      "name": "baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true
+    },
+    {
+      "name": "missing-description",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "fictional-binding",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "invalid-input",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "invalid-output",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "nested-owner",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "write-enabled",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "coding-enabled",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "fictional-fact",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "unknown-metadata-field",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "unknown-schema-constraint",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    },
+    {
+      "name": "default-determinism",
+      "expected": "identical",
+      "actual": "different",
+      "pass": false
+    },
+    {
+      "name": "verifier-types-and-enums",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false
+    }
+  ],
+  "note": "Historical outcomes reconstructed from the round1 review after an accidental round2 rerun overwrote this JSON. Original raw error text is unavailable; current rerun is stored separately."
+}

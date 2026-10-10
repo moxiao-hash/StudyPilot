@@ -1,0 +1,147 @@
+{
+  "zcHead": "1c52a3bd0e693708ef14b1234b5d21ea59f9297c",
+  "inputs": {
+    "miniCommit": "da3bae15bbc74978b5cff82ef7b26f357bd50837",
+    "dsCommit": "e92fc157c85f340f6464bc13b0e1c5c7e2207f03",
+    "schemaSha256": "fcce0b3d6e503feb3b598611e0b553247c90338b7feea4d15b96b48b5234cc76",
+    "metadataSha256": "8d4460c681833ffccf8485ce901d71029ec72460cd6ea35ad4ebaa37cd62eaf6"
+  },
+  "results": [
+    {
+      "name": "aligned immutable baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "old sentinel fictional handler",
+      "expected": "reject",
+      "actual": "reject",
+      "pass": true,
+      "exit": 1,
+      "stderr": "[FAIL - CROSS_CONTRACT] Actual input Manifest failed validation: ERR_FICTIONAL_HANDLER: Fictional handler target 'UnregisteredClass.noSuchMethod' in tool artifacts.evaluate\n"
+    },
+    {
+      "name": "renamed fictional handler",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "nonzero mismatched metadata hash",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "valid JSON wrong schema",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "valid YAML empty metadata",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "missing when_to_use",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "unknown nested cost field",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "empty examples",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "missing successful output",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "missing output required property",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "wrong nested output type",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "duplicate real route replacing another",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "renamed wrong route path",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "fictional registered audit name",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "invalid governance confirmation",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "root unknown field",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    }
+  ]
+}

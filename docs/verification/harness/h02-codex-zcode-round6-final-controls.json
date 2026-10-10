@@ -1,0 +1,53 @@
+{
+  "head": "4aec808f382522dbb30168b99bc029095d3b948a",
+  "results": [
+    {
+      "name": "current baseline",
+      "expected": "accept",
+      "actual": "accept",
+      "pass": true,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "omit one endpoint within retained controller",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "duplicate endpoint within controller",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "real service method paired to wrong fact",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "real endpoint paired to wrong authoritative fact",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "mismatched source commit with explicit current descriptors",
+      "expected": "reject",
+      "actual": "accept",
+      "pass": false,
+      "exit": 0,
+      "stderr": ""
+    }
+  ]
+}
